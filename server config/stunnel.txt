@@ -1,0 +1,9 @@
+https://wiki.mudlet.org/w/Sample_TLS_Configuration
+sysctl -w net.ipv4.conf.all.route_localnet=1
+Don't forget certs only work for fqdn
+Make certain the evennia config file is listening on 127.0.0.1!
+
+Make ip tables persistant
+sudo apt-get install iptables-persistent
+When prompted to save iptables config select yes
+https://dannyda.com/2020/04/29/how-to-make-iptables-rules-persistent-between-reboots-on-debian-ubuntu-18-19/

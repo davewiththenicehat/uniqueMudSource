@@ -1,0 +1,21 @@
+https://github.com/evennia/evennia/wiki/Apache-Config, install apache proxy server for evennia. Lacks important details for proper setup. SKIP TO `mod_proxy and mod_ssl setup`
+
+test config: `sudo apachectl configtest`
+View loaded sites with: `sudo apache2ctl -S`
+restart apache server `sudo systemctl reload apache2`
+
+Add `ServerName localhost`, to bottom of apache2.conf. reference https://dev.to/ayekpleclemence/could-not-reliably-determine-the-server-s-fully-qualified-domain-name-using-127-0-1-1-for-servername-error-on-ubuntu-4gc9add `serverName localhost`
+
+load apache proxy modules
+  sudo a2enmod proxy
+  sudo a2enmod proxy_http
+  sudo a2enmod proxy_ajp
+  sudo a2enmod proxy_balancer
+  sudo a2enmod proxy_connect
+  sudo a2enmod proxy_html
+  sudo a2enmod proxy_wstunnel
+  sudo a2enmod ssl
+
+Open ports 80 and 443 tcp only, don't forget to open both at the router
+  sudo ufw allow 443/tcp
+  sudo ufw allow 80/tcp

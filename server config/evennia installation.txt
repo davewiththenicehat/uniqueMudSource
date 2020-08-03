@@ -1,0 +1,8 @@
+https://github.com/evennia/evennia/wiki/Getting-Started#linux-install
+  Actually good instructions. Lacks virtual everything for security considerations.
+
+Open ports 4000 - 4002
+  sudo ufw allow 4000/tcp
+  sudo ufw allow 4001/tcp
+  sudo ufw allow 4002/tcp
+4000 to 4002 should NOT be open at the router's firewall. No hairpins! This telnet server is not encrypted. Should only be used on local network or via vpn.

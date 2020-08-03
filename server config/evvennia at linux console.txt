@@ -1,0 +1,4 @@
+https://github.com/evennia/evennia/wiki/Start-Stop-Reload
+
+Enter virtualenv by running `source evenv/bin/activate` from the muddev directory.
+reboot portal and game with `evennia reboot` when in (evenv) by running command above.
