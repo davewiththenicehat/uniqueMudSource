@@ -1,7 +1,7 @@
 # uniqueMudSource
 Source code and 
 
-## Getting started
+## Getting started -In progress do not follow these setps-
 	Feel free to use any IDE.
 	
 	An example IDE is ATOM. You can follow the steps below for windows, or to install it for linux follow the steps at: https://hackernoon.com/setting-up-atom-as-a-python-ide-a-how-to-guide-o6dd37ff
