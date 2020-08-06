@@ -7,10 +7,13 @@ Source code and
 Feel free to use any IDE.
 	
 IDLE<br>
-<pre>+very easy installation method<br>
+<pre>
+	+very easy installation method<br>
 	+very light weight<br>
 	+Linux Mac & Windows compatible<br>
 	-Few "high end" features<br>
+</pre>
+IDLE Installation<br>
 Download and install python from: https://www.python.org/downloads/windows/<br>
 IDLE is part of the python installation.<br>
 	
