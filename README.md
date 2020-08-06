@@ -6,7 +6,7 @@ Source code and
 ### Choose an IDE
 Feel free to use any IDE.
 	
-IDLE<br>
+#### IDLE<br>
 <pre>
 	+very easy installation method<br>
 	+very light weight<br>
@@ -17,7 +17,7 @@ IDLE Installation<br>
 Download and install python from: https://www.python.org/downloads/windows/<br>
 IDLE is part of the python installation.<br>
 	
-vscode setup<br>
+#### vscode<br>
 <pre>
 	+Linux Mac & Windows compatible<br>
 	+More robust IDE<br>
