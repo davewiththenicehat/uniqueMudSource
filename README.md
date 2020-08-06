@@ -29,6 +29,6 @@ download and install python: https://www.python.org/downloads/windows/<br>
 download and install vscode: https://code.visualstudio.com/download<br>
 Install the python extension for vscode: https://marketplace.visualstudio.com/items?itemName=ms-python.python<br>
 Restart VS Code<br>
-After installing you will be prompted to select a python interpreter, the window will be at the bottom right of the vscode window.<br>
-When you run your first script you will be prompted to install pylint, install it.<br>
+When you run your first script or restart you will be prompted to install pylint, install it.<br>
+To create a file, click file -> new file. Save the file with file -> save. In the `save as type` field near the bottom choose python.<br>
 vscode installation reference from: reference https://code.visualstudio.com/docs/languages/python<br>
