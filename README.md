@@ -7,7 +7,7 @@ Source code and
 Feel free to use any IDE.
 	
 IDLE<br>
-	+very easy installation method<br>
+<pre>+very easy installation method<br>
 	+very light weight<br>
 	+Linux Mac & Windows compatible<br>
 	-Few "high end" features<br>
