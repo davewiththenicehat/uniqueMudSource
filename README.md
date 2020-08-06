@@ -11,6 +11,7 @@ Feel free to use any IDE.
 	+very easy installation method<br>
 	+very light weight<br>
 	+Linux Mac & Windows compatible<br>
+	+Good for someone starting out, who is considering contributing code<br>
 	-Few "high end" features
 </pre>
 IDLE Installation<br>
@@ -22,7 +23,8 @@ IDLE is part of the python installation.<br>
 	+Linux Mac & Windows compatible<br>
 	+More robust IDE<br>
 	+Fairlt light weight<br>
- 	-Slightly difficult to setup<br>
+	+Good for person considering contributing heavily<br>
+ 	-Slightly difficult to setup
 </pre>
 vscode installation<br>
 download and install python: https://www.python.org/downloads/windows/<br>
