@@ -3,7 +3,7 @@ Source code and
 
 ## Getting started
 
-###Choose an IDE
+### Choose an IDE
 Feel free to use any IDE.
 	
 IDLE setup, very light weight easy to install. Linux Mac & Windows compatible
