@@ -2,23 +2,16 @@
 Source code and 
 
 ## Getting started -In progress do not follow these setps-
-	Feel free to use any IDE.
+Feel free to use any IDE.
 	
-	An example IDE is ATOM. You can follow the steps below for windows, or to install it for linux follow the steps at: https://hackernoon.com/setting-up-atom-as-a-python-ide-a-how-to-guide-o6dd37ff
-	Download and install ATOM: https://atom.io/
-		|_After starting for the first time choose yes to making it your default URI opener.
-	Download ATOMS python linter from: https://atom.io/packages/python-linters, by clicking the install button at the top right.
-		|_You will be requested to install a dependacy of linter, choose yes.
-	OPTIONAL: Install Python Autocomplete for ATOM: https://atom.io/packages/autocomplete-python?ref=hackernoon.com
-	OPTIONAL: Script package at: https://atom.io/packages/script?ref=hackernoon.com
-	OPTIONAL: file icons: https://atom.io/packages/atom-file-icons?ref=hackernoon.com
-	OPTIONAL: Syntac theme: https://atom.io/packages/atom-material-syntax?ref=hackernoon.com
-	OPTIONAL: Minmap preview: https://atom.io/packages/minimap?ref=hackernoon.com
-	OPTIONAL: jupyter-notebook: https://atom.io/packages/jupyter-notebook?ref=hackernoon.com
-	OPTIONA: Git management packages from https://atom.io/packages:
-		git-control
-		git-plus
-		git-blame
-		git-time-machine
-		gitlab
-		open-on-bitbucket
+IDLE setup, very light weight easy to install. Linux Mac & Windows compatible
+Download and install python from: https://www.python.org/downloads/windows/
+IDLE is part of the python installation.
+	
+vscode setup: Linux Mac & Windows compatible 
+download and install python: https://www.python.org/downloads/windows/
+download and install vscode: https://code.visualstudio.com/download
+Install the python extension for vscode: https://marketplace.visualstudio.com/items?itemName=ms-python.python
+After installing you will be prompted to select a python interpreter, the window will be at the bottom right of the vscode window.
+When you run your first script you will be prompted to install pylint, install it.
+vscode installation reference from: reference https://code.visualstudio.com/docs/languages/python
