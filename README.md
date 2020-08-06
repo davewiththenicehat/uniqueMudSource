@@ -1,7 +1,9 @@
 # uniqueMudSource
 Source code and 
 
-## Getting started -In progress do not follow these setps-
+## Getting started
+
+###Choose an IDE
 Feel free to use any IDE.
 	
 IDLE setup, very light weight easy to install. Linux Mac & Windows compatible
