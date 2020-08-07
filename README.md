@@ -34,3 +34,7 @@ Restart VS Code<br>
 When you run your first script or restart you will be prompted to install pylint, install it.<br>
 To create a file, click `file -> new file`. Save the file by clicking `file -> save`. In the `save as type` field near the bottom choose python.<br>
 vscode installation reference from: reference https://code.visualstudio.com/docs/languages/python<br>
+
+## Connecting to server
+Download and install Drive Maker: http://backupchain.com/en/drivemaker/
+When connecting for the first time the server address is mud.techknowledge.repair, prefacing with sftp://mud.techknowledge.repair will not work.
