@@ -35,6 +35,13 @@ When you run your first script or restart you will be prompted to install pylint
 To create a file, click `file -> new file`. Save the file by clicking `file -> save`. In the `save as type` field near the bottom choose python.<br>
 vscode installation reference from: reference https://code.visualstudio.com/docs/languages/python<br>
 
+### pycharm -incomplete<br>
+download pycharm pro<br>
+reference: https://medium.com/@jvision/remote-development-with-pycharm-d741287e07de<br>
+Follow steps at: https://gist.github.com/rszeto/e47d89773c283fff685b0a886517eb6b<br>
+interpreter is /home/dave/muddev/evenv/bin/python<br>
+remote project is: /home/dave/muddev<br>
+
 ## Connecting to server
 Download and install Drive Maker: http://backupchain.com/en/drivemaker/<br>
 When connecting for the first time:
