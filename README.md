@@ -42,7 +42,7 @@ Install: https://atom.io/packages/script<br>
 Install: https://atom.io/packages/ide-python<br>
 Install remote connection: https://atom.io/packages/remote-sync<br>
 
-#### configure remote connection<br>
+#### configure remote sync in atom<br>
 create a project. Right click the project folder, `remote sync` -> `configure`<br>
 <b>CAUTION! On the steps below do not remove the `.remote-sync.json` from the `ignore Paths` that is a clear text file with your password in it</b><br>
 host is: `mud.techknowledge.repair`<br> port `22`<br> target directory `/home/dave/muddev/mygame`<br> uder username click the box `password`<br> below `Watch automatically` check the boxes for `upLoadOnSave` and `Delete localfile/folder upon remote delete`<br>click `save`<br>
