@@ -37,4 +37,7 @@ vscode installation reference from: reference https://code.visualstudio.com/docs
 
 ## Connecting to server
 Download and install Drive Maker: http://backupchain.com/en/drivemaker/<br>
-When connecting for the first time the server address is mud.techknowledge.repair, prefacing with sftp://mud.techknowledge.repair will not work.
+When connecting for the first time:
+At `server type` check the bullet for sftp.
+The `site address` is mud.techknowledge.repair, prefacing with sftp://mud.techknowledge.repair will not work.
+Fill in your id and password. All other settins should be acceptable as default.
