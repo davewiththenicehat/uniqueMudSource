@@ -35,12 +35,25 @@ When you run your first script or restart you will be prompted to install pylint
 To create a file, click `file -> new file`. Save the file by clicking `file -> save`. In the `save as type` field near the bottom choose python.<br>
 vscode installation reference from: reference https://code.visualstudio.com/docs/languages/python<br>
 
+### Atom<br>
+Download Atom from: https://atom.io/<br>
+You MAY need to create your own shortcut. If one does not appear atom is located in `C:\Users\YOURID\AppData\Local\atom\`<br>
+Install: https://atom.io/packages/script<br>
+Install: https://atom.io/packages/ide-python<br>
+Install remote connection: https://atom.io/packages/remote-sync<br>
+To configure remote connection create a project. Right click the project folder, `remote sync` -> `configure`<br>
+host is: `mud.techknowledge.repair`, port `22`, target directory `/home/dave/muddev/mygame`, uder username click the box `password`, below `Watch automatically` check the boxes for `upLoadOnSave` and `Delete localfile/folder upon remote delete`, click `save`<br>
+Right click your project folder, select `remote sync` and click `download folder`<br>
+Now repeat the steps replacing target directory with ``/home/dave/muddev/evennia/evennia``<br>
+
+
 ### pycharm -incomplete<br>
 download pycharm pro<br>
 reference: https://medium.com/@jvision/remote-development-with-pycharm-d741287e07de<br>
 Follow steps at: https://gist.github.com/rszeto/e47d89773c283fff685b0a886517eb6b<br>
 interpreter is /home/dave/muddev/evenv/bin/python<br>
 remote project is: /home/dave/muddev<br>
+Following steps above results in getting stuck at a loading components screen.
 
 ## Connecting to server
 Download and install Drive Maker: http://backupchain.com/en/drivemaker/<br>
