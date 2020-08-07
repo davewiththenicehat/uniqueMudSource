@@ -36,5 +36,5 @@ To create a file, click `file -> new file`. Save the file by clicking `file -> s
 vscode installation reference from: reference https://code.visualstudio.com/docs/languages/python<br>
 
 ## Connecting to server
-Download and install Drive Maker: http://backupchain.com/en/drivemaker/
+Download and install Drive Maker: http://backupchain.com/en/drivemaker/<br>
 When connecting for the first time the server address is mud.techknowledge.repair, prefacing with sftp://mud.techknowledge.repair will not work.
