@@ -41,11 +41,13 @@ You MAY need to create your own shortcut. If one does not appear atom is located
 Install: https://atom.io/packages/script<br>
 Install: https://atom.io/packages/ide-python<br>
 Install remote connection: https://atom.io/packages/remote-sync<br>
+```
 To configure remote connection create a project. Right click the project folder, `remote sync` -> `configure`<br>
 <b>CAUTION! On the steps below do not remove the `.remote-sync.json` from the `ignore Paths` that is a clear text file with your password in it</b><br>
 host is: `mud.techknowledge.repair`, port `22`, target directory `/home/dave/muddev/mygame`, uder username click the box `password`, below `Watch automatically` check the boxes for `upLoadOnSave` and `Delete localfile/folder upon remote delete`, click `save`<br>
 Right click your project folder, select `remote sync` and click `download folder`<br>
-Now repeat the steps replacing target directory with ``/home/dave/muddev/evennia/evennia``<br>
+Now repeat the steps replacing target directory with `/home/dave/muddev/evennia/evennia`
+```
 
 
 ### pycharm -incomplete<br>
