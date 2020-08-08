@@ -29,7 +29,7 @@ host is: `mud.techknowledge.repair`<br> port `22`<br> target directory `/home/da
 Right click your project folder, select `remote sync` and click `download folder`<br>
 Now repeat the steps replacing target directory with `/home/dave/muddev/evennia/evennia`
 
-#### linter error running flake8
+#### linter error running flake8, while running Atom
 run command `python -m pip install flake8 fixed the issue` on your shell, works in windows also<br>
 	
 #### IDLE<br>
