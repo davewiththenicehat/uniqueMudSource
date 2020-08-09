@@ -18,7 +18,7 @@ Download Atom from: https://atom.io/<br>
 You MAY need to create your own shortcut. If one does not appear atom is located in `C:\Users\YOURID\AppData\Local\atom\`<br>
 Install: https://atom.io/packages/script<br>
 Install: https://atom.io/packages/ide-python<br>
-Install github remote-sync: https://atom.io/packages/remote-sync, installation tutorial is [here](https://github.com/davewiththenicehat/uniqueMudSource/wiki/github-sync-configuration)<br>
+Install github remote-sync: https://atom.io/packages/remote-sync, installation tutorial is [here](https://github.com/davewiththenicehat/uniqueMudSource/wiki/Atom:-github-sync)<br>
 Optional, python auto complete: https://atom.io/packages/autocomplete-python, I suggest to not use kite when offered.<br>
 Optional, Minimap: https://atom.io/packages/minimap<br>
 
