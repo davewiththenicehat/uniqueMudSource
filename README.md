@@ -27,7 +27,6 @@ create a project. Right click the project folder, `remote sync` -> `configure`<b
 <b>CAUTION! On the steps below do not remove the `.remote-sync.json` from the `ignore Paths` that is a clear text file with your password in it</b><br>
 host is: `mud.techknowledge.repair`<br> port `22`<br> target directory `/home/dave/muddev/mygame`<br> uder username click the box `password`<br> below `Watch automatically` check the boxes for `upLoadOnSave` and `Delete localfile/folder upon remote delete`<br>click `save`<br>
 Right click your project folder, select `remote sync` and click `download folder`<br>
-Now repeat the steps replacing target directory with `/home/dave/muddev/evennia/evennia`
 
 #### linter error running flake8, while running Atom
 run command `python -m pip install flake8 fixed the issue` on your shell, works in windows also<br>
