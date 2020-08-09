@@ -1,0 +1,7 @@
+Copyright (C) TechKnowledge LLC - All Rights Reserved
+Unauthorized copying of files in the repository, via any medium is strictly prohibited
+developers may copy files to edit them than contribute to this repository only
+developers do not have consent to use files in this repository elsewhere
+Methods outlined in any tutorials (including but not limited to the wiki and readme files) in this repository are the property of TechKnowledge LLC and are not to be used elsewhere
+Proprietary and confidential
+Written by David Gill david@techknowledge.repair, August 2020
