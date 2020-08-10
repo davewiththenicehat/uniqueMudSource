@@ -21,9 +21,7 @@ Install: https://atom.io/packages/ide-python<br>
 Install github remote-sync: https://atom.io/packages/remote-sync, installation tutorial is [here](https://github.com/davewiththenicehat/uniqueMudSource/wiki/Atom:-github-sync)<br>
 Optional, python auto complete: https://atom.io/packages/autocomplete-python, I suggest to not use kite when offered.<br>
 Optional, Minimap: https://atom.io/packages/minimap<br>
-
-#### linter error running flake8, while running Atom
-run command `python -m pip install flake8 fixed the issue` on your shell, works in windows also<br>
+Open a shell and run: `python -m pip install -U mypy`, `python -m pip install -U pydocstyle` and `python -m pip install -U flake8`
 	
 #### IDLE<br>
 <pre>
