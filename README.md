@@ -21,7 +21,8 @@ Install: https://atom.io/packages/ide-python<br>
 Install github remote-sync: https://atom.io/packages/remote-sync, installation tutorial is [here](https://github.com/davewiththenicehat/uniqueMudSource/wiki/Atom:-github-sync)<br>
 Optional, python auto complete: https://atom.io/packages/autocomplete-python, I suggest to not use kite when offered.<br>
 Optional, Minimap: https://atom.io/packages/minimap<br>
-Open a shell and run: `python -m pip install -U mypy`, `python -m pip install -U pydocstyle` and `python -m pip install -U flake8`
+Open a shell and run: `python -m pip install -U mypy`, `python -m pip install -U pydocstyle` and `python -m pip install -U flake8`<br>
+Run a saved local script with `ctrl+shift+b` full steps outlineed [here](https://github.com/davewiththenicehat/uniqueMudSource/wiki/Atom:-running-local-script)<br>
 	
 #### IDLE<br>
 <pre>
