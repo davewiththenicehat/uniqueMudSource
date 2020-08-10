@@ -23,6 +23,7 @@ Optional, python auto complete: https://atom.io/packages/autocomplete-python, I 
 Optional, Minimap: https://atom.io/packages/minimap<br>
 Open a shell and run: `python -m pip install -U mypy`, `python -m pip install -U pydocstyle` and `python -m pip install -U flake8`<br>
 Run a saved local script with `ctrl+shift+b` full steps outlineed [here](https://github.com/davewiththenicehat/uniqueMudSource/wiki/Atom:-running-local-script)<br>
+Disable soft tabs, so a tab is 4 spaces in atom `file -> settings -> editor -> uncheck "atomic Soft Tabs`<br>
 	
 #### IDLE<br>
 <pre>
