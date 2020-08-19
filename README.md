@@ -1,5 +1,5 @@
 # uniqueMudSource
-Source code and 
+Source code and
 
 ## Getting started
 
@@ -25,7 +25,7 @@ Open a shell and run: `python -m pip install -U mypy`, `python -m pip install -U
 Run a saved local script with `ctrl+shift+b` full steps outlineed [here](https://github.com/davewiththenicehat/uniqueMudSource/wiki/Atom:-running-local-script)<br>
 Disable soft tabs, so a tab is 4 spaces in atom `file -> settings -> editor -> uncheck "atomic Soft Tabs`<br>
 Gain shell access to the server within Atom by following a tutorial [here](https://github.com/davewiththenicehat/uniqueMudSource/wiki/Atom:-Remote-shell)
-	
+
 #### IDLE<br>
 <pre>
 	+very easy installation method<br>
@@ -37,7 +37,7 @@ Gain shell access to the server within Atom by following a tutorial [here](https
 IDLE Installation<br>
 Download and install python from: https://www.python.org/downloads/windows/<br>
 IDLE is part of the python installation.<br>
-	
+
 #### vscode<br>
 <pre>
 	+Linux Mac & Windows compatible<br>
