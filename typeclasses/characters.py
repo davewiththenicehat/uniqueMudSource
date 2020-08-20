@@ -7,10 +7,12 @@ is setup to be the "default" character type created by the default
 creation commands.
 
 """
-from evennia import DefaultCharacter
+#from evennia import DefaultCharacter
+from evennia.contrib.gendersub import GenderCharacter
 
 
-class Character(DefaultCharacter):
+#class Character(DefaultCharacter):
+class Character(GenderCharacter):
     """
     The Character defaults to reimplementing some of base Object's hook methods with the
     following functionality:
