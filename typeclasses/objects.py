@@ -11,9 +11,10 @@ inheritance.
 
 """
 from evennia import DefaultObject
+from typeclasses.mixins.invisible import RespectInvisibilityMixin
 
 
-class Object(DefaultObject):
+class Object(RespectInvisibilityMixin, DefaultObject):
     """
     This is the root typeclass object, implementing an in-game Evennia
     game object, such as having a location, being able to be
@@ -159,4 +160,10 @@ class Object(DefaultObject):
 
      """
 
-    pass
+    def make_invisible(self):
+        self.locks.add("visible:false()")
+        self.locks.add("view:false()")
+
+    def make_visible(self):
+        self.locks.add("visible:true()")
+        self.locks.add("view:true()")
