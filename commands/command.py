@@ -6,6 +6,14 @@ Commands describe the input the account can do to the game.
 """
 
 from evennia import Command as BaseCommand
+from typeclasses.rooms import Room
+from evennia import Command
+import random
+from evennia import create_object
+from random import randint
+from evennia import InterruptCommand
+from evennia.utils.search import search_tag
+from typeclasses.accounts import Account
 
 # from evennia import default_cmds
 
@@ -186,3 +194,358 @@ class Command(BaseCommand):
 #                 self.character = self.caller.get_puppet(self.session)
 #             else:
 #                 self.character = None
+
+class CmdAbilities(Command):
+        """
+        List abilities
+
+        Usage:
+          abilities
+
+        Displays a list of your current ability values.
+        """
+        key = "abilities"
+        aliases = ["abi"]
+        lock = "cmd:all()"
+        help_category = "General"
+
+        def func(self):
+            "implements the actual functionality"
+
+            str, agi, mag, pwr, cmbsc = self.caller.get_abilities()
+            string = "STR: %s, AGI: %s, MAG: %s PWR: %s CmbSc: %s" % (str, agi, mag, pwr, cmbsc)
+            self.caller.msg(string)
+
+class CmdSetPower(Command):
+    """
+    set the power of a character
+
+    Usage:
+      +setpower <1-10>
+
+    This sets the power of the current character. This can only be
+    used during character generation.
+    """
+
+    key = "+setpower"
+    help_category = "mush"
+
+    def func(self):
+        "This performs the actual command"
+        errmsg = "You must supply a number between 1 and 10."
+        if not self.args:
+            self.caller.msg(errmsg)
+            return
+        try:
+            power = int(self.args)
+        except ValueError:
+            self.caller.msg(errmsg)
+            return
+        if not (1 <= power <= 10):
+            self.caller.msg(errmsg)
+            return
+        # at this point the argument is tested as valid. Let's set it.
+        self.caller.db.power = power
+        self.caller.msg("Your Power was set to %i." % power)
+
+# ...
+
+class CmdAttack(Command):
+    """
+    issues an attack
+
+    Usage:
+        +attack
+
+    This will calculate a new combat score based on your Power.
+    Your combat score is visible to everyone in the same location.
+    """
+    key = "+attack"
+    help_category = "mush"
+
+    def func(self):
+        "Calculate the random score between 1-10*Power"
+        caller = self.caller
+        power = caller.db.power
+        if not power:
+            # this can happen if caller is not of
+            # our custom Character typeclass
+            power = 1
+        combat_score = random.randint(1, 10 * power)
+        caller.db.combat_score = combat_score
+
+        # announce
+        message = "%s +attack%s with a combat score of %s!"
+        caller.msg(message % ("You", "", combat_score))
+        caller.location.msg_contents(message %
+                                     (caller.key, "s", combat_score),
+                                     exclude=caller)
+
+class CmdCreateNPC(Command):
+    """
+    create a new npc
+
+    Usage:
+        +createNPC <name>
+
+    Creates a new, named NPC. The NPC will start with a Power of 1.
+    """
+    key = "+createnpc"
+    aliases = ["+createNPC"]
+    locks = "call:not perm(nonpcs)"
+    help_category = "mush"
+
+    def func(self):
+        "creates the object and names it"
+        caller = self.caller
+        if not self.args:
+            caller.msg("Usage: +createNPC <name>")
+            return
+        if not caller.location:
+            # may not create npc when OOC
+            caller.msg("You must have a location to create an npc.")
+            return
+        # make name always start with capital letter
+        name = self.args.strip().capitalize()
+        # create npc in caller's location
+        npc = create_object("characters.Character",
+                      key=name,
+                      location=caller.location,
+                      locks="edit:id(%i) and perm(Builders);call:false()" % caller.id)
+        # announce
+        message = "%s created the NPC '%s'."
+        caller.msg(message % ("You", name))
+        caller.location.msg_contents(message % (caller.key, name),
+                                                exclude=caller)
+
+
+class CmdEditNPC(Command):
+    """
+    edit an existing NPC
+
+    Usage:
+      +editnpc <name>[/<attribute> [= value]]
+
+    Examples:
+      +editnpc mynpc/power = 5
+      +editnpc mynpc/power    - displays power value
+      +editnpc mynpc          - shows all editable
+                                attributes and values
+
+    This command edits an existing NPC. You must have
+    permission to edit the NPC to use this.
+    """
+    key = "+editnpc"
+    aliases = ["+editNPC"]
+    locks = "cmd:not perm(nonpcs)"
+    help_category = "mush"
+
+    def parse(self):
+        "We need to do some parsing here"
+        args = self.args
+        propname, propval = None, None
+        if "=" in args:
+            args, propval = [part.strip() for part in args.rsplit("=", 1)]
+        if "/" in args:
+            args, propname = [part.strip() for part in args.rsplit("/", 1)]
+        # store, so we can access it below in func()
+        self.name = args
+        self.propname = propname
+        # a propval without a propname is meaningless
+        self.propval = propval if propname else None
+
+    def func(self):
+        "do the editing"
+
+        allowed_propnames = ("power", "attribute1", "attribute2")
+
+        caller = self.caller
+        if not self.args or not self.name:
+            caller.msg("Usage: +editnpc name[/propname][=propval]")
+            return
+        npc = caller.search(self.name)
+        if not npc:
+            return
+        if not npc.access(caller, "edit"):
+            caller.msg("You cannot change this NPC.")
+            return
+        if not self.propname:
+            # this means we just list the values
+            output = f"Properties of {npc.key}:"
+            for propname in allowed_propnames:
+                output += f"\n {propname} = {npc.attributes.get(propname, default='N/A')}"
+            caller.msg(output)
+        elif self.propname not in allowed_propnames:
+            caller.msg(f"You may only change {', '.join(allowed_propnames)}.")
+        elif self.propval:
+            # assigning a new propvalue
+            # in this example, the properties are all integers...
+            intpropval = int(self.propval)
+            npc.attributes.add(self.propname, intpropval)
+            caller.msg(f"Set {npc.key}'s property {self.propname} to {self.propval}")
+        else:
+            # propname set, but not propval - show current value
+            caller.msg(f"{npc.key} has property {self.propname} = {npc.attributes.get(self.propname, default='N/A')}")
+
+
+class CmdPoke(Command):
+    """
+    Pokes someone.
+
+    Usage: poke <target>
+    """
+    key = "poke"
+
+    def func(self):
+        """Executes poke command"""
+        target = self.caller.search(self.args.lstrip())
+        if not target:
+            # we didn't find anyone, but search has already let the
+            # caller know. We'll just return, since we're done
+            return
+        # we found a target! we'll do stuff to them.
+        target.msg(f"{self.caller} pokes you.")
+        self.caller.msg(f"You poke {target}.")
+
+
+class CmdNPC(Command):
+    """
+    controls an NPC
+
+    Usage:
+        +npc <name> = <command>
+
+    This causes the npc to perform a command as itself. It will do so
+    with its own permissions and accesses.
+    """
+    key = "+npc"
+    locks = "call:not perm(nonpcs)"
+    help_category = "mush"
+
+    def parse(self):
+        "Simple split of the = sign"
+        name, cmdname = None, None
+        if "=" in self.args:
+            name, cmdname = self.args.rsplit("=", 1)
+            name = name.strip()
+            cmdname = cmdname.strip()
+        self.name, self.cmdname = name, cmdname
+
+    def func(self):
+        "Run the command"
+        caller = self.caller
+        if not self.cmdname:
+            caller.msg("Usage: +npc <name> = <command>")
+            return
+        npc = caller.search(self.name)
+        if not npc:
+            return
+        if not npc.access(caller, "edit"):
+            caller.msg("You may not order this NPC to do anything.")
+            return
+        # send the command order
+        npc.execute_cmd(self.cmdname, sessid=caller.sessid)
+        caller.msg(f"You told {npc.key} to do '{self.cmdname}'.")
+
+class CmdRoll(Command):
+
+    """
+    Play random, enter a number and try your luck.
+
+    Specify two numbers separated by a space.  The first number is the
+    number of dice to roll (1, 2, 3) and the second is the expected sum
+    of the roll.
+
+    Usage:
+      roll <dice> <number>
+
+    For instance, to roll two 6-figure dice, enter 2 as first argument.
+    If you think the sum of these two dice roll will be 10, you could enter:
+
+        roll 2 10
+
+    """
+
+    key = "roll"
+
+    def parse(self):
+        """Split the arguments and convert them."""
+        args = self.args.lstrip()
+
+        # Split: we expect two arguments separated by a space
+        try:
+            number, guess = args.split(" ", 1)
+        except ValueError:
+            self.msg("Invalid usage.  Enter two numbers separated by a space.")
+            raise InterruptCommand
+
+        # Convert the entered number (first argument)
+        try:
+            self.number = int(number)
+            if self.number <= 0:
+                raise ValueError
+        except ValueError:
+            self.msg(f"{number} is not a valid number of dice.")
+            raise InterruptCommand
+
+        # Convert the entered guess (second argument)
+        try:
+            self.guess = int(guess)
+            if not 1 <= self.guess <= self.number * 6:
+                raise ValueError
+        except ValueError:
+            self.msg(f"{self.guess} is not a valid guess.")
+            raise InterruptCommand
+
+    def func(self):
+        # Roll a random die X times (X being self.number)
+        figure = 0
+        for _ in range(self.number):
+            figure += randint(1, 6)
+
+        self.msg(f"You roll {self.number} dice and obtain the sum {figure}.")
+
+        if self.guess == figure:
+            self.msg(f"You played {self.guess}, you have won!")
+        else:
+            self.msg(f"You played {self.guess}, you have lost.")
+
+
+class CmdListHangouts(Command):
+    """Lists hangouts"""
+    key = "hangouts"
+
+    def func(self):
+        """Executes 'hangouts' command"""
+        hangouts = search_tag(key="hangout", category="location tags")
+        self.caller.msg(f"Hangouts available: {', '.join(str(ob) for ob in hangouts)}")
+
+
+class CmdListEUsers(Command):
+    """List user accounts with the letter e in them"""
+    key = "userswith"
+
+    def func(self):
+        """List accounts with e in them"""
+        args = self.args.lstrip()
+        message = f"Accounts with {args} in them: "
+        queryset = Account.objects.filter(username__contains=args)
+        accounts = list(queryset)  # this fills list with matches
+        for account in queryset:
+            message = message + "" + account.username
+        self.caller.msg(message + ".")
+
+
+class CmdRoomsWithObjCount(Command):
+    """List rooms with x number of objects within."""
+    key = "roomswithobjects"
+
+    def func(self):
+        """List rooms with a number of objects in them"""
+        args = int(self.args.lstrip())
+        message = f"Rooms with {args} or more objects in them: "
+        queryset = Room.objects.all()  # get all Rooms
+        rooms = [room for room in queryset if len(room.contents) >= args]
+        for room in rooms:
+            message = message + room.name
+        self.caller.msg(message + ".")

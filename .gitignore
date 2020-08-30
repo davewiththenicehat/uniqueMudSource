@@ -56,3 +56,9 @@ nosetests.xml
 
 #server settings file
 server/conf/settings.py
+
+#owncloud sync files
+.sync_*.db*
+
+#Windows explorer icon file
+Desktop.ini

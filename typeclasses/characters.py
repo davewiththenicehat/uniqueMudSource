@@ -33,4 +33,32 @@ class Character(GenderCharacter):
 
     """
 
-    pass
+    def at_object_creation(self):
+        "This is called when object is first created, only."
+        self.db.power = 1
+        self.db.combat_score = 1
+        self.db.strength = 5
+        self.db.agility = 4
+        self.db.magic = 2
+
+    def get_abilities(self):
+        """
+        return abilities
+        """
+        return self.db.strength, self.db.agility, self.db.magic, self.db.power, self.db.combat_score
+
+    def return_appearance(self, looker):
+            """
+            The return from this method is what
+            looker sees when looking at this object.
+            """
+            text = super().return_appearance(looker)
+            cscore = " (combat score: %s)" % self.db.combat_score
+            if "\n" in text:
+                # text is multi-line, add score after first line
+                first_line, rest = text.split("\n", 1)
+                text = first_line + cscore + "\n" + rest
+            else:
+                # text is only one line; add score to end
+                text += cscore
+            return text

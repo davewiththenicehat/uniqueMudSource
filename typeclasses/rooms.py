@@ -5,7 +5,8 @@ Rooms are simple containers that has no location of their own.
 
 """
 
-from evennia import DefaultRoom
+from evennia import DefaultRoom, TICKER_HANDLER
+import random
 
 
 class Room(DefaultRoom):
@@ -19,4 +20,20 @@ class Room(DefaultRoom):
     properties and methods available on all Objects.
     """
 
-    pass
+    def make_hangout(self):
+        self.tags.add("hangout", category="location tags")
+
+    def make_weather(self):
+        TICKER_HANDLER.add(60, self.at_weather_update)
+
+    def at_weather_update(self, *args, **kwargs):
+        "ticked at regular intervals"
+        ECHOES = [
+            "The sky is clear.",
+            "Clouds gather overhead.",
+            "It's starting to drizzle.",
+            "A breeze of wind is felt.",
+            "The wind is picking up"
+            ]
+        echo = random.choice(ECHOES)
+        self.msg_contents(echo)
