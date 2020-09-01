@@ -7,6 +7,7 @@ Rooms are simple containers that has no location of their own.
 
 from evennia import DefaultRoom, TICKER_HANDLER
 import random
+from evennia import utils
 
 
 class Room(DefaultRoom):
@@ -37,3 +38,16 @@ class Room(DefaultRoom):
             ]
         echo = random.choice(ECHOES)
         self.msg_contents(echo)
+
+    # Add this hook in any empty area within your Room class.
+    def at_object_receive(self, obj, source_location):
+        if utils.inherits_from(obj, 'typeclasses.npcs.NPC'):
+            return
+        elif utils.inherits_from(obj, 'typeclasses.characters.Character'):
+            # A PC has entered.
+            # Cause the player's character to look around.
+            obj.execute_cmd('look')
+            for item in self.contents:
+                if utils.inherits_from(item, 'typeclasses.npcs.NPC'):
+                    # An NPC is in the room
+                    item.at_char_entered(obj)

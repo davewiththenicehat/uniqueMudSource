@@ -7,11 +7,11 @@ is setup to be the "default" character type created by the default
 creation commands.
 
 """
-#from evennia import DefaultCharacter
+# from evennia import DefaultCharacter
 from evennia.contrib.gendersub import GenderCharacter
 
 
-#class Character(DefaultCharacter):
+# class Character(DefaultCharacter):
 class Character(GenderCharacter):
     """
     The Character defaults to reimplementing some of base Object's hook methods with the
@@ -48,17 +48,27 @@ class Character(GenderCharacter):
         return self.db.strength, self.db.agility, self.db.magic, self.db.power, self.db.combat_score
 
     def return_appearance(self, looker):
-            """
-            The return from this method is what
-            looker sees when looking at this object.
-            """
-            text = super().return_appearance(looker)
-            cscore = " (combat score: %s)" % self.db.combat_score
-            if "\n" in text:
-                # text is multi-line, add score after first line
-                first_line, rest = text.split("\n", 1)
-                text = first_line + cscore + "\n" + rest
-            else:
-                # text is only one line; add score to end
-                text += cscore
-            return text
+        """
+        The return from this method is what
+        looker sees when looking at this object.
+        """
+        text = super().return_appearance(looker)
+        cscore = " (combat score: %s)" % self.db.combat_score
+        if "\n" in text:
+            # text is multi-line, add score after first line
+            first_line, rest = text.split("\n", 1)
+            text = first_line + cscore + "\n" + rest
+        else:
+            # text is only one line; add score to end
+            text += cscore
+        return text
+
+    def at_after_move(self, source_location):
+        """
+        Default is to look around after a move
+        Note:  This has been moved to Room.at_object_receive
+        Added for tutorial:
+        https://github.com/evennia/evennia/wiki/Tutorial-Aggressive-NPCs
+        """
+        # self.execute_cmd('look')
+        pass
