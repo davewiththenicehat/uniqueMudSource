@@ -18,6 +18,7 @@ from evennia import default_cmds
 from evennia import CmdSet
 from evennia.contrib.gendersub import SetGender
 from commands.command import *
+from typeclasses.npcshop import CmdBuildShop
 
 
 class CharacterCmdSet(default_cmds.CharacterCmdSet):
@@ -48,6 +49,7 @@ class CharacterCmdSet(default_cmds.CharacterCmdSet):
         self.add(CmdListHangouts())
         self.add(CmdListEUsers())
         self.add(CmdRoomsWithObjCount())
+        self.add(CmdBuildShop())
 
 
 class AccountCmdSet(default_cmds.AccountCmdSet):
