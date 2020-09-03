@@ -8,6 +8,7 @@ Rooms are simple containers that has no location of their own.
 from evennia import DefaultRoom, TICKER_HANDLER
 import random
 from evennia import utils
+from world.map import Map
 
 
 class Room(DefaultRoom):
@@ -51,3 +52,11 @@ class Room(DefaultRoom):
                 if utils.inherits_from(item, 'typeclasses.npcs.NPC'):
                     # An NPC is in the room
                     item.at_char_entered(obj)
+
+    #updated following https://github.com/evennia/evennia/wiki/Dynamic-In-Game-Map
+    def return_appearance(self, looker):
+        string = "%s\n" % Map(looker).show_map()
+        # Add all the normal stuff like room description,
+        # contents, exits etc.
+        string += "\n" + super().return_appearance(looker)
+        return string
