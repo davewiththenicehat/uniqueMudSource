@@ -549,3 +549,11 @@ class CmdRoomsWithObjCount(Command):
         for room in rooms:
             message = message + room.name
         self.caller.msg(message + ".")
+
+class CmdCheckUnicodeSpacing(Command):
+    key = "checkspacing"
+
+    def func(self):
+        """prints some unicode characters that should align."""
+        self.caller.msg(u'\U0001F3DC\t'+u' '+u' '+u'\u2610'+u' '+u'\t\U0001F332')
+        self.caller.msg(u'\U0001F332\t'+u' '+u' '+u'\u2610'+u' '+u'\t\U0001F332')

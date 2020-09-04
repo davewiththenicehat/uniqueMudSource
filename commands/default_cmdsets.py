@@ -50,6 +50,7 @@ class CharacterCmdSet(default_cmds.CharacterCmdSet):
         self.add(CmdListEUsers())
         self.add(CmdRoomsWithObjCount())
         self.add(CmdBuildShop())
+        self.add(CmdCheckUnicodeSpacing())
 
 
 class AccountCmdSet(default_cmds.AccountCmdSet):

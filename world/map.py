@@ -1,14 +1,50 @@
 """
 Made following:
 https://github.com/evennia/evennia/wiki/Dynamic-In-Game-Map
+references
+https://docs.python.org/3/library/unicodedata.html
+https://www.programcreek.com/python/example/5938/unicodedata.east_asian_width
+https://pypi.org/project/wcwidth/
 """
+# from evennia.utils import evtable
+# from wcwidth import wcswidth
+# from wcwidth import wcwidth
+#from unicodedata import east_asian_width
 
+def wc_rjust(text, length, padding=u"\U00002003"):
+    from wcwidth import wcswidth
+    print(text+" is "+str(wcswidth(text)))
+    # return padding * max(0, (length - wcswidth(text))) + text
+    return padding * max([0, (length - wcswidth(text))]) + text
+
+def get_east_asian_width(unicode_str):
+    r = unicodedata.east_asian_width(unicode_str)
+    if r == "F":    #  Fullwidth
+        return 1
+    elif r == "H":  #  Half-width
+        return 1
+    elif r == "W":  #  Wide
+        return 2
+    elif r == "Na": #  Narrow
+        return 1
+    elif r == "A":  #  Ambiguous, go with 2
+        return 1
+    elif r == "N":  #  Neutral
+        return 1
+    else:
+        return 1
+
+cell_spacing = 5
 # These are keys set with the Attribute sector_type on the room.
 # The keys None and "you" must always exist.
-SYMBOLS = { None : u"\u2610",  # for rooms without a sector_type attr
-            'you' : u"\u2612",
-            'SECT_INSIDE': u"\u2610",
-            'dune' : u"\U0001F3DC"}
+# 'dune': u"\U0001F3DC\t"
+# 'forest': u"\U0001F332\t"
+SYMBOLS = {None: u"\u2610",
+           'you': u"\u2612",
+           'SECT_INSIDE': u"\u2610",
+           'dune': u"\u2610",
+           'forest': u"\u2610"}
+
 
 class Map(object):
 
@@ -24,7 +60,7 @@ class Map(object):
             # we actually have to store the grid into a variable
             self.grid = self.create_grid()
             self.draw_room_on_map(caller.location,
-                                 ((min(max_width, max_length) -1 ) / 2))
+                                 ((min (max_width , max_length) - 1) / 2))
 
     def update_pos(self, room, exit_name):
         # this ensures the pointer variables always
@@ -74,7 +110,7 @@ class Map(object):
     def median(self, num):
         lst = sorted(range(0, num))
         n = len(lst)
-        m = n -1
+        m = n - 1
         return (lst[n//2] + lst[m//2]) / 2.0
 
     def start_loc_on_grid(self):
@@ -84,12 +120,10 @@ class Map(object):
         x, y = int(x), int(y)
 
         self.grid[x][y] = SYMBOLS['you']
-        self.curX, self.curY = x, y # updating worms current location
-
+        self.curX, self.curY = x, y  # updating worms current location
 
     def has_drawn(self, room):
         return True if room in self.worm_has_mapped.keys() else False
-
 
     def create_grid(self):
         # This method simply creates an empty grid
@@ -98,8 +132,7 @@ class Map(object):
         for row in range(self.max_width):
             board.append([])
             for column in range(self.max_length):
-                #board[row].append(u"\u2800")
-                board[row].append(u"\u0020")
+                board[row].append(u"\u2002\u2002")
         return board
 
     def check_grid(self):
@@ -109,10 +142,14 @@ class Map(object):
                        self.max_width % 2 != 0 else False
 
     def show_map(self):
-        map_string = ""
+        #table = evtable.EvTable(table=self.grid)
+        #table.reformat(width=37, align="c")
+        #return table
+
+        map_string = u""
         for row in self.grid:
             #map_string += u"\u2800".join(row)
-            map_string += "".join(row)
-            map_string += "\n"
+            map_string += u"\t".join(row)
+            map_string += u"\n"
 
         return map_string
