@@ -51,6 +51,7 @@ class CharacterCmdSet(default_cmds.CharacterCmdSet):
         self.add(CmdRoomsWithObjCount())
         self.add(CmdBuildShop())
         self.add(CmdCheckUnicodeSpacing())
+        self.add(CmdAttack())
 
 
 class AccountCmdSet(default_cmds.AccountCmdSet):

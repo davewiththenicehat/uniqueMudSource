@@ -9,6 +9,7 @@ creation commands.
 """
 # from evennia import DefaultCharacter
 from evennia.contrib.gendersub import GenderCharacter
+from random import randint
 
 
 # class Character(DefaultCharacter):
@@ -35,17 +36,17 @@ class Character(GenderCharacter):
 
     def at_object_creation(self):
         "This is called when object is first created, only."
-        self.db.power = 1
-        self.db.combat_score = 1
-        self.db.strength = 5
-        self.db.agility = 4
-        self.db.magic = 2
+        self.db.level = 1
+        self.db.HP = 100
+        self.db.XP = 0
+        self.db.STR = randint(1, 10)
+        self.db.combat = randint(5, 10)
 
     def get_abilities(self):
         """
         return abilities
         """
-        return self.db.strength, self.db.agility, self.db.magic, self.db.power, self.db.combat_score
+        return self.db.level, self.db.HP, self.db.XP, self.db.STR, self.db.combat
 
     def return_appearance(self, looker):
         """

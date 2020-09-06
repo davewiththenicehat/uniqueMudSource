@@ -25,7 +25,10 @@ class TestAbilities(CommandTest):
     character_typeclass = Character
 
     def test_simple(self):
-        self.call(CmdAbilities(), "", "STR: 5, AGI: 4, MAG: 2 PWR: 1 CmbSc: 1")
+        cmd_abil_result = self.call(CmdAbilities(), "")
+        expected_regex_pattern = "level \d+, HP \d+, XP \d+, STR \d+, combat \d+"
+        # https://docs.python.org/3/library/unittest.html#unittest.TestCase.assertRegex
+        self.assertRegex(cmd_abil_result, "level \d+, HP \d+, XP \d+, STR \d+, combat \d+")
 
 
 class TestObject(EvenniaTest):

@@ -14,6 +14,7 @@ from random import randint
 from evennia import InterruptCommand
 from evennia.utils.search import search_tag
 from typeclasses.accounts import Account
+from world import rules
 
 # from evennia import default_cmds
 
@@ -212,8 +213,8 @@ class CmdAbilities(Command):
         def func(self):
             "implements the actual functionality"
 
-            str, agi, mag, pwr, cmbsc = self.caller.get_abilities()
-            string = "STR: %s, AGI: %s, MAG: %s PWR: %s CmbSc: %s" % (str, agi, mag, pwr, cmbsc)
+            level, HP, XP, STR, combat = self.caller.get_abilities()
+            string = f"level {level}, HP {HP}, XP {XP}, STR {STR}, combat {combat}"
             self.caller.msg(string)
 
 class CmdSetPower(Command):
@@ -557,3 +558,27 @@ class CmdCheckUnicodeSpacing(Command):
         """prints some unicode characters that should align."""
         self.caller.msg(u'\U0001F3DC\t'+u' '+u' '+u'\u2610'+u' '+u'\t\U0001F332')
         self.caller.msg(u'\U0001F332\t'+u' '+u' '+u'\u2610'+u' '+u'\t\U0001F332')
+
+class CmdAttack(Command):
+    """
+    attack an opponent
+
+    Usage:
+      attack <target>
+
+    This will attack a target in the same room, dealing
+    damage with your bare hands.
+    """
+    key = "attack"
+
+    def func(self):
+        "Implementing combat"
+
+        caller = self.caller
+        if not self.args:
+            caller.msg("You need to pick a target to attack.")
+            return
+
+        target = caller.search(self.args)
+        if target:
+            rules.roll_challenge(caller, target, "combat")
