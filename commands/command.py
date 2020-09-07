@@ -251,7 +251,7 @@ class CmdSetPower(Command):
 
 # ...
 
-class CmdAttack(Command):
+class CmdTestAttack(Command):
     """
     issues an attack
 
@@ -261,7 +261,7 @@ class CmdAttack(Command):
     This will calculate a new combat score based on your Power.
     Your combat score is visible to everyone in the same location.
     """
-    key = "+attack"
+    key = "+attackmush"
     help_category = "mush"
 
     def func(self):
@@ -559,6 +559,7 @@ class CmdCheckUnicodeSpacing(Command):
         self.caller.msg(u'\U0001F3DC\t'+u' '+u' '+u'\u2610'+u' '+u'\t\U0001F332')
         self.caller.msg(u'\U0001F332\t'+u' '+u' '+u'\u2610'+u' '+u'\t\U0001F332')
 
+
 class CmdAttack(Command):
     """
     attack an opponent
@@ -570,11 +571,18 @@ class CmdAttack(Command):
     damage with your bare hands.
     """
     key = "attack"
+    help_category = "mush"
 
     def func(self):
         "Implementing combat"
 
         caller = self.caller
+
+        cool_down = rules.get_cool_down(caller)
+        if cool_down > 0:
+            caller.msg(f"You will be busy for {int(cool_down)} more seconds.")
+            return
+
         if not self.args:
             caller.msg("You need to pick a target to attack.")
             return
@@ -582,3 +590,4 @@ class CmdAttack(Command):
         target = caller.search(self.args)
         if target:
             rules.roll_challenge(caller, target, "combat")
+            rules.set_cool_down(caller, 10)

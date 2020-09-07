@@ -68,3 +68,15 @@ class TestSet(CommandTest):
     def test_stunned(self):
         from commands.stunned import CmdBlaze
         self.call(CmdBlaze(), "", "You can not do that while stunnded.")
+
+    def test_attack(self):
+        from commands.command import CmdAttack
+        attack_result = self.call(CmdAttack(), "char2")
+        self.char1.ready_timer.cancel()  # stop the ready timer
+        self.char1.cool_down = None  # remove the cool_down variable
+        expected_regex_pattern = "^Char rolls \d+ \+ combat \d+ = \d+ | Char2 rolls \d+ \+ combat \d+ = \d+"
+        self.assertRegex(attack_result, expected_regex_pattern)
+        expected_regex_pattern = "Char \d+ vs Char2 \d+"
+        self.assertRegex(attack_result, expected_regex_pattern)
+        expected_regex_pattern = "You will be busy for 10 seconds.$"
+        self.assertRegex(attack_result, expected_regex_pattern)

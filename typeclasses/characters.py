@@ -73,3 +73,6 @@ class Character(GenderCharacter):
         """
         # self.execute_cmd('look')
         pass
+
+    def ready_msg(self):
+        self.msg("You are no longer busy.")

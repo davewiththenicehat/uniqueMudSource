@@ -1,4 +1,11 @@
+"""
+Created following:
+https://github.com/evennia/evennia/wiki/Implementing-a-game-rule-system
+"""
+
 from random import randint
+import time
+from threading import Timer
 
 
 def roll_hit():
@@ -41,8 +48,15 @@ def skill_combat(*args):
     wintext = "You hit %s for %i damage!"
     xp_gain = randint(1, 3)
 
-    char1.location.msg_contents(f"{char1.name} rolls {roll1} + combat {char1.db.combat} = {char1.db.combat+roll1} | {char2.name} rolls {roll2} + combat {char2.db.combat} = {char2.db.combat+roll2}")
-    char1.location.msg_contents(f"{char1.name} {char1.db.combat+roll1} vs {char2.name} {char2.db.combat+roll2}")
+    # display messages showing attack numbers
+    attack_message = f"{char1.name} rolls {roll1} + combat {char1.db.combat} " \
+    f"= {char1.db.combat+roll1} | {char2.name} rolls {roll2} + combat " \
+    f"{char2.db.combat} = {char2.db.combat+roll2}"
+    char1.location.msg_contents(attack_message)
+    attack_summary = f"{char1.name} {char1.db.combat+roll1} " \
+    f"vs {char2.name} {char2.db.combat+roll2}"
+    char1.location.msg_contents(attack_summary)
+
     if char1.db.combat+roll1 > char2.db.combat+roll2:
         # char 1 hits
         dmg = roll_dmg() + char1.db.STR
@@ -78,3 +92,31 @@ def roll_challenge(character1, character2, skillname):
         SKILLS[skillname](character1, character2)
     else:
         raise RunTimeError("Skillname %s not found." % skillname)
+
+
+def set_cool_down(caller, cool_down):
+    """
+    Locks commands that requiring a cooldown time
+    self is the character who is having the cooldown time set
+    cool_down is the time in seconds for the cooldown.
+    """
+    # https://docs.python.org/3/library/threading.html#timer-objects
+    caller.cool_down = time.time() + cool_down
+    caller.msg(f"You will be busy for {cool_down} seconds.")
+    caller.ready_timer = Timer(cool_down, caller.ready_msg)
+    caller.ready_timer.start()
+
+
+def get_cool_down(caller):
+    """
+    Returns 0 if there is no cooldown or the time for cooldown has passed
+    """
+    # https://docs.python.org/3/library/threading.html#timer-objects
+    if hasattr(caller, "cool_down"):
+        current_time = time.time()
+        if current_time > caller.cool_down:
+            return 0
+        else:
+            return caller.cool_down - current_time
+    else:
+        return 0
