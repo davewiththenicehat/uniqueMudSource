@@ -27,7 +27,10 @@ def check_defeat(character):
 
 def add_XP(character, amount):
     "Add XP to character, tracking level increases."
-    if character.name != "dummy":  # don't allow the training dummy to level
+    if "training_dummy" in character.tags.all():  # don't allow the training dummy to level
+        character.location.msg_contents("Training Dummies can not gain XP.")
+        return
+    else:
         character.db.XP += amount
         if character.db.XP >= (character.db.level + 1) ** 2:
             character.db.level += 1
