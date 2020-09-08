@@ -118,8 +118,38 @@ def get_cool_down(caller):
     if hasattr(caller, "cool_down"):
         current_time = time.time()
         if current_time > caller.cool_down:
+            delattr(caller, "cool_down")
             return 0
         else:
             return caller.cool_down - current_time
+    else:
+        return 0
+
+
+def set_stunned(caller, stun_time):
+    """
+    Locks commands that requiring a cooldown time
+    self is the character who is having the cooldown time set
+    cool_down is the time in seconds for the cooldown.
+    """
+    # https://docs.python.org/3/library/threading.html#timer-objects
+    caller.stunned = time.time() + stun_time
+    caller.msg(f"You will be stunned for {stun_time} seconds.")
+    caller.stunned_timer = Timer(stun_time, caller.stun_stop_msg)
+    caller.stunned_timer.start()
+
+
+def get_stun(caller):
+    """
+    Returns 0 if there is no cooldown or the time for cooldown has passed
+    """
+    # https://docs.python.org/3/library/threading.html#timer-objects
+    if hasattr(caller, "stunned"):
+        current_time = time.time()
+        if current_time > caller.stunned:
+            delattr(caller, "stunned")
+            return 0
+        else:
+            return caller.stunned - current_time
     else:
         return 0

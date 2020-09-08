@@ -10,6 +10,7 @@ creation commands.
 # from evennia import DefaultCharacter
 from evennia.contrib.gendersub import GenderCharacter
 from random import randint
+from world import rules
 
 
 # class Character(DefaultCharacter):
@@ -74,5 +75,23 @@ class Character(GenderCharacter):
         # self.execute_cmd('look')
         pass
 
+    def at_before_move(self, destination):
+        "Called just before trying to move"
+        self.msg("Checking if stunned.")
+
+        if hasattr(self, "stunned"):
+            stunned_time = rules.get_stun(self)
+            if stunned_time > 0:
+                self.msg(f"You will be stunned for {int(stunned_time)} more seconds.")
+                return False
+            return True # stun time is done character can move
+
+        return True # the stunned attribute does not exist, character can move
+
     def ready_msg(self):
+        delattr(self, "cool_down")
         self.msg("You are no longer busy.")
+
+    def stun_stop_msg(self):
+        delattr(self, "stunned")
+        self.msg("You are no longer stunned.")

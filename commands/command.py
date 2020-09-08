@@ -582,6 +582,10 @@ class CmdAttack(Command):
         if cool_down > 0:
             caller.msg(f"You will be busy for {int(cool_down)} more seconds.")
             return
+        stunned_time = rules.get_stun(caller)
+        if stunned_time > 0:
+            caller.msg(f"You will be stunned for {int(stunned_time)} more seconds.")
+            return
 
         if not self.args:
             caller.msg("You need to pick a target to attack.")
@@ -591,3 +595,18 @@ class CmdAttack(Command):
         if target:
             rules.roll_challenge(caller, target, "combat")
             rules.set_cool_down(caller, 10)
+
+
+class CmdStunSelf(Command):
+    """
+    Stun yourself to test chaging character's state.
+
+    usage:
+        stunself
+    """
+    key = "stunself"
+    help_category = "developer"
+
+    def func(self):
+        caller = self.caller
+        rules.set_stunned(caller, 5)
