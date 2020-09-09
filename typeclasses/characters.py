@@ -77,8 +77,6 @@ class Character(GenderCharacter):
 
     def at_before_move(self, destination):
         "Called just before trying to move"
-        self.msg("Checking if stunned.")
-
         if hasattr(self, "stunned"):
             stunned_time = rules.get_stun(self)
             if stunned_time > 0:
