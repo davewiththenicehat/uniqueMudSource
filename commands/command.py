@@ -7,7 +7,6 @@ Commands describe the input the account can do to the game.
 
 from evennia import Command as BaseCommand
 from typeclasses.rooms import Room
-from evennia import Command
 import random
 from evennia import create_object
 from random import randint
@@ -15,11 +14,18 @@ from evennia import InterruptCommand
 from evennia.utils.search import search_tag
 from typeclasses.accounts import Account
 from world import rules
+from evennia import default_cmds
 
-# from evennia import default_cmds
+
+class MuxCommand(default_cmds.MuxCommand):
+    def at_post_cmd(self):
+        "called after self.func()."
+        caller = self.caller
+        message = f"HP:{caller.db.hp} | XP:{caller.db.xp}"
+        caller.msg(message, prompt=True)
 
 
-class Command(BaseCommand):
+class Command(MuxCommand, BaseCommand):
     """
     Inherit from this if you want to create your own command styles
     from scratch.  Note that Evennia's default commands inherits from
@@ -39,9 +45,6 @@ class Command(BaseCommand):
             every command, like prompts.
 
     """
-
-    pass
-
 
 # -------------------------------------------------------------
 #
@@ -195,6 +198,7 @@ class Command(BaseCommand):
 #                 self.character = self.caller.get_puppet(self.session)
 #             else:
 #                 self.character = None
+
 
 class CmdAbilities(Command):
         """
@@ -594,7 +598,7 @@ class CmdAttack(Command):
         target = caller.search(self.args)
         if target:
             rules.roll_challenge(caller, target, "combat")
-            rules.set_cool_down(caller, 10)
+            rules.set_cool_down(caller, 3)
 
 
 class CmdStunSelf(Command):
@@ -610,3 +614,59 @@ class CmdStunSelf(Command):
     def func(self):
         caller = self.caller
         rules.set_stunned(caller, 5)
+
+class CmdDiagnose(Command):
+    """
+    see how hurt your are
+
+    Usage:
+      diagnose [target]
+
+    This will give an estimate of the target's health. Also
+    the target's prompt will be updated.
+    """
+    key = "diagnose"
+
+    def func(self):
+        # https://github.com/evennia/evennia/wiki/Tutorial-Searching-For-Objects#searching-using-objectsearch
+        if self.args:
+            target_name = self.args.lstrip()  # get the string name of desired object. From the commands arguments
+            target = self.caller.search(target_name)  # search caller object inventory than room for object with that name
+        else:
+            target = self.caller
+
+        hp = target.db.hp
+        xp = target.db.xp
+
+        if None in (hp, xp):
+            # Attributes not defined
+            self.caller.msg("Not a valid target!")
+            return
+
+        # text = f"{target.name} has {hp} hp"
+        # prompt = f"HP: {int(hp)}"
+        # self.caller.msg(text, prompt=prompt)
+        text = f"You diagnose {target.name} as having {hp} health."
+        self.caller.msg(text)
+
+
+class CmdChangeHP(Command):
+    """Used to change hp for testing."""
+
+    key = "sethp"
+
+    def func(self):
+        caller = self.caller
+        # https://github.com/evennia/evennia/wiki/Tutorial-Searching-For-Objects#searching-using-objectsearch
+        if self.args:
+            hp = int(self.args.lstrip())  # get the string name of desired object. From the commands arguments
+        else:
+            caller.msg("Please enter a number to set your HP to.")
+            return
+
+        if not isinstance(hp, int):
+            caller.msg("Please enter a number to set your HP to.")
+            return
+
+        caller.db.hp = hp
+        caller.msg(f"Set your hp to {hp}")

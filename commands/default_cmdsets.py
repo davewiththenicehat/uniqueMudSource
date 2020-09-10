@@ -19,6 +19,7 @@ from evennia import CmdSet
 from evennia.contrib.gendersub import SetGender
 from commands.command import *
 from typeclasses.npcshop import CmdBuildShop
+from commands import mycommands
 
 
 class CharacterCmdSet(default_cmds.CharacterCmdSet):
@@ -53,6 +54,9 @@ class CharacterCmdSet(default_cmds.CharacterCmdSet):
         self.add(CmdCheckUnicodeSpacing())
         self.add(CmdAttack())
         self.add(CmdStunSelf())
+        self.add(CmdDiagnose())
+        self.add(CmdChangeHP())
+        self.add(mycommands.CmdLook())
 
 
 class AccountCmdSet(default_cmds.AccountCmdSet):
