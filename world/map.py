@@ -39,11 +39,12 @@ cell_spacing = 5
 # The keys None and "you" must always exist.
 # 'dune': u"\U0001F3DC\t"
 # 'forest': u"\U0001F332\t"
-SYMBOLS = {None: u"\u2610",
-           'you': u"\u2612",
-           'SECT_INSIDE': u"\u2610",
-           'dune': u"\u2610",
-           'forest': u"\u2610"}
+# ascii table can be found at https://www.ascii-code.com/
+SYMBOLS = {None: chr(176),
+           'you': "X",
+           'SECT_INSIDE': chr(176),
+           'dune': chr(176),
+           'forest': chr(176)}
 
 
 class Map(object):
@@ -132,7 +133,7 @@ class Map(object):
         for row in range(self.max_width):
             board.append([])
             for column in range(self.max_length):
-                board[row].append(u"\u2002\u2002")
+                board[row].append(" ")
         return board
 
     def check_grid(self):
@@ -146,10 +147,10 @@ class Map(object):
         #table.reformat(width=37, align="c")
         #return table
 
-        map_string = u""
+        map_string = ""
         for row in self.grid:
             #map_string += u"\u2800".join(row)
-            map_string += u"\t".join(row)
-            map_string += u"\n"
+            map_string += " ".join(row)
+            map_string += "\n"
 
         return map_string
