@@ -13,8 +13,8 @@ from random import randint
 from evennia import InterruptCommand
 from evennia.utils.search import search_tag
 from typeclasses.accounts import Account
-from world import rules
-from evennia import default_cmds
+from world import rules, status_delays
+from evennia import default_cmds, utils
 
 
 class MuxCommand(default_cmds.MuxCommand):
@@ -582,11 +582,11 @@ class CmdAttack(Command):
 
         caller = self.caller
 
-        cool_down = rules.get_cool_down(caller)
+        cool_down = status_delays.get_cool_down(caller)
         if cool_down > 0:
             caller.msg(f"You will be busy for {int(cool_down)} more seconds.")
             return
-        stunned_time = rules.get_stun(caller)
+        stunned_time = status_delays.get_stunned(caller)
         if stunned_time > 0:
             caller.msg(f"You will be stunned for {int(stunned_time)} more seconds.")
             return
@@ -598,7 +598,7 @@ class CmdAttack(Command):
         target = caller.search(self.args)
         if target:
             rules.roll_challenge(caller, target, "combat")
-            rules.set_cool_down(caller, 3)
+            status_delays.set_cool_down(caller, 5)
 
 
 class CmdStunSelf(Command):
@@ -613,7 +613,8 @@ class CmdStunSelf(Command):
 
     def func(self):
         caller = self.caller
-        rules.set_stunned(caller, 5)
+        status_delays.set_stunned(caller, 5)
+
 
 class CmdDiagnose(Command):
     """
@@ -690,3 +691,53 @@ class CmdTestColor(Command):
         caller.msg("|WThis is|/Two Lines")
         caller.msg("|=zmidway gray scale")
         caller.msg("|lcnorth|lt|bGo north|le")
+
+
+class CmdTestYield(Command):
+
+    """
+    A test command just to test waiting.
+
+    Usage:
+        test
+
+    """
+
+    key = "testyield"
+    locks = "cmd:all()"
+
+    def func(self):
+        self.msg("After 5 seconds.")
+        yield 5
+        self.msg("Afterwards.")
+
+
+class CmdEcho(Command):
+    """
+    wait for an echo
+    Tests persistent command delays
+
+    Usage:
+      echo <string>
+
+    Calls and waits for an echo
+    """
+    key = "echo"
+    locks = "cmd:all()"
+
+    def func(self):
+        """
+         This is called at the initial shout.
+        """
+        self.caller.msg("You shout '%s' and wait for an echo ..." % self.args)
+        # this waits non-blocking for 10 seconds, then calls echo(self.caller, self.args)
+        utils.delay(10, echo, self.caller, self.args, persistent=True)  # changes!
+
+
+# this is now in the outermost scope and takes two args!
+def echo(caller, args):
+    "Called after 10 seconds."
+    shout = args
+    string = "You hear an echo: %s ... %s ... %s"
+    string = string % (shout.upper(), shout.capitalize(), shout.lower())
+    caller.msg(string)

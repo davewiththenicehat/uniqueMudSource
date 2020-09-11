@@ -58,6 +58,8 @@ class CharacterCmdSet(default_cmds.CharacterCmdSet):
         self.add(CmdChangeHP())
         self.add(mycommands.CmdLook())
         self.add(CmdTestColor())
+        self.add(CmdTestYield())
+        self.add(CmdEcho())
 
 
 class AccountCmdSet(default_cmds.AccountCmdSet):
