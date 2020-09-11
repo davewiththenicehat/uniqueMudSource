@@ -36,7 +36,7 @@ def add_XP(character, amount):
             character.db.level += 1
             character.db.STR += 1
             character.db.combat += 2
-            character.msg("You are now level %i!" % character.db.level)
+            character.msg("|gYou are now level %i!" % character.db.level)
 
 
 def skill_combat(*args):
@@ -47,16 +47,16 @@ def skill_combat(*args):
     """
     char1, char2 = args
     roll1, roll2 = roll_hit(), roll_hit()
-    failtext = "You are hit by %s for %i damage!"
-    wintext = "You hit %s for %i damage!"
+    failtext = "|RYou are hit by %s for %i damage!"
+    wintext = "|YYou hit %s for %i damage!"
     xp_gain = randint(1, 3)
 
     # display messages showing attack numbers
-    attack_message = f"{char1.name} rolls {roll1} + combat {char1.db.combat} " \
+    attack_message = f"|510{char1.name} rolls {roll1} + combat {char1.db.combat} " \
     f"= {char1.db.combat+roll1} | {char2.name} rolls {roll2} + combat " \
     f"{char2.db.combat} = {char2.db.combat+roll2}"
     char1.location.msg_contents(attack_message)
-    attack_summary = f"{char1.name} {char1.db.combat+roll1} " \
+    attack_summary = f"|510{char1.name} {char1.db.combat+roll1} " \
     f"vs {char2.name} {char2.db.combat+roll2}"
     char1.location.msg_contents(attack_summary)
 
@@ -134,7 +134,7 @@ def set_stunned(caller, stun_time):
     """
     # https://docs.python.org/3/library/threading.html#timer-objects
     caller.stunned = time.time() + stun_time
-    caller.msg(f"You will be stunned for {stun_time} seconds.")
+    caller.msg(f"|[rYou will be stunned for {stun_time} seconds.")
     caller.stunned_timer = Timer(stun_time, caller.stun_stop_msg)
     caller.stunned_timer.start()
 

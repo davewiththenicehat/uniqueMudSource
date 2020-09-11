@@ -88,8 +88,8 @@ class Character(GenderCharacter):
 
     def ready_msg(self):
         delattr(self, "cool_down")
-        self.msg("You are no longer busy.")
+        self.msg("|YYou are no longer busy.")
 
     def stun_stop_msg(self):
         delattr(self, "stunned")
-        self.msg("You are no longer stunned.")
+        self.msg("|YYou are no longer stunned.")

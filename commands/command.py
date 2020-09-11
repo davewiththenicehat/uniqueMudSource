@@ -670,3 +670,23 @@ class CmdChangeHP(Command):
 
         caller.db.hp = hp
         caller.msg(f"Set your hp to {hp}")
+
+class CmdTestColor(Command):
+    """Test colors"""
+
+    key = "testcolors"
+
+    def func(self):
+        caller = self.caller
+# red, green, yellow, blue, magenta, cyan, white and black
+        caller.msg("|rRed |RRed")
+        caller.msg("|gGreen |GGreen")
+        caller.msg("|yYellow |YYellow")
+        caller.msg("|bBlue |BBlue")
+        caller.msg("|mMangenta |MMagenta")
+        caller.msg("|cCyan |CCyan")
+        caller.msg("|wWhite |WWhite|n Default")
+        caller.msg("|[G|BGreen Back Blue fore")
+        caller.msg("|WThis is|/Two Lines")
+        caller.msg("|=zmidway gray scale")
+        caller.msg("|lcnorth|lt|bGo north|le")
