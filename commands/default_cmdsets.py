@@ -60,6 +60,9 @@ class CharacterCmdSet(default_cmds.CharacterCmdSet):
         self.add(CmdTestColor())
         self.add(CmdTestYield())
         self.add(CmdEcho())
+        self.add(CmdTestYieldInput())
+        self.add(CmdTestGet_Input())
+        self.add(CmdTestGet_Input())
 
 
 class AccountCmdSet(default_cmds.AccountCmdSet):

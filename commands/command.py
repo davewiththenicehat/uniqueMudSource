@@ -17,6 +17,7 @@ from world import rules, status_delays
 from evennia import default_cmds, utils
 
 
+
 class MuxCommand(default_cmds.MuxCommand):
     def at_post_cmd(self):
         "called after self.func()."
@@ -741,3 +742,55 @@ def echo(caller, args):
     string = "You hear an echo: %s ... %s ... %s"
     string = string % (shout.upper(), shout.capitalize(), shout.lower())
     caller.msg(string)
+
+
+class CmdTestYieldInput(Command):
+    key = "testyieldinput"
+    def func(self):
+        result = yield("Please enter something:")
+        self.caller.msg(f"You entered {result}.")
+        result2 = yield("Now enter something else:")
+        self.caller.msg(f"You now entered {result2}.")
+
+
+def callback(caller, prompt, user_input):
+    """
+    This is a callback you define yourself.
+
+    Args:
+        caller (Account or Object): The one being asked
+          for input
+        prompt (str): A copy of the current prompt
+        user_input (str): The input from the account.
+
+    Returns:
+        repeat (bool): If not set or False, exit the
+          input prompt and clean up. If returning anything
+          True, stay in the prompt, which means this callback
+          will be called again with the next user input.
+    """
+    caller.msg(f"When asked '{prompt}', you answered '{user_input}'.")
+
+
+class CmdTestGet_Input(Command):
+    key = "testgetinput"
+
+    def func(self):
+        utils.evmenu.get_input(self.caller, "Write something! ", callback)
+
+
+def yesno(caller, prompt, result):
+    if result.lower() in ("y", "yes", "n", "no"):
+        caller.msg(f"You entered {result}")
+    else:
+        # the answer is not on the right yes/no form
+        caller.msg(f"Please answer Yes or No. |/{prompt}")
+        # returning True will make sure the prompt state is not exited
+        return True
+
+
+class CmdTestGet_Input(Command):
+    key = "testyninput"
+
+    def func(self):
+        utils.evmenu.get_input(self.caller, "Is Evennia great (Yes/No)?", yesno)
