@@ -15,7 +15,6 @@ import time
 from evennia import utils
 
 
-
 # class Character(DefaultCharacter):
 class Character(GenderCharacter):
     """
@@ -84,5 +83,4 @@ class Character(GenderCharacter):
         if stunned_time > 0:
             self.msg(f"You will be stunned for {int(stunned_time)} more seconds.")
             return False
-
-        return True # The character is not stunned and can move
+        return True  # The character is not stunned and can move

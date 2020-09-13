@@ -168,6 +168,10 @@ class Object(RespectInvisibilityMixin, DefaultObject):
         self.locks.add("visible:true()")
         self.locks.add("view:true()")
 
+    def get_mass(self):
+        mass = self.attributes.get('mass', 1)  # Default objects have 1 unit mass.
+        return mass + sum(obj.get_mass() for obj in self.contents)
+
 
 class Heavy(DefaultObject):
     "Heavy object"

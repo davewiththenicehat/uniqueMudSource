@@ -25,7 +25,6 @@ class MuxCommand(default_cmds.MuxCommand):
         message = f"HP:{caller.db.hp} | XP:{caller.db.xp}"
         caller.msg(message, prompt=True)
 
-
 class Command(MuxCommand, BaseCommand):
     """
     Inherit from this if you want to create your own command styles
@@ -832,3 +831,32 @@ class CmdRemoveableStunSelf(Command):
         # ask for user input
         # https://github.com/evennia/evennia/wiki/EvMenu#the-get_input-way
         utils.evmenu.get_input(self.caller, "Would you like to stop the stun status (Yes/No)?", user_stop_stun)
+
+
+class CmdInventory(Command):
+    """
+    view inventory
+    Usage:
+      inventory
+      inv
+    Switches:
+      /weight to display all available channels.
+    Shows your inventory: carrying, wielding, wearing, obscuring.
+    """
+
+    key = "inventory"
+    aliases = ["inv", "i"]
+    locks = "cmd:all()"
+
+    def func(self):
+        "check inventory"
+        items = self.caller.contents
+        if not items:
+            string = "You are not carrying anything."
+        else:
+            table = utils.evtable.EvTable("name", "weight")
+            for item in items:
+                mass = item.get_mass()
+                table.add_row(item.name, mass)
+            string = f"|wYou are carrying:|n\n{table}"
+        self.caller.msg(string)
