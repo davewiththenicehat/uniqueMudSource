@@ -613,8 +613,10 @@ class CmdStunSelf(Command):
     help_category = "developer"
 
     def func(self):
-        caller = self.caller
-        status_delays.set_stunned(caller, 5)
+        # caller = self.caller
+        # status_delays.set_stunned(caller, 5)
+        self.caller.msg("This command was replaced with removeablestunself. " \
+                        "To exampe a command that can be interupted.")
 
 
 class CmdDiagnose(Command):
@@ -794,3 +796,39 @@ class CmdTestGet_Input(Command):
 
     def func(self):
         utils.evmenu.get_input(self.caller, "Is Evennia great (Yes/No)?", yesno)
+
+
+def user_stop_stun(caller, prompt, result):
+    if result.lower() in ("y", "yes", "n", "no"):
+        if result.lower() in ("y", "yes"):
+            # remove commands waiting for user to  press yes to stop stun.
+            caller.cmdset.remove(utils.evmenu.InputCmdSet)
+            caller.cmdset.remove(utils.evmenu.CmdGetInput)
+            # remove the stun status
+            status_delays.stun_stop_msg(caller)
+    else:
+
+        # Would want a command passer here. So user could enter actual commands
+
+        # the answer is not on the right yes/no form
+        caller.msg(f"Please answer Yes or No. |/{prompt}")
+        # returning True will make sure the prompt state is not exited
+        return True
+
+
+class CmdRemoveableStunSelf(Command):
+    """
+    Stun yourself to test chaging character's state.
+
+    usage:
+        stunself
+    """
+    key = "removeablestunself"
+    help_category = "developer"
+
+    def func(self):
+        caller = self.caller
+        status_delays.set_stunned(caller, 10)
+        # ask for user input
+        # https://github.com/evennia/evennia/wiki/EvMenu#the-get_input-way
+        utils.evmenu.get_input(self.caller, "Would you like to stop the stun status (Yes/No)?", user_stop_stun)

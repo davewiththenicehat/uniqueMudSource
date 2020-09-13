@@ -10,6 +10,7 @@ utils.delay as a cancel method
 import time
 from evennia import utils
 
+
 def set_cool_down(caller, cool_down):
     """
     Locks commands that requiring a cooldown time
@@ -51,7 +52,7 @@ def set_stunned(caller, stun_time):
     caller.db.stunned = time.time() + stun_time
     caller.msg(f"|[rYou will be stunned for {stun_time} seconds.")
     # https://github.com/evennia/evennia/wiki/Coding-Utils#utilsdelay
-    utils.delay(stun_time, stun_stop_msg, caller, persistent=True)
+    caller.ndb.stun_deffered = utils.delay(stun_time, stun_stop_msg, caller, persistent=True)
     # https://docs.python.org/3/library/threading.html#timer-objects
     # from threading import Timer
     # caller.db.stunned_timer = Timer(stun_down, caller.stun_stop_msg)
@@ -79,5 +80,14 @@ def ready_msg(caller):
 
 
 def stun_stop_msg(caller):
+    # if caller.attributes.has("stunned"):
     caller.attributes.remove("stunned")
+    # remove commands waiting for user to  press yes to stop stun.
+    # review utils.evmenu for reference
+    # simply put
+    caller.cmdset.remove(utils.evmenu.InputCmdSet)
+    caller.cmdset.remove(utils.evmenu.CmdGetInput)
+    # stop utils.delay called from set_stunned
+    # https://github.com/evennia/evennia/wiki/Coding-Utils#utilsdelay
+    caller.ndb.stun_deffered.cancel()
     caller.msg("|YYou are no longer stunned.")

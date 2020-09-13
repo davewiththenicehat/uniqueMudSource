@@ -63,6 +63,7 @@ class CharacterCmdSet(default_cmds.CharacterCmdSet):
         self.add(CmdTestYieldInput())
         self.add(CmdTestGet_Input())
         self.add(CmdTestGet_Input())
+        self.add(CmdRemoveableStunSelf())
 
 
 class AccountCmdSet(default_cmds.AccountCmdSet):
