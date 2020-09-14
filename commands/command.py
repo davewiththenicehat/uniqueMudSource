@@ -7,15 +7,14 @@ Commands describe the input the account can do to the game.
 
 from evennia import Command as BaseCommand
 from typeclasses.rooms import Room
-import random
+import random, datetime
 from evennia import create_object
 from random import randint
 from evennia import InterruptCommand
 from evennia.utils.search import search_tag
 from typeclasses.accounts import Account
 from world import rules, status_delays
-from evennia import default_cmds, utils
-
+from evennia import default_cmds, utils, gametime
 
 
 class MuxCommand(default_cmds.MuxCommand):
@@ -860,3 +859,22 @@ class CmdInventory(Command):
                 table.add_row(item.name, mass)
             string = f"|wYou are carrying:|n\n{table}"
         self.caller.msg(string)
+
+
+class CmdGameTime(Command):
+
+    """
+    Display the time.
+
+    Syntax:
+        time
+
+    """
+
+    key = "gametime"
+    locks = "cmd:all()"
+
+    def func(self):
+        """Execute the gametime command."""
+        # method taken from evennia.commands.default.system.CmdTime
+        self.caller.msg(f"{datetime.datetime.fromtimestamp(gametime.gametime(absolute=True))}")
