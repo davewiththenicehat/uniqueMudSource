@@ -62,3 +62,6 @@ server/conf/settings.py
 
 #Windows explorer icon file
 Desktop.ini
+
+#ignore the static web folder
+web/static

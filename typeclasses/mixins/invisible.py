@@ -62,13 +62,16 @@ class RespectInvisibilityMixin():
         # Change to pretend no object was found from search.
         if not target.access(self, "visible", default=True):
             self.msg(f"Could not find '{target.key}'")
+            self.msg("Mixin test")
             return
 
         if not target.access(self, "view"):
             try:
-                return "Could not view '%s'." % target.get_display_name(self, **kwargs)
+                self.msg("Mixin test")
+                return "Could not find '%s'." % target.get_display_name(self, **kwargs)
             except AttributeError:
-                return "Could not view '%s'." % target.key
+                self.msg("Mixin test")
+                return "Could not find '%s'." % target.key
 
         description = target.return_appearance(self, **kwargs)
 

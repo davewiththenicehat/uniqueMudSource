@@ -50,6 +50,10 @@ class ReapterNPC(Character):
             try:
                 # if text comes from a say, `text` is `('say_text', {'type': 'say'})`
                 say_text, is_say = text[0], text[1]['type'] == 'say'
+                #for textinfo in range(len(text)):
+                    #from_obj.msg(" textinfo: " + text[0])
+                    #from_obj.msg(" textinfo: " + text[1])
+                    # super().msg("textinfo "+textinfo)
             except Exception:
                 is_say = False
             if is_say:

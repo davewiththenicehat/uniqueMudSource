@@ -29,7 +29,7 @@ class StunnedCommand(Command):
     def get_help(self, caller, cmdset):
         """Returns same help string for all commands"""
         return """
-    You are sleeping. Many character commands will no longer function.
+    You are stunned. Many character commands will no longer function.
     """
 
     def func(self):
