@@ -20,6 +20,7 @@ from evennia.contrib.gendersub import SetGender
 from commands.command import *
 from typeclasses.npcshop import CmdBuildShop
 from commands import mycommands
+from commands.comms import CmdConnect, CmdDisconnect
 
 
 class CharacterCmdSet(default_cmds.CharacterCmdSet):
@@ -86,6 +87,8 @@ class AccountCmdSet(default_cmds.AccountCmdSet):
         #
         # any commands you add below will overload the default ones.
         #
+        self.add(CmdConnect())
+        self.add(CmdDisconnect())
 
 
 class UnloggedinCmdSet(default_cmds.UnloggedinCmdSet):
