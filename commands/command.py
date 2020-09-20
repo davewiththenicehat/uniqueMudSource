@@ -15,6 +15,7 @@ from evennia.utils.search import search_tag
 from typeclasses.accounts import Account
 from world import rules, status_delays
 from evennia import default_cmds, utils, gametime
+from evennia import create_script
 
 
 class MuxCommand(default_cmds.MuxCommand):
@@ -896,3 +897,16 @@ class CmdPlayMusic(Command):
         #     return
         stufstring = "Play song called."
         self.caller.msg(audio=(("https://www.scottbuckley.com.au/library/wp-content/uploads/2020/09/sb_electricdreams.mp3"), {"type": "audio-pane"}))
+
+
+class CmdStartDuneWeather(Command):
+    """
+    Play a song
+
+    Usage: play <url>
+    """
+    key = "StartDuneWeather"
+
+    def func(self):
+        create_script("world.duneweather.DunWeather", key="dune_weather", persistent=True, obj=None)
+        self.msg("Dune room weather started.")
