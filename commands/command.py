@@ -878,3 +878,21 @@ class CmdGameTime(Command):
         """Execute the gametime command."""
         # method taken from evennia.commands.default.system.CmdTime
         self.caller.msg(f"{datetime.datetime.fromtimestamp(gametime.gametime(absolute=True))}")
+
+
+class CmdPlayMusic(Command):
+    """
+    Play a song
+
+    Usage: play <url>
+    """
+    key = "play"
+
+    def func(self):
+        """Executes play command"""
+        # song = self.caller.search(self.args.lstrip())
+        # if not song:
+            # No argument passed
+        #     return
+        stufstring = "Play song called."
+        self.caller.msg(audio=(("https://www.scottbuckley.com.au/library/wp-content/uploads/2020/09/sb_electricdreams.mp3"), {"type": "audio-pane"}))

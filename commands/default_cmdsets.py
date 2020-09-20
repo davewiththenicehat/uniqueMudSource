@@ -67,6 +67,7 @@ class CharacterCmdSet(default_cmds.CharacterCmdSet):
         self.add(CmdRemoveableStunSelf())
         self.add(CmdInventory())
         self.add(CmdGameTime())
+        self.add(CmdPlayMusic())
 
 
 class AccountCmdSet(default_cmds.AccountCmdSet):

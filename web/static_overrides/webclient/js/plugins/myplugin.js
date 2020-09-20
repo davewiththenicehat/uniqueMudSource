@@ -4,18 +4,13 @@ let myplugin = (function () {
     var postInit = function() {
         var myLayout = window.plugins['goldenlayout'].getGL();
 
-//        myLayout.registerComponent( "mycomponent", function (container, componentState) {
-//            let div = $("<div class='content'></div>");
-//            initComponent(div, container, componentState, "all", "newlines");
-//            container.on("destroy", calculateUntaggedTypes);
-//        });
-
         // register our component and replace the default messagewindow
         myLayout.registerComponent( 'mycomponent', function (container, componentState) {
-            let mycssdiv = $('<div>').addClass('myCSS');
-            mycssdiv.attr('types', 'mytag');
+            let mycssdiv = $('<div>').addClass('content myCSS');
+            mycssdiv.attr('types', 'mytag1 mytag2');
             mycssdiv.attr('updateMethod', 'newlines');
             mycssdiv.appendTo( container.getElement() );
+            container.on("tab", plugins['goldenlayout'].onTabCreate);
         });
 
         console.log("MyPlugin Initialized.");

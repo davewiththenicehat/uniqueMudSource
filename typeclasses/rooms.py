@@ -56,6 +56,7 @@ class Room(DefaultRoom):
     #updated following https://github.com/evennia/evennia/wiki/Dynamic-In-Game-Map
     def return_appearance(self, looker):
         string = "%s\n" % Map(looker).show_map()
+        looker.msg((string, {"type": "map-pane"}))
         # Add all the normal stuff like room description,
         # contents, exits etc.
         string += "\n" + super().return_appearance(looker)
