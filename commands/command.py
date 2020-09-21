@@ -16,6 +16,8 @@ from typeclasses.accounts import Account
 from world import rules, status_delays
 from evennia import default_cmds, utils, gametime
 from evennia import create_script
+from world.test_monitor import monitor_callback
+from evennia import MONITOR_HANDLER
 
 
 class MuxCommand(default_cmds.MuxCommand):
@@ -910,3 +912,26 @@ class CmdStartDuneWeather(Command):
     def func(self):
         create_script("world.duneweather.DunWeather", key="dune_weather", persistent=True, obj=None)
         self.msg("Dune room weather started.")
+
+
+class CmdMonitorHP(Command):
+    """
+    Send message when UP changes
+
+    Usage: monitorhp
+    """
+    key = "monitorhp"
+
+    def func(self):
+        new_value = self.caller.attributes.get("HP")
+        self.caller.msg(f"Current HP is: {new_value}")
+        MONITOR_HANDLER.add(self.caller, "HP", monitor_callback)
+        self.caller.msg("HP Monitor started. I was unable to get this working, Dave.")
+        # (we could add _some_other_monitor_callback here too)
+
+        # monitor Attribute (assume we have obj from before)
+        # monitorhandler.add(obj, "desc", _monitor_callback)
+
+        # monitor same db-field with two different callbacks (must separate by id_string)
+        # monitorhandler.add(obj, "db_key", _monitor_callback, id_string="foo")
+        # monitorhandler.add(obj, "db_key", _some_other_monitor_callback, id_string="bar")

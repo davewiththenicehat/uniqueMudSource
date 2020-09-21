@@ -69,6 +69,7 @@ class CharacterCmdSet(default_cmds.CharacterCmdSet):
         self.add(CmdGameTime())
         self.add(CmdPlayMusic())
         self.add(CmdStartDuneWeather())
+        self.add(CmdMonitorHP())
 
 
 class AccountCmdSet(default_cmds.AccountCmdSet):
