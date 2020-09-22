@@ -1,4 +1,5 @@
 from typeclasses.characters import Character
+from random import randint
 
 
 class NPC(Character):
@@ -67,3 +68,26 @@ class ReapterNPC(Character):
         # this is needed if anyone ever puppets this NPC - without it you would never
         # get any feedback from the server (not even the results of look)
         super().msg(text=text, from_obj=from_obj, **kwargs)
+
+
+class Rat(Character):
+    """
+    A test aggressive NPC
+    """
+
+    def at_object_creation(self):
+        "This is called when object is first created, only."
+        self.db.desc = "An ugle rat."
+        self.db.level = 1
+        self.db.HP = 100
+        self.db.XP = 0
+        self.db.STR = randint(1, 10)
+        self.db.combat = randint(5, 10)
+        self.db.is_monster = True
+
+    def at_char_entered(self, character):
+        """
+         A simple is_aggressive check.
+         Can be expanded upon later.
+        """
+        self.execute_cmd(f"attack {character}")

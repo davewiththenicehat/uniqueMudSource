@@ -4,7 +4,7 @@ https://github.com/evennia/evennia/wiki/Implementing-a-game-rule-system
 """
 
 from random import randint
-import time
+import time, re
 from threading import Timer
 
 
@@ -23,6 +23,9 @@ def check_defeat(character):
     if character.db.HP <= 0:
         character.msg("You fall down, defeated!")
         character.db.HP = 100   # reset
+        if character.db.is_monster:
+            character.location.msg_contents(f"The {character.name} dies.")
+            character.delete()
 
 
 def add_XP(character, amount):

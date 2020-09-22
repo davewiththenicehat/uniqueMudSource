@@ -71,3 +71,22 @@ See the `@spawn` command and `evennia.utils.spawner` for more info.
 # "key": "goblin archwizard",
 # "prototype_parent" : ("GOBLIN_WIZARD", "ARCHWIZARD_MIXIN")
 # }
+
+from random import randint
+
+STRONG_DUNE_RAT = {
+    "key": "Strong dune rat",
+    "desc": "A strong hungry big mean rat.",
+    "typeclass": "typeclasses.npcs.Rat",
+    "HP": lambda: randint(20, 30),
+    "STR": lambda: randint(10, 15),
+    "combat": lambda: randint(10, 15),
+}
+WEAK_DUNE_RAT = {
+    "key": "Weak dune rat",
+    "desc": "A weak sickly rat.",
+    "typeclass": "typeclasses.npcs.Rat",
+    "HP": lambda: randint(5, 10),
+    "STR": lambda: randint(1, 5),
+    "combat": lambda: randint(2, 5),
+}

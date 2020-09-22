@@ -49,7 +49,7 @@ class Room(DefaultRoom):
             # Cause the player's character to look around.
             obj.execute_cmd('look')
             for item in self.contents:
-                if utils.inherits_from(item, 'typeclasses.npcs.NPC'):
+                if utils.inherits_from(item, 'typeclasses.npcs.NPC') or utils.inherits_from(item, 'typeclasses.npcs.Rat'):
                     # An NPC is in the room
                     item.at_char_entered(obj)
 
