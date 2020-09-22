@@ -1,7 +1,9 @@
 from typeclasses.scripts import Script
 import random
 from evennia.utils.search import search_tag
-
+from random import randint
+from evennia.prototypes.spawner import spawn
+from world.prototypes import *
 
 class DunWeather(Script):
     """
@@ -30,3 +32,40 @@ class DunWeather(Script):
         dune_rooms = search_tag(key="dune_room", category="location tags")
         for dune_room in dune_rooms:
             dune_room.msg_contents(weather)
+
+
+class DuneSpawner(Script):
+    """
+    Spawns monsters in Dune rooms
+    """
+
+    def at_script_creation(self):
+        self.key = "dune_spawner_script"
+        self.desc = "Spawns monsters in dune rooms"
+        self.interval = 60  # every minute
+        self.persistent = True  # will survive reload
+
+    def at_repeat(self):
+        "called every self.interval seconds."
+
+        # decide the monster prototype
+        rand = random.random()
+        if rand <= 0.7:
+            monster = WEAK_DUNE_RAT
+        else:
+            monster = STRONG_DUNE_RAT
+
+        dune_rooms = search_tag(key="dune_room", category="location tags")
+        for dune_room in dune_rooms:
+            room_contents = dune_room.contents
+            room_has_monster = False
+
+            # does this room already have a monster in it?
+            for room_object in room_contents:
+                if room_object.db.is_monster:
+                    room_has_monster = True
+
+            # if there is no monster in this room spawn one.
+            if not room_has_monster:
+                monster['location'] = dune_room.dbref  # set spawn location to this room
+                spawn(monster)

@@ -70,6 +70,7 @@ class CharacterCmdSet(default_cmds.CharacterCmdSet):
         self.add(CmdPlayMusic())
         self.add(CmdStartDuneWeather())
         self.add(CmdMonitorHP())
+        self.add(TestSpawner())
 
 
 class AccountCmdSet(default_cmds.AccountCmdSet):

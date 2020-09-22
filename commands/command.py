@@ -18,6 +18,9 @@ from evennia import default_cmds, utils, gametime
 from evennia import create_script
 from world.test_monitor import monitor_callback
 from evennia import MONITOR_HANDLER
+from evennia.prototypes.spawner import spawn
+from world.prototypes import *
+from world.duneweather import DuneSpawner
 
 
 class MuxCommand(default_cmds.MuxCommand):
@@ -935,3 +938,15 @@ class CmdMonitorHP(Command):
         # monitor same db-field with two different callbacks (must separate by id_string)
         # monitorhandler.add(obj, "db_key", _monitor_callback, id_string="foo")
         # monitorhandler.add(obj, "db_key", _some_other_monitor_callback, id_string="bar")
+
+
+class TestSpawner(Command):
+    """
+    Created to test spawning
+    """
+    key = "testspawn"
+
+    def func(self):
+        "called every self.interval seconds."
+        DuneSpawner.at_repeat(DuneSpawner)
+        self.caller.msg("Spawner called.")

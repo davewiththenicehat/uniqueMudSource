@@ -8,6 +8,9 @@ def get_global_scripts():
     global_scripts = {
         "dune_weather_script": {
             "typeclass": "world.duneweather.DunWeather"
+        },
+        "dune_spawner_script": {
+            "typeclass": "world.duneweather.DuneSpawner"
         }
     }
     return global_scripts
