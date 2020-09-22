@@ -71,6 +71,7 @@ class CharacterCmdSet(default_cmds.CharacterCmdSet):
         self.add(CmdStartDuneWeather())
         self.add(CmdMonitorHP())
         self.add(TestSpawner())
+        self.add(TestLogger())
 
 
 class AccountCmdSet(default_cmds.AccountCmdSet):

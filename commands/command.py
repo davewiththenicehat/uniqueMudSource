@@ -21,6 +21,7 @@ from evennia import MONITOR_HANDLER
 from evennia.prototypes.spawner import spawn
 from world.prototypes import *
 from world.duneweather import DuneSpawner
+from evennia.utils.logger import log_info, log_msg, log_err, log_dep, log_sec, log_server, log_trace, log_warn
 
 
 class MuxCommand(default_cmds.MuxCommand):
@@ -950,3 +951,28 @@ class TestSpawner(Command):
         "called every self.interval seconds."
         DuneSpawner.at_repeat(DuneSpawner)
         self.caller.msg("Spawner called.")
+
+
+class TestLogger(Command):
+    """
+    Created to test logging functions
+    """
+    key = "testlogger"
+
+    def func(self):
+
+        log_info("This is an info log.")
+        log_msg("This is a message log")
+        log_warn("This is a warning log")
+        log_err("This is an error log")
+        log_dep("This is a depreciation log")
+        log_sec("This is a security log")
+        log_server("This is a server log")
+        try:
+            x = 1
+            y = None
+            something = x + y
+        except TypeError:
+            self.caller.msg("Caught test exception. Without this a full traceback would be shown to screen. Rather than just the log file.")
+            log_trace()
+        self.caller.msg("logs recorded.")
