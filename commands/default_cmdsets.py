@@ -21,6 +21,7 @@ from commands.command import *
 from typeclasses.npcshop import CmdBuildShop
 from commands import mycommands
 from commands.comms import CmdConnect, CmdDisconnect
+from evennia.contrib.building_menu import GenericBuildingCmd
 
 
 class CharacterCmdSet(default_cmds.CharacterCmdSet):
@@ -72,6 +73,7 @@ class CharacterCmdSet(default_cmds.CharacterCmdSet):
         self.add(CmdMonitorHP())
         self.add(TestSpawner())
         self.add(TestLogger())
+        self.add(GenericBuildingCmd())
 
 
 class AccountCmdSet(default_cmds.AccountCmdSet):
