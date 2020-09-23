@@ -74,6 +74,7 @@ class CharacterCmdSet(default_cmds.CharacterCmdSet):
         self.add(TestSpawner())
         self.add(TestLogger())
         self.add(GenericBuildingCmd())
+        self.add(TestHealthBar())
 
 
 class AccountCmdSet(default_cmds.AccountCmdSet):

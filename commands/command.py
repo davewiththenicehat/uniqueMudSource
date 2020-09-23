@@ -22,14 +22,14 @@ from evennia.prototypes.spawner import spawn
 from world.prototypes import *
 from world.duneweather import DuneSpawner
 from evennia.utils.logger import log_info, log_msg, log_err, log_dep, log_sec, log_server, log_trace, log_warn
+from evennia.contrib import health_bar
 
 
 class MuxCommand(default_cmds.MuxCommand):
     def at_post_cmd(self):
         "called after self.func()."
         caller = self.caller
-        message = f"HP:{caller.db.hp} | XP:{caller.db.xp}"
-        caller.msg(message, prompt=True)
+        caller.msg(health_bar.display_meter(caller.db.hp, 100, pre_text="HP: ") + f" | XP:{caller.db.xp}", prompt=True )
 
 class Command(MuxCommand, BaseCommand):
     """
@@ -976,3 +976,12 @@ class TestLogger(Command):
             self.caller.msg("Caught test exception. Without this a full traceback would be shown to screen. Rather than just the log file.")
             log_trace()
         self.caller.msg("logs recorded.")
+
+class TestHealthBar(Command):
+    """
+    Created to test logging functions
+    """
+    key = "testhealthbar"
+
+    def func(self):
+        self.caller.msg(health_bar.display_meter(50, 100))
