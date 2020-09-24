@@ -11,10 +11,11 @@ inheritance.
 
 """
 from evennia import DefaultObject
+from evennia.contrib.rpsystem import ContribRPObject
 from typeclasses.mixins.invisible import RespectInvisibilityMixin
 
 
-class Object(RespectInvisibilityMixin, DefaultObject):
+class Object(RespectInvisibilityMixin, ContribRPObject):
     """
     This is the root typeclass object, implementing an in-game Evennia
     game object, such as having a location, being able to be

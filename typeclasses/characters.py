@@ -9,6 +9,7 @@ creation commands.
 """
 # from evennia import DefaultCharacter
 from evennia.contrib.gendersub import GenderCharacter
+from evennia.contrib.rpsystem import ContribRPCharacter
 from random import randint
 from world import rules, status_delays
 import time
@@ -16,7 +17,7 @@ from evennia import utils
 
 
 # class Character(DefaultCharacter):
-class Character(GenderCharacter):
+class Character(ContribRPCharacter, GenderCharacter):
     """
     The Character defaults to reimplementing some of base Object's hook methods with the
     following functionality:
@@ -39,11 +40,13 @@ class Character(GenderCharacter):
 
     def at_object_creation(self):
         "This is called when object is first created, only."
+        super().at_object_creation()
         self.db.level = 1
         self.db.HP = 100
         self.db.XP = 0
         self.db.STR = randint(1, 10)
         self.db.combat = randint(5, 10)
+        self.db.gender = "ambiguous"
 
     def get_abilities(self):
         """
@@ -57,7 +60,7 @@ class Character(GenderCharacter):
         looker sees when looking at this object.
         """
         text = super().return_appearance(looker)
-        cscore = " (combat score: %s)" % self.db.combat_score
+        cscore = " (combat score: %s)" % self.db.combat
         if "\n" in text:
             # text is multi-line, add score after first line
             first_line, rest = text.split("\n", 1)
