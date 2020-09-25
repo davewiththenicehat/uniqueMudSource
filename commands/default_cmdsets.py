@@ -22,6 +22,8 @@ from typeclasses.npcshop import CmdBuildShop
 from commands import mycommands
 from commands.comms import CmdConnect, CmdDisconnect
 from evennia.contrib.building_menu import GenericBuildingCmd
+from evennia.contrib.simpledoor import CmdOpen, CmdOpenCloseDoor
+from evennia.commands.default import building
 
 
 class CharacterCmdSet(default_cmds.CharacterCmdSet):
@@ -75,6 +77,9 @@ class CharacterCmdSet(default_cmds.CharacterCmdSet):
         self.add(TestLogger())
         self.add(GenericBuildingCmd())
         self.add(TestHealthBar())
+        self.add(CmdOpenCloseDoor())
+        # self.add(building.CmdOpen())
+        # self.add(CmdOpen())
 
 
 class AccountCmdSet(default_cmds.AccountCmdSet):
