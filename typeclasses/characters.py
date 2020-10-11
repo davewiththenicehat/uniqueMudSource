@@ -7,10 +7,11 @@ is setup to be the "default" character type created by the default
 creation commands.
 
 """
+from typeclasses.mixins import ObjectBaseMixin
 from evennia.contrib.gendersub import GenderCharacter
 
 
-class Character(GenderCharacter):
+class Character(ObjectBaseMixin, GenderCharacter):
     """
     The Character defaults to reimplementing some of base Object's hook methods with the
     following functionality:
@@ -28,7 +29,5 @@ class Character(GenderCharacter):
     at_pre_puppet - Just before Account re-connects, retrieves the character's
                     pre_logout_location Attribute and move it back on the grid.
     at_post_puppet - Echoes "AccountName has entered the game" to the room.
-
     """
-
     pass
