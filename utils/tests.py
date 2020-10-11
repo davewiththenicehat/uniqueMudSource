@@ -128,6 +128,9 @@ class TestUtils(CommandTest):
         char.hp += 200
         self.assertTrue(char.max_reached)
 
+        # make certain the Element is still an element, not an int
+        self.assertIsInstance(char.hp, Element)
+
         # test element deletion
         del char.hp
         self.assertFalse(char.attributes.has('hp_value'))

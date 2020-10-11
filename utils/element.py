@@ -54,6 +54,7 @@ class Element:
                     if self._hp:
                         pass
                 except AttributeError:
+                    #if using a kwarg dict Element(self, #, **argument_dict)
                     self._hp = Element(self)
                 return self._hp
 
@@ -64,6 +65,7 @@ class Element:
             @hp.deleter
             def hp(self):
                 self._hp.delete()
+                del self._hp
     Above the property self.hp can be access as if it were an integer or float.
     Usage is explained in the Usage: section
 
@@ -72,7 +74,6 @@ class Element:
     Settings will set to their default if they are not passed on creation. No need to pass a full dictionary of arguments.
     Below is a list of those setting, in ditionary format with their default settings.
         arguments = {
-            'value': 100,  # the starting value of the Element
             'name': None,  # name of the Element, highly recommend leaving default
             'min': -100,  # the min number the Element can be, if reached min_func runs
             'min_func': None,  # reference to a function to run when the self.value attribute reaches self.min
@@ -118,7 +119,7 @@ class Element:
     self.__str__ returns a rounded version of Element. The actual element is a float that can be longer than the str represents
     """
 
-    def __init__(self, container, value=100, name=None, **kwargs):
+    def __init__(self, container, value=100, **kwargs):
         """
         Initialize an Element object.
 
@@ -132,16 +133,31 @@ class Element:
                 self.log = True
             else:
                 self.log = False
+            if kwargs['name']:
+                name = kwargs.get('name')
+                if name:
+                    if isinstance(name, str):
+                        self.name = name
+                        if self.log:
+                            log_info(f"Element __init__, name passed and used {self.name}")
+                    else:
+                        raise ValueError("Element object, kwarg name must be a string variable or ommited at declaration.")
         except KeyError:  # No log kwarg passed
             self.log = False
-        # verify and record element name
-        if name:
-            if isinstance(name, str):
-                self.name = name
-                if self.log:
-                    log_info(f"Element __init__, name passed and used {self.name}")
-            else:
-                raise ValueError("Element object, argument 3 or kwarg name must be a string variable or ommited at declaration.")
+
+        try:
+            if kwargs['name']:
+                name = kwargs.get('name')
+                if name:
+                    if isinstance(name, str):
+                        self.name = name
+                        if self.log:
+                            log_info(f"Element __init__, name passed and used {self.name}")
+                    else:
+                        raise ValueError("Element object, argument 3 or kwarg name must be a string variable or ommited at declaration.")
+        except KeyError:  # No log kwarg passed
+            pass
+
         # collect an instance of the container object
         try:
             if container:
