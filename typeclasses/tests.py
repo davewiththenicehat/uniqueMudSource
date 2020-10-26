@@ -1,12 +1,13 @@
 from evennia.commands.default.tests import CommandTest
 from evennia import create_object
-from typeclasses.characters import Character, ATTRIBUTE_SETTINGS
+from typeclasses.characters import Character, CHARACTER_STAT_SETTINGS
 from evennia.contrib import gendersub
 
 
 class TestCharacter(CommandTest):
     """
     Used to test the character object
+    stat modifiers unit tests are in world.rules.tests.TestRules.test_stat_modifiers
     """
     def test_character(self):
 
@@ -26,11 +27,11 @@ class TestCharacter(CommandTest):
         # test stats
         # test strength
         self.assertEqual(char.STR, 100)
-        self.assertEqual(char.STR.max, ATTRIBUTE_SETTINGS.get('max'))
-        self.assertEqual(char.STR.min, ATTRIBUTE_SETTINGS.get('min'))
-        self.assertEqual(char.STR.breakpoint, ATTRIBUTE_SETTINGS.get('breakpoint'))
-        char.STR = 101
-        self.assertEqual(char.attributes.get('strength_value'), 101)
+        self.assertEqual(char.STR.max, CHARACTER_STAT_SETTINGS.get('max'))
+        self.assertEqual(char.STR.min, CHARACTER_STAT_SETTINGS.get('min'))
+        self.assertEqual(char.STR.breakpoint, CHARACTER_STAT_SETTINGS.get('breakpoint'))
+        char.STR = 99
+        self.assertEqual(char.attributes.get('strength_value'), 99)
         char.STR = 100
         self.assertEqual(char.attributes.get('strength_value'), 100)
         self.assertFalse(char.attributes.has('strength_max'))
@@ -45,11 +46,11 @@ class TestCharacter(CommandTest):
         self.assertEqual(char.attributes.get('strength_min'), 100)
         # test constitution
         self.assertEqual(char.CON, 100)
-        self.assertEqual(char.CON.max, ATTRIBUTE_SETTINGS.get('max'))
-        self.assertEqual(char.CON.min, ATTRIBUTE_SETTINGS.get('min'))
-        self.assertEqual(char.CON.breakpoint, ATTRIBUTE_SETTINGS.get('breakpoint'))
-        char.CON = 101
-        self.assertEqual(char.attributes.get('constitution_value'), 101)
+        self.assertEqual(char.CON.max, CHARACTER_STAT_SETTINGS.get('max'))
+        self.assertEqual(char.CON.min, CHARACTER_STAT_SETTINGS.get('min'))
+        self.assertEqual(char.CON.breakpoint, CHARACTER_STAT_SETTINGS.get('breakpoint'))
+        char.CON = 99
+        self.assertEqual(char.attributes.get('constitution_value'), 99)
         char.CON = 100
         self.assertEqual(char.attributes.get('constitution_value'), 100)
         self.assertFalse(char.attributes.has('constitution_max'))
@@ -64,11 +65,11 @@ class TestCharacter(CommandTest):
         self.assertEqual(char.attributes.get('constitution_min'), 100)
         # test observation
         self.assertEqual(char.OBS, 100)
-        self.assertEqual(char.OBS.max, ATTRIBUTE_SETTINGS.get('max'))
-        self.assertEqual(char.OBS.min, ATTRIBUTE_SETTINGS.get('min'))
-        self.assertEqual(char.OBS.breakpoint, ATTRIBUTE_SETTINGS.get('breakpoint'))
-        char.OBS = 101
-        self.assertEqual(char.attributes.get('observation_value'), 101)
+        self.assertEqual(char.OBS.max, CHARACTER_STAT_SETTINGS.get('max'))
+        self.assertEqual(char.OBS.min, CHARACTER_STAT_SETTINGS.get('min'))
+        self.assertEqual(char.OBS.breakpoint, CHARACTER_STAT_SETTINGS.get('breakpoint'))
+        char.OBS = 99
+        self.assertEqual(char.attributes.get('observation_value'), 99)
         char.OBS = 100
         self.assertEqual(char.attributes.get('observation_value'), 100)
         self.assertFalse(char.attributes.has('observation_max'))
@@ -83,11 +84,11 @@ class TestCharacter(CommandTest):
         self.assertEqual(char.attributes.get('observation_min'), 100)
         # test agility
         self.assertEqual(char.AGI, 100)
-        self.assertEqual(char.AGI.max, ATTRIBUTE_SETTINGS.get('max'))
-        self.assertEqual(char.AGI.min, ATTRIBUTE_SETTINGS.get('min'))
-        self.assertEqual(char.AGI.breakpoint, ATTRIBUTE_SETTINGS.get('breakpoint'))
-        char.AGI = 101
-        self.assertEqual(char.attributes.get('agility_value'), 101)
+        self.assertEqual(char.AGI.max, CHARACTER_STAT_SETTINGS.get('max'))
+        self.assertEqual(char.AGI.min, CHARACTER_STAT_SETTINGS.get('min'))
+        self.assertEqual(char.AGI.breakpoint, CHARACTER_STAT_SETTINGS.get('breakpoint'))
+        char.AGI = 99
+        self.assertEqual(char.attributes.get('agility_value'), 99)
         char.AGI = 100
         self.assertEqual(char.attributes.get('agility_value'), 100)
         self.assertFalse(char.attributes.has('agility_max'))
@@ -102,11 +103,11 @@ class TestCharacter(CommandTest):
         self.assertEqual(char.attributes.get('agility_min'), 100)
         # test speed
         self.assertEqual(char.SPD, 100)
-        self.assertEqual(char.SPD.max, ATTRIBUTE_SETTINGS.get('max'))
-        self.assertEqual(char.SPD.min, ATTRIBUTE_SETTINGS.get('min'))
-        self.assertEqual(char.SPD.breakpoint, ATTRIBUTE_SETTINGS.get('breakpoint'))
-        char.SPD = 101
-        self.assertEqual(char.attributes.get('speed_value'), 101)
+        self.assertEqual(char.SPD.max, CHARACTER_STAT_SETTINGS.get('max'))
+        self.assertEqual(char.SPD.min, CHARACTER_STAT_SETTINGS.get('min'))
+        self.assertEqual(char.SPD.breakpoint, CHARACTER_STAT_SETTINGS.get('breakpoint'))
+        char.SPD = 99
+        self.assertEqual(char.attributes.get('speed_value'), 99)
         char.SPD = 100
         self.assertEqual(char.attributes.get('speed_value'), 100)
         self.assertFalse(char.attributes.has('speed_max'))
@@ -121,11 +122,11 @@ class TestCharacter(CommandTest):
         self.assertEqual(char.attributes.get('speed_min'), 100)
         # test intelligence
         self.assertEqual(char.INT, 100)
-        self.assertEqual(char.INT.max, ATTRIBUTE_SETTINGS.get('max'))
-        self.assertEqual(char.INT.min, ATTRIBUTE_SETTINGS.get('min'))
-        self.assertEqual(char.INT.breakpoint, ATTRIBUTE_SETTINGS.get('breakpoint'))
-        char.INT = 101
-        self.assertEqual(char.attributes.get('intelligence_value'), 101)
+        self.assertEqual(char.INT.max, CHARACTER_STAT_SETTINGS.get('max'))
+        self.assertEqual(char.INT.min, CHARACTER_STAT_SETTINGS.get('min'))
+        self.assertEqual(char.INT.breakpoint, CHARACTER_STAT_SETTINGS.get('breakpoint'))
+        char.INT = 99
+        self.assertEqual(char.attributes.get('intelligence_value'), 99)
         char.INT = 100
         self.assertEqual(char.attributes.get('intelligence_value'), 100)
         self.assertFalse(char.attributes.has('intelligence_max'))
@@ -140,11 +141,11 @@ class TestCharacter(CommandTest):
         self.assertEqual(char.attributes.get('intelligence_min'), 100)
         # test wisdom
         self.assertEqual(char.WIS, 100)
-        self.assertEqual(char.WIS.max, ATTRIBUTE_SETTINGS.get('max'))
-        self.assertEqual(char.WIS.min, ATTRIBUTE_SETTINGS.get('min'))
-        self.assertEqual(char.WIS.breakpoint, ATTRIBUTE_SETTINGS.get('breakpoint'))
-        char.WIS = 101
-        self.assertEqual(char.attributes.get('wisdom_value'), 101)
+        self.assertEqual(char.WIS.max, CHARACTER_STAT_SETTINGS.get('max'))
+        self.assertEqual(char.WIS.min, CHARACTER_STAT_SETTINGS.get('min'))
+        self.assertEqual(char.WIS.breakpoint, CHARACTER_STAT_SETTINGS.get('breakpoint'))
+        char.WIS = 99
+        self.assertEqual(char.attributes.get('wisdom_value'), 99)
         char.WIS = 100
         self.assertEqual(char.attributes.get('wisdom_value'), 100)
         self.assertFalse(char.attributes.has('wisdom_max'))
@@ -157,22 +158,22 @@ class TestCharacter(CommandTest):
         self.assertEqual(char.attributes.get('wisdom_min'), 101)
         char.WIS.min = 100
         self.assertEqual(char.attributes.get('wisdom_min'), 100)
-        # test renown
-        self.assertEqual(char.REN, 100)
-        self.assertEqual(char.REN.max, ATTRIBUTE_SETTINGS.get('max'))
-        self.assertEqual(char.REN.min, ATTRIBUTE_SETTINGS.get('min'))
-        self.assertEqual(char.REN.breakpoint, ATTRIBUTE_SETTINGS.get('breakpoint'))
-        char.REN = 101
-        self.assertEqual(char.attributes.get('renown_value'), 101)
-        char.REN = 100
-        self.assertEqual(char.attributes.get('renown_value'), 100)
-        self.assertFalse(char.attributes.has('renown_max'))
-        char.REN.max = 101
-        self.assertEqual(char.attributes.get('renown_max'), 101)
-        char.REN.max = 100
-        self.assertEqual(char.attributes.get('renown_max'), 100)
-        self.assertFalse(char.attributes.has('renown_min'))
-        char.REN.min = 101
-        self.assertEqual(char.attributes.get('renown_min'), 101)
-        char.REN.min = 100
-        self.assertEqual(char.attributes.get('renown_min'), 100)
+        # test charisma
+        self.assertEqual(char.CHR, 100)
+        self.assertEqual(char.CHR.max, CHARACTER_STAT_SETTINGS.get('max'))
+        self.assertEqual(char.CHR.min, CHARACTER_STAT_SETTINGS.get('min'))
+        self.assertEqual(char.CHR.breakpoint, CHARACTER_STAT_SETTINGS.get('breakpoint'))
+        char.CHR = 99
+        self.assertEqual(char.attributes.get('charisma_value'), 99)
+        char.CHR = 100
+        self.assertEqual(char.attributes.get('charisma_value'), 100)
+        self.assertFalse(char.attributes.has('charisma_max'))
+        char.CHR.max = 101
+        self.assertEqual(char.attributes.get('charisma_max'), 101)
+        char.CHR.max = 100
+        self.assertEqual(char.attributes.get('charisma_max'), 100)
+        self.assertFalse(char.attributes.has('charisma_min'))
+        char.CHR.min = 101
+        self.assertEqual(char.attributes.get('charisma_min'), 101)
+        char.CHR.min = 100
+        self.assertEqual(char.attributes.get('charisma_min'), 100)

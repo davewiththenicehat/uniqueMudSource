@@ -28,10 +28,10 @@ ELEMENT_DB_KEYS = {
 
 class Element:
     """
-    An Element allows a devloper to work with a complex fully managed object as if it were a standard intiger.
+    An Element allows a devloper to work with a complex fully managed object as if it were a standard python attribute.
         An Element will handle the float to int and int to float conversions
         An Element handles database interactions.
-        An Element with handle many misc settings for the attribute.
+        An Element will handle many misc settings for the attribute.
             Examples:
                 will not allow operators to set the Element below min
                     will run Element.min_func when min is reached
@@ -90,7 +90,13 @@ class Element:
         char.hp = 10  # sets objects hp to 10
         char.hp = 5 + 5  # sets objects hp to 10
         char.hp += 5  # object's hp is now 5 higher.
-        char.hp -= dmg # will subtract dmg from char's hp total
+        char.hp -= dmg  # will subtract dmg from char's hp total
+        hp = getattr(char, 'hp')  # returns a reference of the Element
+        hpref = getattr(char, 'hp').get  # returns a value of the instance
+            Use hpref.get() over the example above.
+            It is easier to read and understand.
+        hpref = char.hp  # returns a reference of the Element
+        hp = char.hp.get()  # returns a int or float value of the instance
         IMPORTANT:
         char.hp += 10000  # object's hp is now 100. Because Elements' default max is 100.
             ^ If the element was passed a reference of a function with kwarg max_func it will be called now

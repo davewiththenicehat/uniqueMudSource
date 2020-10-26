@@ -12,19 +12,19 @@ from evennia.contrib.gendersub import GenderCharacter, _RE_GENDER_PRONOUN
 from utils.element import Element
 from world import status_functions
 from evennia import utils
+from world.rules import stats
 
 # Used to adjust Element settings for stats, and the unit test for Character also
-ATTRIBUTE_SETTINGS = {
+CHARACTER_STAT_SETTINGS = {
     'name': None,  # name of the Element, highly recommend leaving default
-    'min': 0,  # the min number the Element can be, if reached min_func runs
+    'min': -100,  # the min number the Element can be, if reached min_func runs
     'min_func': None,  # reference to a function to run when the self.value attribute reaches self.min
     'breakpoint': 0,  # number a breakpoint point occurs like falling unconshious or an object breakpoint
     'breakpoint_func': None,  # When passed breakpoint_func runs
-    'max': 200,  # the max number the Element can be. When reached self.max_fun() runs
+    'max': 100,  # the max number the Element can be. When reached self.max_fun() runs
     'max_func': None,  # reference to a function to run when the self.value attribute reachs the self.max
     'dbtype': 'db'  # the database type to use can be 'db' or 'ndb'
 }
-
 
 class Character(ObjectBaseMixin, GenderCharacter):
     """
@@ -49,9 +49,11 @@ class Character(ObjectBaseMixin, GenderCharacter):
         ONLY interact with Elements via the characters Element reference.
             Do not change the database entries directly
             Do not change the protected _attribute_name attribute directly
+        If a Character attribute is not described here, it is not intended to be interacted with.
 
         Character stats are referenced as uppercase abbriviations.
-        Character stats are instance of Elements
+        Character stats are instance of utils.Elements
+        Character stats have a max value of 200
         In the database as Elements they are refered to in full name form.
         Example:
             self.STR # is strength
@@ -64,18 +66,43 @@ class Character(ObjectBaseMixin, GenderCharacter):
             self.SPD  # speed
             self.INT  # intelligence
             self.WIS  # wisdom
-            self.REN  # renown
+            self.CHR  # charisma
+
         Inheirited from ObjectBaseMixin:
-        self.hp is an Element, character's hitpoints.
+            self.hp is an Element, character's hitpoints.
+
+        Stat modifiers:
+            All stat modifiers are cached on Characters as local attributes.
+            To view a full list run command: 'view_obj =stat_cache', to view all local attributes of self.
+            Examples:
+                char.STR_dodge_mod, char.CON_action_mod, char.OBS_action_cost_mod
+
+            Stats change: when stats change on a Character method Character.cache_stat_modifiers() needs to be called.
+
     Methods:
         All methods are fully documented in their docstrings.
         self.get_pronoun(pattern), pattern is a gendersub pattern, returns Character's pronoun
         self.ready(), returns True if a character is ready for a 'busy' action
         self.stun(int() or float()), stun the Character for argument seconds
         self.status_stop(status_type=str, stop_message=str, stop_cmd=str), stop a stun status early
+
     Final Notes:
         unit testing for Character status is done in the commands.tests.TestCommands unit test
     """
+
+    def at_init(self):
+        """
+        This is always called whenever this object is initiated --
+        that is, whenever it its typeclass is cached from memory. This
+        happens on-demand first time the object is used or activated
+        in some way after being created but also after each server
+        restart or reload.
+
+        UniqueMud:
+            Used to cache stat modifiers.
+        """
+        self.cache_stat_modifiers()  # load stats cache when Character is initialized.
+        return super().at_init()  # Here only to support future change to evennia's Character.at_init
 
     # define characters's strength
     @property
@@ -84,7 +111,7 @@ class Character(ObjectBaseMixin, GenderCharacter):
             if self._strength:
                 pass
         except AttributeError:
-            self._strength = Element(self, 100, **ATTRIBUTE_SETTINGS)
+            self._strength = Element(self, 100, **CHARACTER_STAT_SETTINGS)
         return self._strength
 
     @STR.setter
@@ -103,7 +130,7 @@ class Character(ObjectBaseMixin, GenderCharacter):
             if self._constitution:
                 pass
         except AttributeError:
-            self._constitution = Element(self, 100, **ATTRIBUTE_SETTINGS)
+            self._constitution = Element(self, 100, **CHARACTER_STAT_SETTINGS)
         return self._constitution
 
     @CON.setter
@@ -122,7 +149,7 @@ class Character(ObjectBaseMixin, GenderCharacter):
             if self._observation:
                 pass
         except AttributeError:
-            self._observation = Element(self, 100, **ATTRIBUTE_SETTINGS)
+            self._observation = Element(self, 100, **CHARACTER_STAT_SETTINGS)
         return self._observation
 
     @OBS.setter
@@ -141,7 +168,7 @@ class Character(ObjectBaseMixin, GenderCharacter):
             if self._agility:
                 pass
         except AttributeError:
-            self._agility = Element(self, 100, **ATTRIBUTE_SETTINGS)
+            self._agility = Element(self, 100, **CHARACTER_STAT_SETTINGS)
         return self._agility
 
     @AGI.setter
@@ -160,7 +187,7 @@ class Character(ObjectBaseMixin, GenderCharacter):
             if self._speed:
                 pass
         except AttributeError:
-            self._speed = Element(self, 100, **ATTRIBUTE_SETTINGS)
+            self._speed = Element(self, 100, **CHARACTER_STAT_SETTINGS)
         return self._speed
 
     @SPD.setter
@@ -179,7 +206,7 @@ class Character(ObjectBaseMixin, GenderCharacter):
             if self._intelligence:
                 pass
         except AttributeError:
-            self._intelligence = Element(self, 100, **ATTRIBUTE_SETTINGS)
+            self._intelligence = Element(self, 100, **CHARACTER_STAT_SETTINGS)
         return self._intelligence
 
     @INT.setter
@@ -198,7 +225,7 @@ class Character(ObjectBaseMixin, GenderCharacter):
             if self._wisdom:
                 pass
         except AttributeError:
-            self._wisdom = Element(self, 100, **ATTRIBUTE_SETTINGS)
+            self._wisdom = Element(self, 100, **CHARACTER_STAT_SETTINGS)
         return self._wisdom
 
     @WIS.setter
@@ -210,24 +237,24 @@ class Character(ObjectBaseMixin, GenderCharacter):
         self._wisdom.delete()
         del self._wisdom
 
-    # define characters's renown
+    # define characters's charisma
     @property
-    def REN(self):
+    def CHR(self):
         try:
-            if self._renown:
+            if self._charisma:
                 pass
         except AttributeError:
-            self._renown = Element(self, 100, **ATTRIBUTE_SETTINGS)
-        return self._renown
+            self._charisma = Element(self, 100, **CHARACTER_STAT_SETTINGS)
+        return self._charisma
 
-    @REN.setter
-    def REN(self, value):
-        self._renown.set(value)
+    @CHR.setter
+    def CHR(self, value):
+        self._charisma.set(value)
 
-    @REN.deleter
-    def REN(self):
-        self._renown.delete()
-        del self._renown
+    @CHR.deleter
+    def CHR(self):
+        self._charisma.delete()
+        del self._charisma
 
     def ready(self):
         """
@@ -358,3 +385,34 @@ class Character(ObjectBaseMixin, GenderCharacter):
             if stop_cmd:
                 self.msg(f'You may want to |lc{stop_cmd}|lt{stop_cmd}|le.')
             return False
+
+    def cache_stat_modifiers(self):
+        """
+        Create a cache of meaningful ability modifiers.
+        To view a full list run command: 'view_obj =stat_cache', to view all local attributes of self.
+        Code to view stat cache is in commands.developer_cmds.CmdViewObj.view_cache_stat_modifiers
+
+        Example caches:
+            char.STR_dodge_mod, char.CON_action_mod, char.OBS_action_cost_mod
+        """
+        stats_dictionary = stats.STAT_MAP_DICT
+        for stat_type, long_name in stats_dictionary.items():
+            mod_value = stats.dodge_mod(self, stat_type)
+            mod_name = stat_type + '_dodge_mod'
+            setattr(self, mod_name, mod_value)
+            mod_value = stats.action_mod(self, stat_type)
+            mod_name = stat_type + '_action_mod'
+            setattr(self, mod_name, mod_value)
+            mod_value = stats.action_cost_mod(self, stat_type)
+            mod_name = stat_type + '_action_cost_mod'
+            setattr(self, mod_name, mod_value)
+            mod_value = stats.dmg_mod(self, stat_type)
+            mod_name = stat_type + '_dmg_mod'
+            setattr(self, mod_name, mod_value)
+        setattr(self, 'hp_max_mod', stats.hp_max_mod(self))
+        setattr(self, 'endurance_max_mod', stats.endurance_max_mod(self))
+        setattr(self, 'sanity_max_mod', stats.sanity_max_mod(self))
+        setattr(self, 'load_max_mod', stats.load_max_mod(self))
+        setattr(self, 'busy_mod', stats.busy_mod(self))
+        setattr(self, 'stunned_mod', stats.stunned_mod(self))
+        setattr(self, 'purchase_mod', stats.purchase_mod(self))

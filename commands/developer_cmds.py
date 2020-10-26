@@ -1,5 +1,6 @@
 from commands.command import Command
 from evennia import CmdSet
+from world.rules import stats
 
 
 class DeveloperCmdSet(CmdSet):
@@ -21,6 +22,7 @@ class DeveloperCmdSet(CmdSet):
         self.add(CmdStopStun)
         self.add(CmdMultiCmd)
         self.add(CmdCompleteCmdEarly)
+        self.add(CmdViewObj)
 
 
 class CmdDeferCmd(Command):
@@ -235,3 +237,68 @@ class CmdMultiCmd(Command):
         commands = self.rhslist
         for command in commands:
             self.caller.execute_cmd(command)
+
+
+class CmdViewObj(Command):
+    """
+    Used to view misc information that exists on Objects as basic python attributes.
+
+    Reason:
+        Misc testing.
+        Unit testing
+
+        Usage:
+            view_obj/switches target=view_group_name,attribute_name
+
+    Switches:
+        v, to view in veribose mode
+
+    Target:
+        Leave the target blank for self: view_obj =attribute_name
+
+    view_group_names:
+        'stat_cache' or 'stat cache': to view all stat caches on Character.
+    """
+    key = "view_obj"
+    help_category = "developer"
+    locks = "cmd:perm(Developer)"
+
+    def view_cache_stat_modifiers(self, target=None):
+        if not target:
+            target = self.caller
+        char_message = 'Character ID: '+str(target.id)+' | '
+        stats_dictionary = stats.STAT_MAP_DICT
+        for stat_type, long_name in stats_dictionary.items():
+            mod_name = stat_type + '_dodge_mod'
+            self.caller.msg(f'{char_message+mod_name}: {getattr(target, mod_name)}')
+            mod_name = stat_type + '_action_mod'
+            self.caller.msg(f'{char_message+mod_name}: {getattr(target, mod_name)}')
+            mod_name = stat_type + '_action_cost_mod'
+            self.caller.msg(f'{char_message+mod_name}: {getattr(target, mod_name)}')
+            mod_name = stat_type + '_dmg_mod'
+            self.caller.msg(f'{char_message+mod_name}: {getattr(target, mod_name)}')
+        self.caller.msg(f"{char_message}hp_max_mod: {getattr(target, 'hp_max_mod')}")
+        self.caller.msg(f"{char_message}endurance_max_mod: {getattr(target, 'endurance_max_mod')}")
+        self.caller.msg(f"{char_message}sanity_max_mod: {getattr(target, 'sanity_max_mod')}")
+        self.caller.msg(f"{char_message}load_max_mod: {getattr(target, 'load_max_mod')}")
+        self.caller.msg(f"{char_message}busy_mod: {getattr(target, 'busy_mod')}")
+        self.caller.msg(f"{char_message}stunned_mod: {getattr(target, 'stunned_mod')}")
+        self.caller.msg(f"{char_message}purchase_mod: {getattr(target, 'purchase_mod')}")
+
+    def func(self):
+        target = self.lhs.strip()
+        target = self.caller.search(target, quiet=True)
+        view_list = self.rhslist
+        if not target:
+            target = self.caller
+        if 'v' in self.switches:
+            self.caller.msg(f'target: {target} | view_list: {view_list}')
+        for view_type in view_list:
+            view_type = view_type.lower()
+            if view_type == 'stat_cache' or view_type == 'stat cache':
+                self.view_cache_stat_modifiers(target)
+            else:
+                if hasattr(target, view_type):
+                    self.caller.msg(f'{target.name}.{view_type} == {getattr(target, view_type)}')
+                else:
+                    self.caller.msg(f'{target.name}.{view_type} does not exist.')
