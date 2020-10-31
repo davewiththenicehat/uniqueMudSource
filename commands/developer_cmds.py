@@ -270,7 +270,7 @@ class CmdViewObj(Command):
         char_message = 'Character ID: '+str(target.id)+' | '
         stats_dictionary = stats.STAT_MAP_DICT
         for stat_type, long_name in stats_dictionary.items():
-            mod_name = stat_type + '_dodge_mod'
+            mod_name = stat_type + '_evade_mod'
             self.caller.msg(f'{char_message+mod_name}: {getattr(target, mod_name)}')
             mod_name = stat_type + '_action_mod'
             self.caller.msg(f'{char_message+mod_name}: {getattr(target, mod_name)}')

@@ -31,7 +31,7 @@ class Command(BaseCommand):
     Command attributes
         status_type = 'busy'  # Character status type used to track the command
         defer_time = 3  # time is seconds for the command to wait before running action of command
-        dodge_mod_stat = 'AGI'  # stat used to dodge this command
+        evade_mod_stat = 'AGI'  # stat used to evade this command
         action_mod_stat = 'OBS'  # stat used to modify this command
         roll_max = 50  # max number this command can roll to succeed
         dmg_max = 4  # the maximum damage this command can cause
@@ -49,7 +49,7 @@ class Command(BaseCommand):
     """
     status_type = 'busy'  # Character status type used to track the command
     defer_time = 3  # time is seconds for the command to wait before running action of command
-    dodge_mod_stat = 'AGI'  # stat used to dodge this command
+    evade_mod_stat = 'AGI'  # stat used to evade this command
     action_mod_stat = 'OBS'  # stat used to modify this command
     roll_max = 50  # max number this command can roll to succeed
     dmg_max = 4  # the maximum damage this command can cause

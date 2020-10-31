@@ -75,7 +75,7 @@ class Character(ObjectBaseMixin, GenderCharacter):
             All stat modifiers are cached on Characters as local attributes.
             To view a full list run command: 'view_obj =stat_cache', to view all local attributes of self.
             Examples:
-                char.STR_dodge_mod, char.CON_action_mod, char.OBS_action_cost_mod
+                char.STR_evade_mod, char.CON_action_mod, char.OBS_action_cost_mod
 
             Stats change: when stats change on a Character method Character.cache_stat_modifiers() needs to be called.
 
@@ -392,12 +392,12 @@ class Character(ObjectBaseMixin, GenderCharacter):
         Code to view stat cache is in commands.developer_cmds.CmdViewObj.view_cache_stat_modifiers
 
         Example caches:
-            char.STR_dodge_mod, char.CON_action_mod, char.OBS_action_cost_mod
+            char.STR_evade_mod, char.CON_action_mod, char.OBS_action_cost_mod
         """
         stats_dictionary = stats.STAT_MAP_DICT
         for stat_type, long_name in stats_dictionary.items():
-            mod_value = stats.dodge_mod(self, stat_type)
-            mod_name = stat_type + '_dodge_mod'
+            mod_value = stats.evade_mod(self, stat_type)
+            mod_name = stat_type + '_evade_mod'
             setattr(self, mod_name, mod_value)
             mod_value = stats.action_mod(self, stat_type)
             mod_name = stat_type + '_action_mod'

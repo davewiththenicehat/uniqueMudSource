@@ -24,10 +24,10 @@ class EvasionCommand(Command):
         self.evade_msg, message to display when the character attempts to evade
 
     Reason:
-        Evasion commands adjust the default evasion rules in rules.actions.dodge_roll
+        Evasion commands adjust the default evasion rules in rules.actions.evade_roll
         If an attack is received by the Character with an active evasion command:
-            dodge_roll will use the Evasion commands roll_max over the default
-            dodge_roll will automatically stop this command and display a message to players in the room
+            evade_roll will use the Evasion commands roll_max over the default
+            evade_roll will automatically stop this command and display a message to players in the room
 
 
     Inheirits commands.command.Command
@@ -63,7 +63,7 @@ class CmdDodge(EvasionCommand):
 
     key = "dodge"
     defer_time = 10  # time is seconds for the command to wait before running action of command
-    roll_max = 51  # default max roll for dodge rolls
+    roll_max = 51  # default max roll for evade rolls
 
     def start_message(self):
         """

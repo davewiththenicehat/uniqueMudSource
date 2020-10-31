@@ -57,7 +57,7 @@ class CmdPunch(UnarmedCommand):
         punch does 1 or 2 damage.
         punch's damage is modifider by strength damage modifier.
     Dodge:
-        punch is dodged by agility.
+        punch is evaded by agility.
     time:
         punch's default completion time is 3 seconds.
     Returns:
@@ -89,10 +89,10 @@ class CmdPunch(UnarmedCommand):
             caller.msg(f'You can no no longer reach {target_name}.')
             return False
         target = self.target
-        result, action_result, dodge_result = actions.targeted_action(caller, target)
+        result, action_result, evade_result = actions.targeted_action(caller, target)
         result += self.unarmed_str_mod
-        caller_message = f"{self.key} {action_result} VS evade {dodge_result}: You {self.key} at {target.name} "
-        target_message = f"evade {dodge_result} VS {self.key} {action_result}: You attempt to evade {caller.name}'s {self.key} "
+        caller_message = f"{self.key} {action_result} VS evade {evade_result}: You {self.key} at {target.name} "
+        target_message = f"evade {evade_result} VS {self.key} {action_result}: You attempt to evade {caller.name}'s {self.key} "
         room_message = f"{caller.name} {self.key}es at {target.name} and "
         if result > 0:
             damage = actions.dmg_roll(self)
@@ -123,7 +123,7 @@ class CmdKick(UnarmedCommand):
         kick does 1 to 4 damage.
         kick's damage is modifider by strength damage modifier.
     Dodge:
-        kick is dodged by agility.
+        kick is evaded by agility.
     time:
         kick's default completion time is 5 seconds.
     """
@@ -155,10 +155,10 @@ class CmdKick(UnarmedCommand):
             caller.msg(f'You can no no longer reach {target_name}.')
             return False
         target = self.target
-        result, action_result, dodge_result = actions.targeted_action(caller, target)
+        result, action_result, evade_result = actions.targeted_action(caller, target)
         result += self.unarmed_str_mod
-        caller_message = f"{self.key} {action_result} VS evade {dodge_result}: You {self.key} at {target.name} "
-        target_message = f"evade {dodge_result} VS {self.key} {action_result}: You attempt to evade {caller.name}'s {self.key} "
+        caller_message = f"{self.key} {action_result} VS evade {evade_result}: You {self.key} at {target.name} "
+        target_message = f"evade {evade_result} VS {self.key} {action_result}: You attempt to evade {caller.name}'s {self.key} "
         room_message = f"{caller.name} {self.key}s at {target.name} and "
         if result > 0:
             damage = actions.dmg_roll(self)

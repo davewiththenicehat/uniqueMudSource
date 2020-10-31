@@ -112,9 +112,9 @@ def check(caller, stat_type, fail_chance, return_result=False, log=False):
         return success
 
 
-def dodge_mod(caller, stat_type, log=False):
+def evade_mod(caller, stat_type, log=False):
     """
-    Get a stat dodge modifier of a Character.
+    Get a stat evade modifier of a Character.
 
     Arguments:
         caller, is the character rolling the stat check
@@ -122,8 +122,8 @@ def dodge_mod(caller, stat_type, log=False):
         log=False, if True log the variables used
 
     Equation:
-        Any stat can be used as a dodge modifier.
-        Most often Agility is used to modify a dodge.
+        Any stat can be used as a evade modifier.
+        Most often Agility is used to modify an evade.
         For every 3 ranks in a stat a Character received a 1 modifier.
         For example:
             2 ranks provides 0 modifier
@@ -132,12 +132,12 @@ def dodge_mod(caller, stat_type, log=False):
             -30 ranks provides a -10 modifier
             100 ranks (stat max) provides a +33 modifier
     """
-    stat_value = get_stat(caller, stat_type, 'world.stats.dodge_mod')
-    dodge_modifier = stat_value * .33
-    dodge_modifier = stat_round(dodge_modifier)
+    stat_value = get_stat(caller, stat_type, 'world.stats.evade_mod')
+    evade_modifier = stat_value * .33
+    evade_modifier = stat_round(evade_modifier)
     if log:
-        log_info(f'world.stats.dodge_mod | Character id: {caller.id} | stat_type: {stat_type} | dodge_modifier: {dodge_modifier}')
-    return dodge_modifier
+        log_info(f'world.stats.evade_mod | Character id: {caller.id} | stat_type: {stat_type} | evade_modifier: {evade_modifier}')
+    return evade_modifier
 
 
 def action_mod(caller, stat_type, log=False):
