@@ -368,20 +368,19 @@ class Character(ObjectBaseMixin, GenderCharacter):
         References:
         https://github.com/evennia/evennia/wiki/EvMenu#the-get_input-way
         """
-        try:
-            if self.ndb.deffered_command:
-                if not stop_message:
-                    stop_message = f'Stop your {self.ndb.deffered_command.key} command?'
-                self_sessions = self.sessions.get()
-                self.ndb.cmd_stop_request = status_functions.status_user_request_stop
-                if stop_cmd:
-                    utils.evmenu.get_input(self, f"{stop_message} 'y' for yes or 'i' to ignore.",
-                                           self.ndb.cmd_stop_request, self_sessions, stop_cmd)
-                else:
-                    utils.evmenu.get_input(self, f"{stop_message} 'y' for yes or 'i' to ignore.",
-                                           self.ndb.cmd_stop_request, self_sessions)
-                return True
-        except AttributeError:  # if no command is waiting, suggest the stop_cmd
+        if self.nattributes.has('deffered_command'):
+            if not stop_message:
+                stop_message = f'Stop your {self.ndb.deffered_command.key} command'
+            self_sessions = self.sessions.get()
+            self.ndb.cmd_stop_request = status_functions.status_user_request_stop
+            if stop_cmd:
+                utils.evmenu.get_input(self, f"{stop_message} to |lc{stop_cmd}|lt{stop_cmd}|le? 'y' for yes or 'i' to ignore.",
+                                       self.ndb.cmd_stop_request, self_sessions, stop_cmd)
+            else:
+                utils.evmenu.get_input(self, f"{stop_message}? 'y' for yes or 'i' to ignore.",
+                                       self.ndb.cmd_stop_request, self_sessions)
+            return True
+        else:  # if no command is waiting, suggest the stop_cmd
             if stop_cmd:
                 self.msg(f'You may want to |lc{stop_cmd}|lt{stop_cmd}|le.')
             return False

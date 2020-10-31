@@ -35,6 +35,8 @@ def status_delay_set(target, cmd, delay_time, status_type):
     https://github.com/evennia/evennia/wiki/Coding-Utils#utilsdelay
         Much of utilsdelay is poorly documented.
         utilsdelay is an instance of evennia.scripts.TaskHandler
+        TaskHandler returns a twisted Deffered object
+        https://twistedmatrix.com/documents/13.0.0/api/twisted.internet.defer.Deferred.html
     """
     # create an Character.int attribute with the completion time
     target.attributes.add(status_type, time.time() + delay_time)
@@ -80,6 +82,7 @@ def status_delay_stop(target, status_type, complete_cmd):
     Returns True when the status was stopped successfully
 
     Reference:
+    https://twistedmatrix.com/documents/13.0.0/api/twisted.internet.defer.Deferred.html#cancel
     https://github.com/evennia/evennia/wiki/Coding-Utils#utilsdelay
     Much of utilsdelay is poorly documented.
     utilsdelay is an instance of evennia.scripts.TaskHandler
@@ -97,11 +100,11 @@ def status_delay_stop(target, status_type, complete_cmd):
         except AttributeError:
             pass
         try:
-            # utils.delay instance has persistent set.
-            # cancel is required or a newly deffered command will be called.
-            # with the previous completion time.
-            # delay_status_inst.cancel()
-            delay_status_inst.remove()
+            # If the deffered command was not called by the twisted deferred instance cancel it
+            if not delay_status_inst.called:
+                delay_status_inst.pause()  # tricks cancel into not shooting an error
+                delay_status_inst.cancel()
+                delay_status_inst.remove()
         except AttributeError:
             pass
         # remove commands waiting for user imput

@@ -17,6 +17,8 @@ own cmdsets by inheriting from them or directly from `evennia.CmdSet`.
 from evennia import default_cmds
 from evennia.contrib.gendersub import SetGender
 from commands.developer_cmds import DeveloperCmdSet
+from commands.combat.unarmed import UnarmedCmdSet
+from commands.combat.evasion import EvasionCmdSet
 
 
 class CharacterCmdSet(default_cmds.CharacterCmdSet):
@@ -38,6 +40,8 @@ class CharacterCmdSet(default_cmds.CharacterCmdSet):
         #
         self.add(SetGender)
         self.add(DeveloperCmdSet)
+        self.add(UnarmedCmdSet)
+        self.add(EvasionCmdSet)
 
 
 class AccountCmdSet(default_cmds.AccountCmdSet):

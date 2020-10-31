@@ -23,6 +23,7 @@ class DeveloperCmdSet(CmdSet):
         self.add(CmdMultiCmd)
         self.add(CmdCompleteCmdEarly)
         self.add(CmdViewObj)
+        self.add(CmdContrlOther)
 
 
 class CmdDeferCmd(Command):
@@ -82,7 +83,7 @@ class CmdInterruptCmd(Command):
         if not target:
             stop_success = self.stop_request(None, None, 'test_cmd')
             if not stop_success:
-                self.caller.msg(f'You are not commited to an action.')
+                self.caller.msg('You are not commited to an action.')
         else:
             stop_success = self.stop_request(target, None, 'test_cmd')
             if not stop_success:
@@ -302,3 +303,35 @@ class CmdViewObj(Command):
                     self.caller.msg(f'{target.name}.{view_type} == {getattr(target, view_type)}')
                 else:
                     self.caller.msg(f'{target.name}.{view_type} does not exist.')
+
+
+class CmdContrlOther(Command):
+    """
+    Used to force another object to commit a command.
+
+    Reason:
+        Used to test commands that interact with commands on other objects.
+        Will also be used in unit testing.
+
+    usage:
+    control_other <target>=command
+    """
+    key = "control_other"
+    help_category = "developer"
+    locks = "cmd:perm(Developer)"
+
+    def func(self):
+        caller = self.caller
+        target_name = self.lhs.strip()
+        target = caller.search(target_name, quiet=True)
+        cmd_list = self.rhslist
+        if target:
+            target=target[0]
+        else:
+            caller.msg(f'{target_name} is not here.')
+            return
+        if 'v' in self.switches:
+            caller.msg(f'target: {target} | cmd_list: {cmd_list}')
+        for cmd in cmd_list:
+            cmd = cmd.lower()
+            target.execute_cmd(cmd)

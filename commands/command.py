@@ -7,7 +7,6 @@ Commands describe the input the account can do to the game.
 
 from evennia import Command as BaseCommand
 from world import status_functions
-import time
 from evennia import utils
 
 
@@ -26,18 +25,37 @@ class Command(BaseCommand):
             every command, like prompts.
 
     UniqueMud:
+        To more seamlessly support UniqueMud's deffered command system, evennia's Command.func has been overridden.
+            If your command does not defer an action, override Command.func
 
     Command attributes
         status_type = 'busy'  # Character status type used to track the command
-        defer_time = 3
+        defer_time = 3  # time is seconds for the command to wait before running action of command
+        dodge_mod_stat = 'AGI'  # stat used to dodge this command
+        action_mod_stat = 'OBS'  # stat used to modify this command
+        roll_max = 50  # max number this command can roll to succeed
+        dmg_max = 4  # the maximum damage this command can cause
+        cmd_type = False  # Should be a string of the cmd type. IE: 'evasion' for an evasion cmd
+        target = None  # collected in Command.func if the command has a target
     Methods:
         All methods are fully documented in their docstrings.
+        func, To more seamlessly support UniqueMud's deffered command system, evennia's Command.func has been overridden.
         defer(int or float), defer the action of a command by calling Command.deferred_action after the number of seconds passed to defer
+        start_message, Displays a message after a command has been successfully deffered.
         stop_request(self, target, stop_message, stop_cmd), request a Character to stop a deffered command early
         stop_forced(self, target, stop_message, stop_cmd, status_type), force a character to stop a deffered command early
         complete_early(self, target, stop_message), make a Character to complete a deffered command early
+        successful(success=True), records if a command was successful
     """
-
+    status_type = 'busy'  # Character status type used to track the command
+    defer_time = 3  # time is seconds for the command to wait before running action of command
+    dodge_mod_stat = 'AGI'  # stat used to dodge this command
+    action_mod_stat = 'OBS'  # stat used to modify this command
+    roll_max = 50  # max number this command can roll to succeed
+    dmg_max = 4  # the maximum damage this command can cause
+    dmg_mod_stat = 'STR'  # the stat that will modifier damage this command manipulates
+    target_required = False  # if True and the command has no target, Command.func will stop execution and message the player
+    cmd_type = False  # Should be a string of the cmd type. IE: 'evasion' for an evasion cmd
     # -------------------------------------------------------------
     #
     # The default commands inherit from
@@ -187,6 +205,48 @@ class Command(BaseCommand):
             else:
                 self.character = None
 
+    def func(self):
+        """
+        To more seamlessly support UniqueMud's deffered command system, evennia's Command.func has been overridden.
+
+        Attributes:
+            self.target, is added if the command supplied a target.
+
+        UniqueMud:
+            UniqueMud's func will:
+                find and store a reference of the Object the command is targetting as self.target
+                defer the action of the command.
+                call Command.start_message if the command deffered successfully.
+            If your command does not defer an action, override Command.func
+            It is possible to still use this method within your overidden one with:
+                super().self.func()
+
+        """
+        caller = self.caller
+        # find the commands target
+        target_name = self.lhs.strip()
+        target = caller.search(target_name, quiet=True)
+        if target:
+            self.target = target[0]
+        else:
+            if self.target_required:
+                caller.msg(f'{target_name} is not here.')
+                return
+        # defer the command
+        defer_successful = self.defer()
+        if defer_successful:
+            self.start_message()
+
+    def start_message(self):
+        """
+        Display a message after a command has been successfully deffered.
+
+        Automatically called at the end of Command.func
+        """
+
+    def successful(self, success=True):
+        """Record if the command was successful."""
+
     def defer(self, defer_time=3, status_type='busy'):
         """
         Defer or delay the action of a command.
@@ -240,6 +300,17 @@ class Command(BaseCommand):
                 pass
             return status_functions.status_delay_set(self.caller, self,
                                                      defer_time, status_type)
+
+    def deferred_action(self):
+        """
+        This method is called after defer_time seconds when the Command.defer method is used.
+
+        Usage:
+            Intended to be overritten. Simply put the action portions of a command in this method.
+        Return:
+            Return True if the command completes successfully.
+        """
+        pass
 
     def stop_request(self, target=None, stop_message=None, stop_cmd=None):
         """
@@ -300,17 +371,21 @@ class Command(BaseCommand):
         Example:
             commands.developer_cmdsets.CmdStopCmd
         """
+        caller = self.caller
         #set the target of the forced stop
         if not target:
-            target = self.caller
+            target = caller
         # if the target has a command deffered
         if target.nattributes.has('deffered_command'):
             if not stop_message:  # if none was provided make a message
-                self_pronoun = self.caller.get_pronoun('|p')
-                stop_message = f'{self.caller.name} stopped your {target.ndb.deffered_command.key} command with {self_pronoun} {self.key}.'
+                if target == caller:  # do not display a stop message if the player stopped their own command
+                    stop_message = None
+                else:
+                    self_pronoun = caller.get_pronoun('|p')
+                    stop_message = f'{caller.name} stopped your {target.ndb.deffered_command.key} command with {self_pronoun} {self.key}.'
             status_functions.status_force_stop(target, stop_message, stop_cmd, status_type)
         else:
-            self.caller.msg(f'{target.name} is not commited to an action.')
+            caller.msg(f'{target.name} is not commited to an action.')
 
     def complete_early(self, target=None, stop_message=None):
         """
@@ -345,7 +420,8 @@ class Command(BaseCommand):
                 self_pronoun = self.caller.get_pronoun('|p')
                 stop_message = f'{self.caller.name} allowed you to complete your {target.ndb.deffered_command.key} command early with {self_pronoun} {self.key} command.'
             stopped_succesfully = status_functions.status_delay_stop(target, 'busy', True)
-            target.msg(stop_message)
+            if stop_message:
+                target.msg(stop_message)
         else:
             if target == self.caller:
                 self.caller.msg(f'You are not commited to an action.')
