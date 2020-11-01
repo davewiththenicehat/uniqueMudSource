@@ -24,6 +24,7 @@ class UnarmedCommand(Command):
     Attributes:
         unarmed_str_mod = int()  # half of the Characters.STR_action_mod
         help_category = "unarmed"
+        can_not_target_self = True  # if True this command will end with a message if the Character targets themself
         target_required = True  # if True and the command has no target, Command.func will stop execution and message the player
         cmd_type = 'unarmed'  # Should be a string of the cmd type. IE: 'evasion' for an evasion cmd
         unarmed_str_mod = 0  # half of the unarmed command caller's strength modifier
@@ -35,6 +36,7 @@ class UnarmedCommand(Command):
     target_required = True  # if True and the command has no target, Command.func will stop execution and message the player
     cmd_type = 'unarmed'  # Should be a string of the cmd type. IE: 'evasion' for an evasion cmd
     unarmed_str_mod = 0  # half of the unarmed command caller's strength modifier
+    can_not_target_self = True  # if True this command will end with a message if the Character targets themself
 
     def at_pre_cmd(self):
         """
