@@ -1,7 +1,10 @@
 from evennia.commands.default.tests import CommandTest
 from evennia import create_object
 from typeclasses.characters import Character, CHARACTER_STAT_SETTINGS
+from typeclasses.rooms import Room
+from typeclasses.objects import Object
 from evennia.contrib import gendersub
+from evennia.utils.test_resources import EvenniaTest
 
 
 class TestCharacter(CommandTest):
@@ -177,3 +180,186 @@ class TestCharacter(CommandTest):
         self.assertEqual(char.attributes.get('charisma_min'), 101)
         char.CHR.min = 100
         self.assertEqual(char.attributes.get('charisma_min'), 100)
+
+
+# Testing of emoting / sdesc / recog system
+
+
+from evennia.contrib import rpsystem
+
+sdesc0 = "A nice sender of emotes"
+sdesc1 = "The first receiver of emotes."
+sdesc2 = "Another nice colliding sdesc-guy for tests"
+recog01 = "Mr Receiver"
+recog02 = "Mr Receiver2"
+recog10 = "Mr Sender"
+emote = 'With a flair, /me looks at /first and /colliding sdesc-guy. She says "This is a test."'
+
+
+class TestRPSystem(EvenniaTest):
+    maxDiff = None
+
+    def setUp(self):
+        super().setUp()
+        self.room = create_object(Room, key="Location")
+        self.speaker = create_object(Character, key="Sender", location=self.room)
+        self.receiver1 = create_object(Character, key="Receiver1", location=self.room)
+        self.receiver2 = create_object(Character, key="Receiver2", location=self.room)
+
+    def test_ordered_permutation_regex(self):
+        self.assertEqual(
+            rpsystem.ordered_permutation_regex(sdesc0),
+            "/[0-9]*-*A\\ nice\\ sender\\ of\\ emotes(?=\\W|$)+|"
+            "/[0-9]*-*nice\\ sender\\ of\\ emotes(?=\\W|$)+|"
+            "/[0-9]*-*A\\ nice\\ sender\\ of(?=\\W|$)+|"
+            "/[0-9]*-*sender\\ of\\ emotes(?=\\W|$)+|"
+            "/[0-9]*-*nice\\ sender\\ of(?=\\W|$)+|"
+            "/[0-9]*-*A\\ nice\\ sender(?=\\W|$)+|"
+            "/[0-9]*-*nice\\ sender(?=\\W|$)+|"
+            "/[0-9]*-*of\\ emotes(?=\\W|$)+|"
+            "/[0-9]*-*sender\\ of(?=\\W|$)+|"
+            "/[0-9]*-*A\\ nice(?=\\W|$)+|"
+            "/[0-9]*-*emotes(?=\\W|$)+|"
+            "/[0-9]*-*sender(?=\\W|$)+|"
+            "/[0-9]*-*nice(?=\\W|$)+|"
+            "/[0-9]*-*of(?=\\W|$)+|"
+            "/[0-9]*-*A(?=\\W|$)+",
+        )
+
+    def test_sdesc_handler(self):
+        self.speaker.sdesc.add(sdesc0)
+        self.assertEqual(self.speaker.sdesc.get(), sdesc0)
+        self.speaker.sdesc.add("This is {#324} ignored")
+        self.assertEqual(self.speaker.sdesc.get(), "This is 324 ignored")
+        self.speaker.sdesc.add("Testing three words")
+        self.assertEqual(
+            self.speaker.sdesc.get_regex_tuple()[0].pattern,
+            "/[0-9]*-*Testing\ three\ words(?=\W|$)+|"
+            "/[0-9]*-*Testing\ three(?=\W|$)+|"
+            "/[0-9]*-*three\ words(?=\W|$)+|"
+            "/[0-9]*-*Testing(?=\W|$)+|"
+            "/[0-9]*-*three(?=\W|$)+|"
+            "/[0-9]*-*words(?=\W|$)+",
+        )
+
+    def test_recog_handler(self):
+        self.speaker.sdesc.add(sdesc0)
+        self.receiver1.sdesc.add(sdesc1)
+        self.speaker.recog.add(self.receiver1, recog01)
+        self.speaker.recog.add(self.receiver2, recog02)
+        self.assertEqual(self.speaker.recog.get(self.receiver1), recog01)
+        self.assertEqual(self.speaker.recog.get(self.receiver2), recog02)
+        self.assertEqual(
+            self.speaker.recog.get_regex_tuple(self.receiver1)[0].pattern,
+            "/[0-9]*-*Mr\\ Receiver(?=\\W|$)+|/[0-9]*-*Receiver(?=\\W|$)+|/[0-9]*-*Mr(?=\\W|$)+",
+        )
+        self.speaker.recog.remove(self.receiver1)
+        self.assertEqual(self.speaker.recog.get(self.receiver1), sdesc1)
+
+        self.assertEqual(self.speaker.recog.all(), {"Mr Receiver2": self.receiver2})
+
+    def test_parse_language(self):
+        self.assertEqual(
+            rpsystem.parse_language(self.speaker, emote),
+            (
+                "With a flair, /me looks at /first and /colliding sdesc-guy. She says {##0}",
+                {"##0": (None, '"This is a test."')},
+            ),
+        )
+
+    def parse_sdescs_and_recogs(self):
+        speaker = self.speaker
+        speaker.sdesc.add(sdesc0)
+        self.receiver1.sdesc.add(sdesc1)
+        self.receiver2.sdesc.add(sdesc2)
+        candidates = (self.receiver1, self.receiver2)
+        result = (
+            'With a flair, {#9} looks at {#10} and {#11}. She says "This is a test."',
+            {
+                "#11": "Another nice colliding sdesc-guy for tests",
+                "#10": "The first receiver of emotes.",
+                "#9": "A nice sender of emotes",
+            },
+        )
+        self.assertEqual(rpsystem.parse_sdescs_and_recogs(speaker, candidates, emote), result)
+        self.speaker.recog.add(self.receiver1, recog01)
+        self.assertEqual(rpsystem.parse_sdescs_and_recogs(speaker, candidates, emote), result)
+
+    def test_send_emote(self):
+        speaker = self.speaker
+        receiver1 = self.receiver1
+        receiver2 = self.receiver2
+        receivers = [speaker, receiver1, receiver2]
+        speaker.sdesc.add(sdesc0)
+        receiver1.sdesc.add(sdesc1)
+        receiver2.sdesc.add(sdesc2)
+        speaker.msg = lambda text, **kwargs: setattr(self, "out0", text)
+        receiver1.msg = lambda text, **kwargs: setattr(self, "out1", text)
+        receiver2.msg = lambda text, **kwargs: setattr(self, "out2", text)
+        rpsystem.send_emote(speaker, receivers, emote)
+        self.assertEqual(
+            self.out0,
+            "With a flair, |bSender|n looks at |bThe first receiver of emotes.|n "
+            'and |bAnother nice colliding sdesc-guy for tests|n. She says |w"This is a test."|n',
+        )
+        self.assertEqual(
+            self.out1,
+            "With a flair, |bA nice sender of emotes|n looks at |bReceiver1|n and "
+            '|bAnother nice colliding sdesc-guy for tests|n. She says |w"This is a test."|n',
+        )
+        self.assertEqual(
+            self.out2,
+            "With a flair, |bA nice sender of emotes|n looks at |bThe first "
+            'receiver of emotes.|n and |bReceiver2|n. She says |w"This is a test."|n',
+        )
+
+    def test_rpsearch(self):
+        self.speaker.sdesc.add(sdesc0)
+        self.receiver1.sdesc.add(sdesc1)
+        self.receiver2.sdesc.add(sdesc2)
+        self.speaker.msg = lambda text, **kwargs: setattr(self, "out0", text)
+        self.assertEqual(self.speaker.search("receiver of emotes"), self.receiver1)
+        self.assertEqual(self.speaker.search("colliding"), self.receiver2)
+
+
+class TestRPSystemCommands(CommandTest):
+    def setUp(self):
+        super().setUp()
+        self.char1.swap_typeclass(Character)
+        self.char2.swap_typeclass(Character)
+
+    def test_commands(self):
+
+        self.call(
+            rpsystem.CmdSdesc(), "Foobar Character", "Char's sdesc was set to 'Foobar Character'."
+        )
+        self.call(
+            rpsystem.CmdSdesc(),
+            "BarFoo Character",
+            "Char2's sdesc was set to 'BarFoo Character'.",
+            caller=self.char2,
+        )
+        self.call(rpsystem.CmdSay(), "Hello!", 'Char says, "Hello!"')
+        self.call(rpsystem.CmdEmote(), "/me smiles to /barfoo.", "Char smiles to BarFoo Character")
+        self.call(
+            rpsystem.CmdPose(),
+            "stands by the bar",
+            "Pose will read 'Foobar Character stands by the bar.'.",
+        )
+        self.call(
+            rpsystem.CmdRecog(),
+            "barfoo as friend",
+            "Char will now remember BarFoo Character as friend.",
+        )
+        self.call(
+            rpsystem.CmdRecog(),
+            "",
+            "Currently recognized (use 'recog <sdesc> as <alias>' to add new "
+            "and 'forget <alias>' to remove):\n friend  (BarFoo Character)",
+        )
+        self.call(
+            rpsystem.CmdRecog(),
+            "friend",
+            "Char will now know them only as 'BarFoo Character'",
+            cmdstring="forget",
+        )

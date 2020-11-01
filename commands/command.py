@@ -281,7 +281,7 @@ class Command(BaseCommand):
                 def func(self):
                     defer_successful = self.defer()
                     if defer_successful:
-                        message = f"{self.caller.name} is testing deferring a command."
+                        message = f"{self.caller.db._sdesc} is testing deferring a command."
                         self.caller.location.msg_contents(message)
 
                 def deferred_action(self):
@@ -361,7 +361,7 @@ class Command(BaseCommand):
             target=Character, the target of the forced stop
                 Default: self.caller
             stop_message=str, a message to show the target.
-                Default: f'{self.caller.name} stopped your {target.ndb.deffered_command.key} command with {self_pronoun} {self.key}.'
+                Default: f'{self.caller.db._sdesc} stopped your {target.ndb.deffered_command.key} command with {self_pronoun} {self.key}.'
             stop_cmd=str: a command to run when the deffered command is stopped.
                 Default: None
                 Example: 'look'
@@ -382,16 +382,16 @@ class Command(BaseCommand):
                     stop_message = None
                 else:
                     self_pronoun = caller.get_pronoun('|p')
-                    stop_message = f'{caller.name} stopped your {target.ndb.deffered_command.key} command with {self_pronoun} {self.key}.'
+                    stop_message = f'{caller.db._sdesc} stopped your {target.ndb.deffered_command.key} command with {self_pronoun} {self.key}.'
             status_functions.status_force_stop(target, stop_message, stop_cmd, status_type)
         else:
-            caller.msg(f'{target.name} is not commited to an action.')
+            caller.msg(f'{target.db._sdesc} is not commited to an action.')
 
     def complete_early(self, target=None, stop_message=None):
         """
         Complete a deffered complete before the completion time has passed
         Returns True if the early completion was successful.
-        Displays a f'{target.name} is not commited to an action.' message
+        Displays a f'{target.db._sdesc} is not commited to an action.' message
             if the command could not be completed early.
 
         Supports:
@@ -418,7 +418,7 @@ class Command(BaseCommand):
         if target.nattributes.has('deffered_command'):
             if not stop_message:  # if none was provided make a message
                 self_pronoun = self.caller.get_pronoun('|p')
-                stop_message = f'{self.caller.name} allowed you to complete your {target.ndb.deffered_command.key} command early with {self_pronoun} {self.key} command.'
+                stop_message = f'{self.caller.db._sdesc} allowed you to complete your {target.ndb.deffered_command.key} command early with {self_pronoun} {self.key} command.'
             stopped_succesfully = status_functions.status_delay_stop(target, 'busy', True)
             if stop_message:
                 target.msg(stop_message)
@@ -426,5 +426,37 @@ class Command(BaseCommand):
             if target == self.caller:
                 self.caller.msg(f'You are not commited to an action.')
             else:
-                self.caller.msg(f'{target.name} is not commited to an action.')
+                self.caller.msg(f'{target.db._sdesc} is not commited to an action.')
         return stopped_succesfully
+
+    def act_vs_msg(self, action_result, evade_result):
+        """
+        Returns two strings to display at the start of an actions message.
+        Intended to be used to more easily get the vs message for commands
+
+        Arguments:
+            action_result: number returned from actions.targeted_action
+            evade_result: number returned from actions.targeted_action
+
+        Returns:
+            caller_message, target_message
+            Where caller_message is the message to show the command's caller
+            where target_message is the message to show the command's target
+        """
+        caller_message = f"{self.key} {action_result} VS evade {evade_result}: "
+        target_message = f"evade {evade_result} VS {self.key} {action_result}: "
+        return caller_message, target_message
+
+    def target_out_of_melee(self):
+        """
+        returns true if the commands target is out of melee range.
+        Intended to be used in Command.deferred_action to easily check if the target is still in range.
+
+        Returns:
+            True, if the target is out of melee range
+        """
+        caller = self.caller
+        target = caller.search(self.target.db._sdesc, quiet=True)
+        if not target:
+            caller.msg(f'You can no longer reach {self.target.db._sdesc}.')
+            return True

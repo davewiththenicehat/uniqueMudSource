@@ -13,6 +13,7 @@ from utils.element import Element
 from world import status_functions
 from evennia import utils
 from world.rules import stats
+from evennia.contrib.rpsystem import ContribRPCharacter
 
 # Used to adjust Element settings for stats, and the unit test for Character also
 CHARACTER_STAT_SETTINGS = {
@@ -26,7 +27,7 @@ CHARACTER_STAT_SETTINGS = {
     'dbtype': 'db'  # the database type to use can be 'db' or 'ndb'
 }
 
-class Character(ObjectBaseMixin, GenderCharacter):
+class Character(ObjectBaseMixin, GenderCharacter, ContribRPCharacter):
     """
     The Character defaults to reimplementing some of base Object's hook methods with the
     following functionality:
@@ -44,6 +45,14 @@ class Character(ObjectBaseMixin, GenderCharacter):
     at_pre_puppet - Just before Account re-connects, retrieves the character's
                     pre_logout_location Attribute and move it back on the grid.
     at_post_puppet - Echoes "AccountName has entered the game" to the room.
+
+    INHERITS:
+        evennia.contrib.gendersub.GenderCharacter
+            A simple gender-aware Character class.
+        evennia.contrib.rpsystem.ContribRPCharacter
+            Roleplaying base system for Evennia
+        typeclasses.mixins.ObjectBaseMixin
+            Creates basic attributes that exist on all typeclasses.objects.Objects and typeclasses.characters.Character objects.
 
     ATTRIBUTES:
         ONLY interact with Elements via the characters Element reference.
@@ -355,7 +364,7 @@ class Character(ObjectBaseMixin, GenderCharacter):
         Useage:
             If not calling on self:
                 call within Command.func or Command.deffered_action methods
-                message = f'{self.caller.name} left an opening, dodge?'
+                message = f'{self.caller.db._sdesc} left an opening, dodge?'
                 target.status_stop_request(message, 'dodge')
             If calling on self
                 message = 'You are at 20 hp, would you like to teleport home?'

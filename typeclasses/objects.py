@@ -10,10 +10,11 @@ the other types, you can do so by adding this as a multiple
 inheritance.
 
 """
-from evennia import DefaultObject
+from evennia.contrib.rpsystem import ContribRPObject
+from typeclasses.mixins import ObjectBaseMixin
 
 
-class Object(DefaultObject):
+class Object(ObjectBaseMixin, ContribRPObject):
     """
     This is the root typeclass object, implementing an in-game Evennia
     game object, such as having a location, being able to be
@@ -156,6 +157,15 @@ class Object(DefaultObject):
      at_drop(dropper)          - called when this object has been dropped.
      at_say(speaker, message)  - by default, called if an object inside this
                                  object speaks
+
+    Unique Mud:
+        INHERITS:
+            evennia.contrib.gendersub.GenderCharacter
+                A simple gender-aware Character class.
+            evennia.contrib.rpsystem.ContribRPCharacter
+                Roleplaying base system for Evennia
+            typeclasses.mixins.ObjectBaseMixin
+                Creates basic attributes that exist on all typeclasses.objects.Objects and typeclasses.characters.Character objects.
 
      """
 
