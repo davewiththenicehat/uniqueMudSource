@@ -8,6 +8,7 @@ Commands describe the input the account can do to the game.
 from evennia import Command as BaseCommand
 from world import status_functions
 from evennia import utils
+from evennia.utils.logger import log_warn
 
 
 class Command(BaseCommand):
@@ -38,6 +39,10 @@ class Command(BaseCommand):
         cmd_type = False  # Should be a string of the cmd type. IE: 'evasion' for an evasion cmd
         target = None  # collected in Command.func if the command has a target
         can_not_target_self = False  # if True this command will end with a message if the Character targets themself
+        target_type = 'unknown'  # will be a string of the class the target is.
+            target_types are: 'Character', 'Object', 'Room', 'Exit'
+        target_types_allowed = ['Character', 'Object', 'Room', 'Exit']  # a list of target types the command supports
+            Remove support for a type by overriding this attribute in your command
     Methods:
         All methods are fully documented in their docstrings.
         func, To more seamlessly support UniqueMud's deffered command system, evennia's Command.func has been overridden.
@@ -47,6 +52,8 @@ class Command(BaseCommand):
         stop_forced(self, target, stop_message, stop_cmd, status_type), force a character to stop a deffered command early
         complete_early(self, target, stop_message), make a Character to complete a deffered command early
         successful(success=True), records if a command was successful
+        target_out_of_melee(), returns true if the commands target is out of melee range.
+        act_vs_msg(action_result, evade_result), Returns two strings to display at the start of an actions message.
     """
     status_type = 'busy'  # Character status type used to track the command
     defer_time = 3  # time is seconds for the command to wait before running action of command
@@ -58,6 +65,8 @@ class Command(BaseCommand):
     target_required = False  # if True and the command has no target, Command.func will stop execution and message the player
     can_not_target_self = False  # if True this command will end with a message if the Character targets themself
     cmd_type = False  # Should be a string of the cmd type. IE: 'evasion' for an evasion cmd
+    target_type = 'unknown'  # will be a string of the class the target is.
+    target_types_allowed = ['Character', 'Object', 'Room', 'Exit']  # a list of target types the command supports
     # -------------------------------------------------------------
     #
     # The default commands inherit from
@@ -217,12 +226,14 @@ class Command(BaseCommand):
         UniqueMud:
             UniqueMud's func will:
                 find and store a reference of the Object the command is targetting as self.target
+                find and store the target's type as self.target_type
+                will stop the command with msg if the target_type is unsupported
+                will stop the command if targeting self an self.can_not_target_self is True
                 defer the action of the command.
                 call Command.start_message if the command deffered successfully.
             If your command does not defer an action, override Command.func
             It is possible to still use this method within your overidden one with:
                 super().self.func()
-
         """
         caller = self.caller
         # find the commands target
@@ -230,8 +241,32 @@ class Command(BaseCommand):
         target = caller.search(target_name, quiet=True)
         if target:
             self.target = target[0]
-            if self.target == caller and self.can_not_target_self:
+            target = self.target
+            if target == caller and self.can_not_target_self:
                 caller.msg(f'You can not {self.key} yourself.')
+                return
+            # find the command's target type
+            target_type = type(target)
+            target_type = str(target_type)
+            target_desc = ''
+            if target_type == "<class 'typeclasses.objects.Object'>":
+                self.target_type = 'Object'
+                target_desc = target.name
+            elif target_type == "<class 'typeclasses.characters.Character'>":
+                self.target_type = 'Character'
+                target_desc = target.db._sdesc
+            elif target_type == "<class 'typeclasses.rooms.Room'>":
+                self.target_type = 'Room'
+                target_desc = target.name
+            elif target_type == "<class 'typeclasses.exits.Exit'>":
+                self.target_type = 'Exit'
+                target_desc = target.name
+            else:
+                log_warn(f'{caller.id} command: {self.key} found an unknown target type.')
+            target_type = self.target_type
+            # stop the command if the target is an unsupported type for this command
+            if target_type not in self.target_types_allowed:
+                caller.msg(f'You can not {self.key} {target_desc}')
                 return
         else:
             if self.target_required:
