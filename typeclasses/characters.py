@@ -91,7 +91,7 @@ class Character(ObjectBaseMixin, GenderCharacter, ContribRPCharacter):
         usdesc = self.sdesc.get()  # a property to easy get and set the short description on an object.
             Use as if it were a stanard attribute.
             usdesc = 'a happy tree'
-            caller.msg(f'You attack {target.udesc}.')
+            caller.msg(f'You attack {target.usdesc}.')
 
     Methods:
         All methods are fully documented in their docstrings.

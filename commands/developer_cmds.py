@@ -87,7 +87,7 @@ class CmdInterruptCmd(Command):
         else:
             stop_success = self.stop_request(target, None, 'test_cmd')
             if not stop_success:
-                self.caller.msg(f'{target.name} is not commited to an action.')
+                self.caller.msg(f'{target.usdesc} is not commited to an action.')
 
 
 class CmdStopCmd(Command):

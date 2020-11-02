@@ -20,7 +20,7 @@ class Room(ContribRPRoom):
     properties and methods available on all Objects.
 
     UniqueMud:
-    
+
         INHERITS:
             evennia.contrib.rpsystem.ContribRPRoom
                 Roleplaying base system for Evennia
@@ -29,7 +29,7 @@ class Room(ContribRPRoom):
             usdesc = self.key  # a property to easy get and set the short description on an object.
                 Use as if it were a stanard attribute.
                 usdesc = 'a happy tree'  # this will change the key of this object
-                caller.msg(f'You attack {target.udesc}.')
+                caller.msg(f'You attack {target.usdesc}.')
     """
 
     @property

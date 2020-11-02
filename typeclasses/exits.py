@@ -38,7 +38,7 @@ class Exit(DefaultExit):
             usdesc = self.key  # a property to easy get and set the short description on an object.
                 Use as if it were a stanard attribute.
                 usdesc = 'a happy tree'  # this will change the key of this object
-                caller.msg(f'You attack {target.udesc}.')
+                caller.msg(f'You attack {target.usdesc}.')
     """
 
     @property

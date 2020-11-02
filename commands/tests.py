@@ -2,6 +2,9 @@ from evennia.commands.default.tests import CommandTest
 from commands import developer_cmds
 from commands.combat import evasion, unarmed
 from typeclasses.characters import Character
+from typeclasses.exits import Exit
+from typeclasses.rooms import Room
+from typeclasses.objects import Object
 
 
 class TestCommands(CommandTest):
@@ -12,23 +15,29 @@ class TestCommands(CommandTest):
             noansi=True, caller=None, receiver=None, cmdstring=None,
             obj=None, inputs=None, raw_string=None,
         ):
+    Objects in EvenniaTest
+        self.obj1 self.obj2 self.char1 self.char2 self.exit
     """
-
     # account_typeclass = DefaultAccount
-    # object_typeclass = DefaultObject
+    object_typeclass = Object
     character_typeclass = Character
-    # exit_typeclass = DefaultExit
-    # room_typeclass = DefaultRoom
+    exit_typeclass = Exit
+    room_typeclass = Room
     # script_typeclass = DefaultScript
 
 
+
     def test_cmds(self):
+
+        # make character names something easy to tell apart
+        self.char1.usdesc = 'Char'
+        self.char2.usdesc = 'Char2'
 
     # test deffering commands
         # defer a command and complete it
         command = developer_cmds.CmdMultiCmd
         arg = "= defer_cmd, complete_cmd_early"
-        wanted_message = "You will be busy for 5 seconds.|Char is testing deferring a command.|Defered command ran successfully.|You are no longer busy.|A normal person allowed you to complete your defer_cmd command early with their complete_cmd_early command."
+        wanted_message = "You will be busy for 5 seconds.|Char is testing deferring a command.|Defered command ran successfully.|You are no longer busy.|Char allowed you to complete your defer_cmd command early with their complete_cmd_early command."
         self.call(command(), arg, wanted_message)
 
         # request a deffered command to stop
@@ -63,7 +72,7 @@ class TestCommands(CommandTest):
 
         # request the stop of a deffered command on a target that has no deffered command
         command = developer_cmds.CmdMultiCmd
-        arg = "= interrupt_cmd 2-a normal person"
+        arg = "= interrupt_cmd Char2, l"
         wanted_message = "Char2 is not commited to an action."
         self.call(command(), arg, wanted_message)
 
@@ -96,21 +105,35 @@ class TestCommands(CommandTest):
     # test punch, kick and dodge
         # test punch
         command = developer_cmds.CmdMultiCmd
-        arg = "= punch 2-a normal person, complete_cmd_early"
-        wanted_message = 'You will be busy for \\d+ seconds.\nFacing A normal person A normal person pulls theirs hand back preparing an attack.\npunch \\d+ VS evade \\d+: You punch at A normal person .*'
+        arg = "= punch Char2, complete_cmd_early"
+        wanted_message = 'You will be busy for \\d+ seconds.\nFacing Char2 Char pulls theirs hand back preparing an attack.\npunch \\d+ VS evade \\d+: You punch at Char2.*'
         cmd_result = self.call(command(), arg)
         self.assertRegex(cmd_result, wanted_message)
 
         # test kick
         command = developer_cmds.CmdMultiCmd
-        arg = "= kick 2-a normal person, complete_cmd_early"
-        wanted_message = 'You will be busy for \\d+ seconds.\nFacing A normal person A normal person lifts theirs knee up preparing an attack.\nkick \\d+ VS evade \\d+: You kick at A normal person '
+        arg = "= kick Char2, complete_cmd_early"
+        wanted_message = 'You will be busy for \\d+ seconds.\nFacing Char2 Char lifts theirs knee up preparing an attack.\nkick \\d+ VS evade \\d+: You kick at Char2'
         cmd_result = self.call(command(), arg)
         self.assertRegex(cmd_result, wanted_message)
 
         # test dodge
         command = developer_cmds.CmdMultiCmd
-        arg = "= dodge, control_other 2-a normal person=punch a normal person, complete_cmd_early 2-a normal person"
-        wanted_message = 'You will be busy for \\d+ seconds.\nYou begin to sway warily.\nFacing A normal person A normal person pulls theirs hand back preparing an attack.\nYou are no longer busy.\nYou try to dodge the incoming attack.\nevade \\d+ VS punch \\d+: You attempt to evade A normal person'
+        arg = "= dodge, control_other Char2=punch Char, complete_cmd_early Char2"
+        wanted_message = "You will be busy for \\d+ seconds.\nYou begin to sway warily.\nFacing Char Char2 pulls theirs hand back preparing an attack.\nYou are no longer busy.\nYou try to dodge the incoming attack.\nevade \\d+ VS punch \\d+: You attempt to evade Char2's punch "
+        cmd_result = self.call(command(), arg)
+        self.assertRegex(cmd_result, wanted_message)
+
+        # test attacking an Object
+        command = developer_cmds.CmdMultiCmd
+        arg = "= punch Obj, complete_cmd_early"
+        wanted_message = 'You will be busy for \\d+ seconds.\nFacing Obj Char pulls theirs hand back preparing an attack.\npunch \\d+ VS evade \\d+: You punch at Obj'
+        cmd_result = self.call(command(), arg)
+        self.assertRegex(cmd_result, wanted_message)
+
+        # test a target leaving melee range
+        command = developer_cmds.CmdMultiCmd
+        arg = "= punch Char2, control_other Char2=out, complete_cmd_early"
+        wanted_message = "You can no longer reach Char2\\."
         cmd_result = self.call(command(), arg)
         self.assertRegex(cmd_result, wanted_message)
