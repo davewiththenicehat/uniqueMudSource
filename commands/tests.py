@@ -137,3 +137,9 @@ class TestCommands(CommandTest):
         wanted_message = "You can no longer reach Char2\\."
         cmd_result = self.call(command(), arg)
         self.assertRegex(cmd_result, wanted_message)
+
+        # test commands that can not target self
+        command = developer_cmds.CmdMultiCmd
+        arg = "= punch Char"
+        wanted_message = 'You can not punch yourself.'
+        cmd_result = self.call(command(), arg, wanted_message)
