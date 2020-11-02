@@ -37,7 +37,7 @@ class UnarmedCommand(Command):
     cmd_type = 'unarmed'  # Should be a string of the cmd type. IE: 'evasion' for an evasion cmd
     unarmed_str_mod = 0  # half of the unarmed command caller's strength modifier
     can_not_target_self = True  # if True this command will end with a message if the Character targets themself
-    target_types_allowed = ['Character']  # a list of target types the command supports
+    target_types_allowed = ['Character', 'Object']  # a list of target types the command supports
 
     def at_pre_cmd(self):
         """
@@ -83,31 +83,30 @@ class CmdPunch(UnarmedCommand):
         Automatically called at the end of Command.func
         """
         caller_pronoun = self.caller.get_pronoun('|a')
-        message = f"Facing {self.target.db._sdesc} {self.caller.db._sdesc} pulls {caller_pronoun} hand back preparing an attack."
+        message = f"Facing {self.target.usdesc} {self.caller.usdesc} pulls {caller_pronoun} hand back preparing an attack."
         self.caller.location.msg_contents(message)
 
     def deferred_action(self):
         """Causes the action of the punch command."""
-        # verify the target is still in range
-        caller = self.caller
-        target_name = self.lhs.strip()
         # stop the method if target is out of range
         if self.target_out_of_melee():
             return
+        caller = self.caller
         target = self.target
-        result, action_result, evade_result = actions.targeted_action(caller, target)
+        target_type = self.target_type
+        result, action_result, evade_result = actions.targeted_action(caller, target, target_type)
         result += self.unarmed_str_mod
         caller_message, target_message = self.act_vs_msg(action_result, evade_result)
-        caller_message += f"You {self.key} at {target.db._sdesc} "
-        target_message += f"You attempt to evade {caller.db._sdesc}'s {self.key} "
-        room_message = f"{caller.db._sdesc} {self.key}es at {target.db._sdesc} "
+        caller_message += f"You {self.key} at {target.usdesc} "
+        target_message += f"You attempt to evade {caller.usdesc}'s {self.key} "
+        room_message = f"{caller.usdesc} {self.key}es at {target.usdesc} "
         if result > 0:
             damage = actions.dmg_roll(self)
             if damage > 0:  # make certain punch can not heal
                 target.hp -= damage
             caller_message += f"and connect. Dealing {damage} damage."
             target_message += f"but fail. Receiving {damage} damage."
-            room_message += " and connects."
+            room_message += "and connects."
             self.successful(True)
         else:
             caller_message += "but miss."
@@ -115,7 +114,8 @@ class CmdPunch(UnarmedCommand):
             room_message += "and misses."
             self.successful(False)
         caller.msg(caller_message)
-        target.msg(target_message)
+        if self.target_type == 'Character':
+            target.msg(target_message)
         caller.location.msg_contents(room_message, exclude=(target, caller))
         return True
 
@@ -148,7 +148,7 @@ class CmdKick(UnarmedCommand):
         target = self.target
         caller = self.caller
         caller_pronoun = self.caller.get_pronoun('|a')
-        message = f"Facing {target.db._sdesc} {caller.db._sdesc} lifts {caller_pronoun} knee up preparing an attack."
+        message = f"Facing {target.usdesc} {caller.usdesc} lifts {caller_pronoun} knee up preparing an attack."
         caller.location.msg_contents(message)
         # This is a slow powerful command, ask target if they would like to dodge.
         target.status_stop_request(stop_cmd='dodge')
@@ -164,9 +164,9 @@ class CmdKick(UnarmedCommand):
         result, action_result, evade_result = actions.targeted_action(caller, target)
         result += self.unarmed_str_mod
         caller_message, target_message = self.act_vs_msg(action_result, evade_result)
-        caller_message += f"You {self.key} at {target.db._sdesc} "
-        target_message += f"You attempt to evade {caller.db._sdesc}'s {self.key} "
-        room_message = f"{caller.db._sdesc} {self.key}s at {target.db._sdesc} and "
+        caller_message += f"You {self.key} at {target.usdesc} "
+        target_message += f"You attempt to evade {caller.usdesc}'s {self.key} "
+        room_message = f"{caller.usdesc} {self.key}s at {target.usdesc} and "
         if result > 0:
             damage = actions.dmg_roll(self)
             if damage > 0:  # make certain unarmed attack can not heal

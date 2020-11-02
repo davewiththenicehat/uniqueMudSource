@@ -6,19 +6,20 @@ from random import randint
 from evennia.utils.logger import log_info, log_warn
 
 
-def targeted_action(caller, target, log=False):
+def targeted_action(caller, target, target_type='Character', log=False):
     """
     Used to facilitate a standard action that has a target.
 
     Arguments:
         caller, is the character commiting the action
         target, the target this command targets
+        target_type='Character', optional the evennia object type the target is
         log=False, if True log the variables used
 
     Returns:
         action_result - evade_result  # the literal math result displayed
         action_result  # resulting roll of stats.action_roll
-        evade_result  $ resulting roll of stats.evade_roll
+        evade_result  # resulting roll of stats.evade_roll
     """
     # get reference of the command creating the action
     action_cmd = caller.nattributes.get('deffered_command')
@@ -26,7 +27,10 @@ def targeted_action(caller, target, log=False):
         caller.msg('You no longer have an action waiting.')
         return
     action_result = action_roll(caller, log)
-    evade_result = evade_roll(target, action_cmd.evade_mod_stat, log)
+    # only roll an evade if the target is a Character
+    evade_result = 5
+    if target_type == 'Character':
+        evade_result = evade_roll(target, action_cmd.evade_mod_stat, log)
     if log:
         log_info(f'caller id {caller.id}: action_result: {action_result} | evade_result {evade_result}')
     return action_result - evade_result, action_result, evade_result

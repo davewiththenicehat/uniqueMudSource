@@ -1,18 +1,28 @@
 from evennia.commands.default.tests import CommandTest
 from evennia import create_object
 from typeclasses.characters import Character, CHARACTER_STAT_SETTINGS
+from typeclasses.exits import Exit
 from typeclasses.rooms import Room
 from typeclasses.objects import Object
 from evennia.contrib import gendersub
 from evennia.utils.test_resources import EvenniaTest
 
 
-class TestCharacter(CommandTest):
+class TestObjects(CommandTest):
     """
     Used to test the character object
     stat modifiers unit tests are in world.rules.tests.TestRules.test_stat_modifiers
+
+    Objects in EvenniaTest
+        self.obj1 self.obj2 self.char1 self.char2 self.exit
     """
-    def test_character(self):
+    # account_typeclass = DefaultAccount
+    object_typeclass = Object
+    character_typeclass = Character
+    exit_typeclass = Exit
+    room_typeclass = Room
+    # script_typeclass = DefaultScript
+    def test_objects(self):
 
         # test the character's gender and the abilit to run the @gender command
         char = create_object(Character, key="Gendered", location=self.room1)
@@ -27,7 +37,7 @@ class TestCharacter(CommandTest):
 
         # hp is tested in the utils unit test
 
-        # test stats
+        # test Character stats
         # test strength
         self.assertEqual(char.STR, 100)
         self.assertEqual(char.STR.max, CHARACTER_STAT_SETTINGS.get('max'))
@@ -180,6 +190,25 @@ class TestCharacter(CommandTest):
         self.assertEqual(char.attributes.get('charisma_min'), 101)
         char.CHR.min = 100
         self.assertEqual(char.attributes.get('charisma_min'), 100)
+
+        # test usdesc
+        self.assertEqual(char.usdesc, 'A normal person')
+        self.assertEqual(self.room1.usdesc, 'Room')
+        self.assertEqual(self.obj1.usdesc, 'Obj')
+        self.assertEqual(self.exit.usdesc, 'out')
+        # test setting usdesc
+        char.usdesc = 'not_' + char.usdesc
+        self.room1.usdesc = 'not_' + self.room1.usdesc
+        self.obj1.usdesc = 'not_' + self.obj1.usdesc
+        self.exit.usdesc = 'not_' + self.exit.usdesc
+        self.assertEqual(char.usdesc, 'not_A normal person')
+        self.assertEqual(self.room1.usdesc, 'not_Room')
+        self.assertEqual(self.obj1.usdesc, 'not_Obj')
+        self.assertEqual(self.exit.usdesc, 'not_out')
+        char.usdesc = 'A normal person'
+        self.room1.usdesc = 'Room'
+        self.obj1.usdesc = 'Obj'
+        self.exit.usdesc = 'out'
 
 
 # Testing of emoting / sdesc / recog system

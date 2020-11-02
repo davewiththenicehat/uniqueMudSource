@@ -248,25 +248,20 @@ class Command(BaseCommand):
             # find the command's target type
             target_type = type(target)
             target_type = str(target_type)
-            target_desc = ''
             if target_type == "<class 'typeclasses.objects.Object'>":
                 self.target_type = 'Object'
-                target_desc = target.name
             elif target_type == "<class 'typeclasses.characters.Character'>":
                 self.target_type = 'Character'
-                target_desc = target.db._sdesc
             elif target_type == "<class 'typeclasses.rooms.Room'>":
                 self.target_type = 'Room'
-                target_desc = target.name
             elif target_type == "<class 'typeclasses.exits.Exit'>":
                 self.target_type = 'Exit'
-                target_desc = target.name
             else:
                 log_warn(f'{caller.id} command: {self.key} found an unknown target type.')
             target_type = self.target_type
             # stop the command if the target is an unsupported type for this command
             if target_type not in self.target_types_allowed:
-                caller.msg(f'You can not {self.key} {target_desc}')
+                caller.msg(f'You can not {self.key} {target.usdesc}')
                 return
         else:
             if self.target_required:
@@ -321,7 +316,7 @@ class Command(BaseCommand):
                 def func(self):
                     defer_successful = self.defer()
                     if defer_successful:
-                        message = f"{self.caller.db._sdesc} is testing deferring a command."
+                        message = f"{self.caller.usdesc} is testing deferring a command."
                         self.caller.location.msg_contents(message)
 
                 def deferred_action(self):
@@ -401,7 +396,7 @@ class Command(BaseCommand):
             target=Character, the target of the forced stop
                 Default: self.caller
             stop_message=str, a message to show the target.
-                Default: f'{self.caller.db._sdesc} stopped your {target.ndb.deffered_command.key} command with {self_pronoun} {self.key}.'
+                Default: f'{self.caller.usdesc} stopped your {target.ndb.deffered_command.key} command with {self_pronoun} {self.key}.'
             stop_cmd=str: a command to run when the deffered command is stopped.
                 Default: None
                 Example: 'look'
@@ -422,16 +417,16 @@ class Command(BaseCommand):
                     stop_message = None
                 else:
                     self_pronoun = caller.get_pronoun('|p')
-                    stop_message = f'{caller.db._sdesc} stopped your {target.ndb.deffered_command.key} command with {self_pronoun} {self.key}.'
+                    stop_message = f'{caller.usdesc} stopped your {target.ndb.deffered_command.key} command with {self_pronoun} {self.key}.'
             status_functions.status_force_stop(target, stop_message, stop_cmd, status_type)
         else:
-            caller.msg(f'{target.db._sdesc} is not commited to an action.')
+            caller.msg(f'{target.usdesc} is not commited to an action.')
 
     def complete_early(self, target=None, stop_message=None):
         """
         Complete a deffered complete before the completion time has passed
         Returns True if the early completion was successful.
-        Displays a f'{target.db._sdesc} is not commited to an action.' message
+        Displays a f'{target.usdesc} is not commited to an action.' message
             if the command could not be completed early.
 
         Supports:
@@ -458,7 +453,7 @@ class Command(BaseCommand):
         if target.nattributes.has('deffered_command'):
             if not stop_message:  # if none was provided make a message
                 self_pronoun = self.caller.get_pronoun('|p')
-                stop_message = f'{self.caller.db._sdesc} allowed you to complete your {target.ndb.deffered_command.key} command early with {self_pronoun} {self.key} command.'
+                stop_message = f'{self.caller.usdesc} allowed you to complete your {target.ndb.deffered_command.key} command early with {self_pronoun} {self.key} command.'
             stopped_succesfully = status_functions.status_delay_stop(target, 'busy', True)
             if stop_message:
                 target.msg(stop_message)
@@ -466,7 +461,7 @@ class Command(BaseCommand):
             if target == self.caller:
                 self.caller.msg(f'You are not commited to an action.')
             else:
-                self.caller.msg(f'{target.db._sdesc} is not commited to an action.')
+                self.caller.msg(f'{target.usdesc} is not commited to an action.')
         return stopped_succesfully
 
     def act_vs_msg(self, action_result, evade_result):
@@ -496,7 +491,7 @@ class Command(BaseCommand):
             True, if the target is out of melee range
         """
         caller = self.caller
-        target = caller.search(self.target.db._sdesc, quiet=True)
+        target = caller.search(self.target.usdesc, quiet=True)
         if not target:
-            caller.msg(f'You can no longer reach {self.target.db._sdesc}.')
+            caller.msg(f'You can no longer reach {self.target.usdesc}.')
             return True

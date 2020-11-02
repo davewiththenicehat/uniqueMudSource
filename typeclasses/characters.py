@@ -88,6 +88,11 @@ class Character(ObjectBaseMixin, GenderCharacter, ContribRPCharacter):
 
             Stats change: when stats change on a Character method Character.cache_stat_modifiers() needs to be called.
 
+        usdesc = self.sdesc.get()  # a property to easy get and set the short description on an object.
+            Use as if it were a stanard attribute.
+            usdesc = 'a happy tree'
+            caller.msg(f'You attack {target.udesc}.')
+
     Methods:
         All methods are fully documented in their docstrings.
         self.get_pronoun(pattern), pattern is a gendersub pattern, returns Character's pronoun
@@ -364,7 +369,7 @@ class Character(ObjectBaseMixin, GenderCharacter, ContribRPCharacter):
         Useage:
             If not calling on self:
                 call within Command.func or Command.deffered_action methods
-                message = f'{self.caller.db._sdesc} left an opening, dodge?'
+                message = f'{self.caller.usdesc} left an opening, dodge?'
                 target.status_stop_request(message, 'dodge')
             If calling on self
                 message = 'You are at 20 hp, would you like to teleport home?'
@@ -424,3 +429,25 @@ class Character(ObjectBaseMixin, GenderCharacter, ContribRPCharacter):
         setattr(self, 'busy_mod', stats.busy_mod(self))
         setattr(self, 'stunned_mod', stats.stunned_mod(self))
         setattr(self, 'purchase_mod', stats.purchase_mod(self))
+
+    @property
+    def usdesc(self):
+        """
+        Universal method to get and set an object's description.
+        Universal Short Description
+
+        A usdesc exists on each evennia object type Object, Character, Room and Exit
+
+        usdesc refers to self.key on Exits, Objects and rooms
+        usdesc refers to self.sdesc on Characters
+
+        Usage:
+           caller.msg(f'You attack {target.usdesc}.)  # to get
+           target.usdesc = 'a happy tree'  # to set
+        """
+        return self.sdesc.get()
+
+    @usdesc.setter
+    def usdesc(self, value):
+        """Setter property for usdesc"""
+        self.sdesc.add(value)
