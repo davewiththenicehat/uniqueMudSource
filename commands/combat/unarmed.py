@@ -150,7 +150,7 @@ class CmdKick(UnarmedCommand):
         message = f"Facing {target.usdesc} {caller.usdesc} lifts {caller_pronoun} knee up preparing an attack."
         caller.location.msg_contents(message)
         # This is a slow powerful command, ask target if they would like to dodge.
-        target.status_stop_request(stop_cmd='dodge')
+        self.stop_request(target=target, stop_cmd='dodge')
 
     def deferred_action(self):
         """Causes the action of the kick command."""

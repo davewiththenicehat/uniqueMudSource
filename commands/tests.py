@@ -159,3 +159,10 @@ class TestCommands(CommandTest):
         cmd_result = self.call(command(), arg)
         self.assertRegex(cmd_result, wanted_message)
         self.exit.targetable = False
+
+        # test a targeted command that has a stop_request against an object
+        command = developer_cmds.CmdMultiCmd
+        arg = "= kick Obj, complete_cmd_early"
+        wanted_message = "You will be busy for \\d+ seconds.\nFacing Obj Char lifts theirs knee up preparing an attack.\nkick \\d+ VS evade 5: You kick at Obj"
+        cmd_result = self.call(command(), arg)
+        self.assertRegex(cmd_result, wanted_message)

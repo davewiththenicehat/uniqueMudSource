@@ -360,7 +360,10 @@ class Command(BaseCommand):
         """
         if not target:
             target = self.caller
-        return target.status_stop_request(stop_message, stop_cmd)
+        if utils.inherits_from(target, 'typeclasses.characters.Character'):
+            return target.status_stop_request(stop_message, stop_cmd)
+        else:
+            return False
 
     def stop_forced(self, target=None, stop_message=None, stop_cmd=None, status_type='busy'):
         """
