@@ -12,6 +12,7 @@ inheritance.
 """
 from evennia.contrib.rpsystem import ContribRPObject
 from typeclasses.mixins import ObjectBaseMixin, AllObjectsMixin, ExitObjectAndRoomMixin
+from evennia.contrib.clothing import Clothing
 
 
 class Object(ExitObjectAndRoomMixin, AllObjectsMixin, ObjectBaseMixin, ContribRPObject):
@@ -179,4 +180,15 @@ class Object(ExitObjectAndRoomMixin, AllObjectsMixin, ObjectBaseMixin, ContribRP
                 self.hp is an Element, objects's hitpoints.
      """
 
+    pass
+
+
+class UMClothing(Clothing, Object):
+    """
+    Clothing for UniqueMud.
+
+    inherits:
+        evennia.contrib.clothing.Clothing
+        typeclasses.objects.Object
+    """
     pass

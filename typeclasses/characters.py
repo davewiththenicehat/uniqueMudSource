@@ -14,6 +14,7 @@ from world import status_functions
 from evennia import utils
 from world.rules import stats
 from evennia.contrib.rpsystem import ContribRPCharacter
+from evennia.contrib.clothing import ClothedCharacter
 
 # Used to adjust Element settings for stats, and the unit test for Character also
 CHARACTER_STAT_SETTINGS = {
@@ -27,7 +28,7 @@ CHARACTER_STAT_SETTINGS = {
     'dbtype': 'db'  # the database type to use can be 'db' or 'ndb'
 }
 
-class Character(AllObjectsMixin, ObjectBaseMixin, GenderCharacter, ContribRPCharacter):
+class Character(AllObjectsMixin, ObjectBaseMixin, ClothedCharacter, GenderCharacter, ContribRPCharacter):
     """
     The Character defaults to reimplementing some of base Object's hook methods with the
     following functionality:
