@@ -125,6 +125,7 @@ class TestCommands(CommandTest):
         self.assertRegex(cmd_result, wanted_message)
 
         # test attacking an Object
+        self.obj1.targetable = True
         command = developer_cmds.CmdMultiCmd
         arg = "= punch Obj, complete_cmd_early"
         wanted_message = 'You will be busy for \\d+ seconds.\nFacing Obj Char pulls theirs hand back preparing an attack.\npunch \\d+ VS evade \\d+: You punch at Obj'

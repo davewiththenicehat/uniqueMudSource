@@ -7,9 +7,10 @@ Rooms are simple containers that has no location of their own.
 
 from evennia import DefaultRoom
 from evennia.contrib.rpsystem import ContribRPRoom
+from typeclasses.mixins import ExitObjectAndRoomMixin
 
 
-class Room(ContribRPRoom):
+class Room(ExitObjectAndRoomMixin, ContribRPRoom):
     """
     Rooms are like any Object, except their location is None
     (which is default). They also use basetype_setup() to
@@ -21,35 +22,17 @@ class Room(ContribRPRoom):
 
     UniqueMud:
 
-        INHERITS:
+        Inherits:
             evennia.contrib.rpsystem.ContribRPRoom
                 Roleplaying base system for Evennia
+            typeclasses.mixins.ExitObjectAndRoomMixin
 
         Attributes:
-            usdesc = self.key  # a property to easy get and set the short description on an object.
-                Use as if it were a stanard attribute.
-                usdesc = 'a happy tree'  # this will change the key of this object
-                caller.msg(f'You attack {target.usdesc}.')
+            inheirited from ExitObjectAndRoomMixin
+                usdesc = self.key  # a property to easy get and set the short description on an object.
+                    Use as if it were a stanard attribute.
+                    usdesc = 'a happy tree'  # this will change the key of this object
+                    caller.msg(f'You attack {target.usdesc}.')
     """
 
-    @property
-    def usdesc(self):
-        """
-        Universal method to get and set an object's description.
-        Universal Short Description
-
-        A usdesc exists on each evennia object type Object, Character, Room and Exit
-
-        usdesc refers to self.key on Exits, Objects and rooms
-        usdesc refers to self.sdesc on Characters
-
-        Usage:
-        caller.msg(f'You attack {target.usdesc}.)  # to get
-        target.usdesc = 'a happy tree'  # to set
-        """
-        return self.key
-
-    @usdesc.setter
-    def usdesc(self, value):
-        """Setter property for usdesc"""
-        self.key = value
+    pass

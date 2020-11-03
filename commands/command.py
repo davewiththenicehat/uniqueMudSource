@@ -263,8 +263,8 @@ class Command(BaseCommand):
             if target_type not in self.target_types_allowed:
                 caller.msg(f'You can not {self.key} {target.usdesc}.')
                 return
-            # stop the command if the target is an not targetable exit
-            elif target_type == 'Exit':
+            # stop the command if the target is an not targetable exit or object
+            elif target_type in ('Exit', 'Object'):
                 if not target.targetable:
                     caller.msg(f'You can not {self.key} {target.usdesc}.')
                     return
