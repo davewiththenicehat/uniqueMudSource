@@ -7,12 +7,12 @@ for allowing Characters to traverse the exit to its destination.
 
 """
 from evennia import DefaultExit
-from typeclasses.mixins import ObjectBaseMixin, ExitAndObjectMixin, ExitObjectAndRoomMixin
+from typeclasses.mixins import ObjectBaseMixin, AllObjectsMixin, ExitObjectAndRoomMixin
 
 # A tuple of standard exit names
 STANDARD_EXITS = ('north', 'northeast', 'east', 'southeast', 'south', 'southwest', 'west', 'northwest')
 
-class Exit(ExitObjectAndRoomMixin, ExitAndObjectMixin, ObjectBaseMixin, DefaultExit):
+class Exit(ExitObjectAndRoomMixin, AllObjectsMixin, ObjectBaseMixin, DefaultExit):
     """
     Exits are connectors between rooms. Exits are normal Objects except
     they defines the `destination` property. It also does work in the
@@ -41,10 +41,10 @@ class Exit(ExitObjectAndRoomMixin, ExitAndObjectMixin, ObjectBaseMixin, DefaultE
             typeclasses.mixins.ObjectBaseMixin
                 Creates basic attributes that exist on all typeclasses.objects.Objects and typeclasses.characters.Character objects.
             typeclasses.mixins.ExitObjectAndRoomMixin
-            typeclasses.mixins.ExitAndObjectMixin
+            typeclasses.mixins.AllObjectsMixin
 
         Attributes:
-            inheirited from ExitAndObjectMixin
+            inheirited from AllObjectsMixin
                 targetable = False  # can this exit be targeted with an action
             inheirited from ExitObjectAndRoomMixin
                 usdesc = self.key  # a property to easy get and set the short description on an object.

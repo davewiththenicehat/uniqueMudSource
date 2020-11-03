@@ -7,10 +7,10 @@ Rooms are simple containers that has no location of their own.
 
 from evennia import DefaultRoom
 from evennia.contrib.rpsystem import ContribRPRoom
-from typeclasses.mixins import ExitObjectAndRoomMixin
+from typeclasses.mixins import ExitObjectAndRoomMixin, AllObjectsMixin
 
 
-class Room(ExitObjectAndRoomMixin, ContribRPRoom):
+class Room(AllObjectsMixin, ExitObjectAndRoomMixin, ContribRPRoom):
     """
     Rooms are like any Object, except their location is None
     (which is default). They also use basetype_setup() to
@@ -26,6 +26,7 @@ class Room(ExitObjectAndRoomMixin, ContribRPRoom):
             evennia.contrib.rpsystem.ContribRPRoom
                 Roleplaying base system for Evennia
             typeclasses.mixins.ExitObjectAndRoomMixin
+            typeclasses.mixins.AllObjectsMixin
 
         Attributes:
             inheirited from ExitObjectAndRoomMixin
@@ -33,6 +34,8 @@ class Room(ExitObjectAndRoomMixin, ContribRPRoom):
                     Use as if it were a stanard attribute.
                     usdesc = 'a happy tree'  # this will change the key of this object
                     caller.msg(f'You attack {target.usdesc}.')
+            inheirited from AllObjectsMixin
+                targetable = False  # can this exit be targeted with an action
     """
 
     pass

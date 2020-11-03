@@ -4,16 +4,16 @@ Contains functions intended for use with combat commands
 
 from random import randint
 from evennia.utils.logger import log_info, log_warn
+from evennia.utils import inherits_from
 
 
-def targeted_action(caller, target, target_type='Character', log=False):
+def targeted_action(caller, target, log=False):
     """
     Used to facilitate a standard action that has a target.
 
     Arguments:
         caller, is the character commiting the action
         target, the target this command targets
-        target_type='Character', optional the evennia object type the target is
         log=False, if True log the variables used
 
     Returns:
@@ -29,7 +29,7 @@ def targeted_action(caller, target, target_type='Character', log=False):
     action_result = action_roll(caller, log)
     # only roll an evade if the target is a Character
     evade_result = 5
-    if target_type == 'Character':
+    if inherits_from(target, 'typeclasses.characters.Character'):
         evade_result = evade_roll(target, action_cmd.evade_mod_stat, log)
     if log:
         log_info(f'caller id {caller.id}: action_result: {action_result} | evade_result {evade_result}')

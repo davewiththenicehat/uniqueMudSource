@@ -39,10 +39,6 @@ class Command(BaseCommand):
         cmd_type = False  # Should be a string of the cmd type. IE: 'evasion' for an evasion cmd
         target = None  # collected in Command.func if the command has a target
         can_not_target_self = False  # if True this command will end with a message if the Character targets themself
-        target_type = 'unknown'  # will be a string of the class the target is.
-            target_types are: 'Character', 'Object', 'Room', 'Exit'
-        target_types_allowed = ['Character', 'Object', 'Room', 'Exit']  # a list of target types the command supports
-            Remove support for a type by overriding this attribute in your command
     Methods:
         All methods are fully documented in their docstrings.
         func, To more seamlessly support UniqueMud's deffered command system, evennia's Command.func has been overridden.
@@ -65,8 +61,6 @@ class Command(BaseCommand):
     target_required = False  # if True and the command has no target, Command.func will stop execution and message the player
     can_not_target_self = False  # if True this command will end with a message if the Character targets themself
     cmd_type = False  # Should be a string of the cmd type. IE: 'evasion' for an evasion cmd
-    target_type = 'unknown'  # will be a string of the class the target is.
-    target_types_allowed = ['Character', 'Object', 'Room', 'Exit']  # a list of target types the command supports
     # -------------------------------------------------------------
     #
     # The default commands inherit from
@@ -226,9 +220,8 @@ class Command(BaseCommand):
         UniqueMud:
             UniqueMud's func will:
                 find and store a reference of the Object the command is targetting as self.target
-                find and store the target's type as self.target_type
-                will stop the command with msg if the target_type is unsupported
                 will stop the command if targeting self an self.can_not_target_self is True
+                will stop the commnad if the targets self.targetable is False
                 defer the action of the command.
                 call Command.start_message if the command deffered successfully.
             If your command does not defer an action, override Command.func
@@ -245,29 +238,9 @@ class Command(BaseCommand):
             if target == caller and self.can_not_target_self:
                 caller.msg(f'You can not {self.key} yourself.')
                 return
-            # find the command's target type
-            target_type = type(target)
-            target_type = str(target_type)
-            if target_type == "<class 'typeclasses.objects.Object'>":
-                self.target_type = 'Object'
-            elif target_type == "<class 'typeclasses.characters.Character'>":
-                self.target_type = 'Character'
-            elif target_type == "<class 'typeclasses.rooms.Room'>":
-                self.target_type = 'Room'
-            elif target_type == "<class 'typeclasses.exits.Exit'>":
-                self.target_type = 'Exit'
-            else:
-                log_warn(f'{caller.id} command: {self.key} found an unknown target type.')
-            target_type = self.target_type
-            # stop the command if the target is an unsupported type for this command
-            if target_type not in self.target_types_allowed:
+            if not target.targetable:
                 caller.msg(f'You can not {self.key} {target.usdesc}.')
                 return
-            # stop the command if the target is an not targetable exit or object
-            elif target_type in ('Exit', 'Object'):
-                if not target.targetable:
-                    caller.msg(f'You can not {self.key} {target.usdesc}.')
-                    return
         else:
             if self.target_required:
                 caller.msg(f'{target_name} is not here.')

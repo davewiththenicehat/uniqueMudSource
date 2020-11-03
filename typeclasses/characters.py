@@ -7,7 +7,7 @@ is setup to be the "default" character type created by the default
 creation commands.
 
 """
-from typeclasses.mixins import ObjectBaseMixin
+from typeclasses.mixins import ObjectBaseMixin, AllObjectsMixin
 from evennia.contrib.gendersub import GenderCharacter, _RE_GENDER_PRONOUN
 from utils.element import Element
 from world import status_functions
@@ -27,7 +27,7 @@ CHARACTER_STAT_SETTINGS = {
     'dbtype': 'db'  # the database type to use can be 'db' or 'ndb'
 }
 
-class Character(ObjectBaseMixin, GenderCharacter, ContribRPCharacter):
+class Character(AllObjectsMixin, ObjectBaseMixin, GenderCharacter, ContribRPCharacter):
     """
     The Character defaults to reimplementing some of base Object's hook methods with the
     following functionality:
@@ -53,6 +53,7 @@ class Character(ObjectBaseMixin, GenderCharacter, ContribRPCharacter):
             Roleplaying base system for Evennia
         typeclasses.mixins.ObjectBaseMixin
             Creates basic attributes that exist on all typeclasses.objects.Objects and typeclasses.characters.Character objects.
+        typeclasses.mixins.AllObjectsMixin
 
     ATTRIBUTES:
         ONLY interact with Elements via the characters Element reference.
@@ -88,6 +89,9 @@ class Character(ObjectBaseMixin, GenderCharacter, ContribRPCharacter):
         Inheirited from ObjectBaseMixin:
             self.hp is an Element, objects's hitpoints.
 
+        inheirited from AllObjectsMixin
+            targetable = True  # can this exit be targeted with an action
+
         usdesc = self.sdesc.get()  # a property to easy get and set the short description on an object.
             Use as if it were a stanard attribute.
             usdesc = 'a happy tree'
@@ -120,6 +124,11 @@ class Character(ObjectBaseMixin, GenderCharacter, ContribRPCharacter):
         """
         self.cache_stat_modifiers()  # load stats cache when Character is initialized.
         return super().at_init()  # Here only to support future change to evennia's Character.at_init
+
+    def at_object_creation(self):
+        """Runs when Character is created."""
+        self.targetable = True
+        return super().at_object_creation()
 
     # define characters's strength
     @property

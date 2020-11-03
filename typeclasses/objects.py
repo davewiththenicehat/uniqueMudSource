@@ -11,10 +11,10 @@ inheritance.
 
 """
 from evennia.contrib.rpsystem import ContribRPObject
-from typeclasses.mixins import ObjectBaseMixin, ExitAndObjectMixin, ExitObjectAndRoomMixin
+from typeclasses.mixins import ObjectBaseMixin, AllObjectsMixin, ExitObjectAndRoomMixin
 
 
-class Object(ExitObjectAndRoomMixin, ExitAndObjectMixin, ObjectBaseMixin, ContribRPObject):
+class Object(ExitObjectAndRoomMixin, AllObjectsMixin, ObjectBaseMixin, ContribRPObject):
     """
     This is the root typeclass object, implementing an in-game Evennia
     game object, such as having a location, being able to be
@@ -165,10 +165,10 @@ class Object(ExitObjectAndRoomMixin, ExitAndObjectMixin, ObjectBaseMixin, Contri
             typeclasses.mixins.ObjectBaseMixin
                 Creates basic attributes that exist on all typeclasses.objects.Objects and typeclasses.characters.Character objects.
             typeclasses.mixins.ExitObjectAndRoomMixin
-            typeclasses.mixins.ExitAndObjectMixin
+            typeclasses.mixins.AllObjectsMixin
 
         Attributes:
-            inheirited from ExitAndObjectMixin
+            inheirited from AllObjectsMixin
                 targetable = False  # can this exit be targeted with an action
             inheirited from ExitObjectAndRoomMixin
                 usdesc = self.key  # a property to easy get and set the short description on an object.

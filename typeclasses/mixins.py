@@ -32,9 +32,10 @@ class ObjectBaseMixin:
         del self._hp
 
 
-class ExitAndObjectMixin:
+class AllObjectsMixin:
     """
-    Creates basic attributes and methods that are shared on Objects and Exits.
+    Creates basic attributes and methods that are shared on all objects.
+        Rooms, Objects, Characters and Exits
 
     Attributes:
         targetable = False  # if the target is targetable.

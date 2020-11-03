@@ -1,6 +1,7 @@
 from commands.command import Command
 from evennia import CmdSet
 from evennia.utils.logger import log_info, log_warn
+from evennia.utils import inherits_from
 from world.rules import stats, actions
 
 
@@ -37,7 +38,6 @@ class UnarmedCommand(Command):
     cmd_type = 'unarmed'  # Should be a string of the cmd type. IE: 'evasion' for an evasion cmd
     unarmed_str_mod = 0  # half of the unarmed command caller's strength modifier
     can_not_target_self = True  # if True this command will end with a message if the Character targets themself
-    target_types_allowed = ['Character', 'Object', 'Exit']  # a list of target types the command supports
 
     def at_pre_cmd(self):
         """
@@ -93,8 +93,7 @@ class CmdPunch(UnarmedCommand):
             return
         caller = self.caller
         target = self.target
-        target_type = self.target_type
-        result, action_result, evade_result = actions.targeted_action(caller, target, target_type)
+        result, action_result, evade_result = actions.targeted_action(caller, target)
         result += self.unarmed_str_mod
         caller_message, target_message = self.act_vs_msg(action_result, evade_result)
         caller_message += f"You {self.key} at {target.usdesc} "
@@ -114,7 +113,7 @@ class CmdPunch(UnarmedCommand):
             room_message += "and misses."
             self.successful(False)
         caller.msg(caller_message)
-        if self.target_type == 'Character':
+        if inherits_from(target, 'typeclasses.characters.Character'):
             target.msg(target_message)
         caller.location.msg_contents(room_message, exclude=(target, caller))
         return True
