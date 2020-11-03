@@ -7,9 +7,12 @@ for allowing Characters to traverse the exit to its destination.
 
 """
 from evennia import DefaultExit
+from typeclasses.mixins import ObjectBaseMixin
 
+# A tuple of standard exit names
+STANDARD_EXITS = ('north', 'northeast', 'east', 'southeast', 'south', 'southwest', 'west', 'northwest')
 
-class Exit(DefaultExit):
+class Exit(ObjectBaseMixin, DefaultExit):
     """
     Exits are connectors between rooms. Exits are normal Objects except
     they defines the `destination` property. It also does work in the
@@ -35,11 +38,16 @@ class Exit(DefaultExit):
                                         defined, in which case that will simply be echoed.
     UniqueMud:
         Attributes:
+            targetable = False  # can this exit be targeted with an action
             usdesc = self.key  # a property to easy get and set the short description on an object.
                 Use as if it were a stanard attribute.
                 usdesc = 'a happy tree'  # this will change the key of this object
                 caller.msg(f'You attack {target.usdesc}.')
+            Inheirited from ObjectBaseMixin:
+                self.hp is an Element, objects's hitpoints.
     """
+
+    targetable = False  # can this exit be targeted with an action
 
     @property
     def usdesc(self):

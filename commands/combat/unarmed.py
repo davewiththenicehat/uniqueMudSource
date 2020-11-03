@@ -37,7 +37,7 @@ class UnarmedCommand(Command):
     cmd_type = 'unarmed'  # Should be a string of the cmd type. IE: 'evasion' for an evasion cmd
     unarmed_str_mod = 0  # half of the unarmed command caller's strength modifier
     can_not_target_self = True  # if True this command will end with a message if the Character targets themself
-    target_types_allowed = ['Character', 'Object']  # a list of target types the command supports
+    target_types_allowed = ['Character', 'Object', 'Exit']  # a list of target types the command supports
 
     def at_pre_cmd(self):
         """

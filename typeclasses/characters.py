@@ -77,9 +77,6 @@ class Character(ObjectBaseMixin, GenderCharacter, ContribRPCharacter):
             self.WIS  # wisdom
             self.CHR  # charisma
 
-        Inheirited from ObjectBaseMixin:
-            self.hp is an Element, character's hitpoints.
-
         Stat modifiers:
             All stat modifiers are cached on Characters as local attributes.
             To view a full list run command: 'view_obj =stat_cache', to view all local attributes of self.
@@ -87,6 +84,9 @@ class Character(ObjectBaseMixin, GenderCharacter, ContribRPCharacter):
                 char.STR_evade_mod, char.CON_action_mod, char.OBS_action_cost_mod
 
             Stats change: when stats change on a Character method Character.cache_stat_modifiers() needs to be called.
+
+        Inheirited from ObjectBaseMixin:
+            self.hp is an Element, objects's hitpoints.
 
         usdesc = self.sdesc.get()  # a property to easy get and set the short description on an object.
             Use as if it were a stanard attribute.
@@ -99,9 +99,12 @@ class Character(ObjectBaseMixin, GenderCharacter, ContribRPCharacter):
         self.ready(), returns True if a character is ready for a 'busy' action
         self.stun(int() or float()), stun the Character for argument seconds
         self.status_stop(status_type=str, stop_message=str, stop_cmd=str), stop a stun status early
+        status_stop_request(stop_message=None, stop_cmd=None), Request for a player to stop a status.
+        cache_stat_modifiers(), Creates "Stat modifiers" mentioned in the Attributes section of this docstring
 
     Final Notes:
         unit testing for Character status is done in the commands.tests.TestCommands unit test
+        unit testing for hp is done in utils.tests.TestUtils.test_elements
     """
 
     def at_init(self):

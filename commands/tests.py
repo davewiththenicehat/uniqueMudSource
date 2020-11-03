@@ -143,3 +143,18 @@ class TestCommands(CommandTest):
         arg = "= punch Char"
         wanted_message = 'You can not punch yourself.'
         cmd_result = self.call(command(), arg, wanted_message)
+
+        # test attaking an exit that is not targetable
+        command = developer_cmds.CmdMultiCmd
+        arg = "= punch out"
+        wanted_message = 'You can not punch out.'
+        cmd_result = self.call(command(), arg, wanted_message)
+
+        # test attaking a targetable exit
+        self.exit.targetable = True
+        command = developer_cmds.CmdMultiCmd
+        arg = "= punch out, complete_cmd_early"
+        wanted_message = "You will be busy for \\d+ seconds.\nFacing out Char pulls theirs hand back preparing an attack.\npunch \\d+ VS evade 5: You punch at out"
+        cmd_result = self.call(command(), arg)
+        self.assertRegex(cmd_result, wanted_message)
+        self.exit.targetable = False
