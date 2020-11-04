@@ -12,7 +12,7 @@ inheritance.
 """
 from evennia.contrib.rpsystem import ContribRPObject
 from typeclasses.mixins import ObjectBaseMixin, AllObjectsMixin, ExitObjectAndRoomMixin
-from evennia.contrib.clothing import Clothing
+from typeclasses.equipment.clothing import Clothing
 
 
 class Object(ExitObjectAndRoomMixin, AllObjectsMixin, ObjectBaseMixin, ContribRPObject):

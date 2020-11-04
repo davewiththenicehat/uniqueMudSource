@@ -14,7 +14,7 @@ from world import status_functions
 from evennia import utils
 from world.rules import stats
 from evennia.contrib.rpsystem import ContribRPCharacter
-from evennia.contrib.clothing import ClothedCharacter
+from typeclasses.equipment.clothing import ClothedCharacter
 
 # Used to adjust Element settings for stats, and the unit test for Character also
 CHARACTER_STAT_SETTINGS = {

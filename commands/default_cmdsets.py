@@ -19,7 +19,7 @@ from evennia.contrib.gendersub import SetGender
 from commands.developer_cmds import DeveloperCmdSet
 from commands.combat.unarmed import UnarmedCmdSet
 from commands.combat.evasion import EvasionCmdSet
-from evennia.contrib.clothing import ClothedCharacterCmdSet
+from typeclasses.equipment.clothing import ClothedCharacterCmdSet
 
 
 class CharacterCmdSet(default_cmds.CharacterCmdSet):
