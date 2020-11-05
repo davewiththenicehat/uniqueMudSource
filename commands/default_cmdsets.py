@@ -20,6 +20,7 @@ from commands.developer_cmds import DeveloperCmdSet
 from commands.combat.unarmed import UnarmedCmdSet
 from commands.combat.evasion import EvasionCmdSet
 from typeclasses.equipment.clothing import ClothedCharacterCmdSet
+from commands.standard_cmds import StandardCmdsCmdSet
 
 
 class CharacterCmdSet(default_cmds.CharacterCmdSet):
@@ -44,6 +45,7 @@ class CharacterCmdSet(default_cmds.CharacterCmdSet):
         self.add(UnarmedCmdSet)
         self.add(EvasionCmdSet)
         self.add(ClothedCharacterCmdSet)
+        self.add(StandardCmdsCmdSet)
 
 
 class AccountCmdSet(default_cmds.AccountCmdSet):
