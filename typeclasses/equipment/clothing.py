@@ -390,6 +390,8 @@ class ClothingCommand(Command):
     cmd_type = "clothing"  # Should be a string of the command type. IE: 'evasion' for an evasion command
     target_required = True  # if True and the command has no target, Command.func will stop execution and message the player
     target_inherits_from = (CLOTHING_OBJECT_CLASS, 'clothing and armor') # a tuple, position 0 string of a class type, position 1 is a string to show on mismatch
+    search_caller_only = True  # if True the command will only search the caller for targets
+    can_not_target_self = True  # if True this command will end with a message if the Character targets themself
 
 class CmdWear(ClothingCommand):
     """

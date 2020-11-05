@@ -41,6 +41,7 @@ class Command(BaseCommand):
         can_not_target_self = False  # if True this command will end with a message if the Character targets themself
         target_inherits_from = False  # a tuple, position 0 string of a class type, position 1 is a string to show on mismatch
             example: target_inherits_from = ("typeclasses.equipment.clothing.Clothing", 'clothing and armor')
+        search_caller_only = False  # if True the command will only search the caller for targets
     Methods:
         All methods are fully documented in their docstrings.
         func, To more seamlessly support UniqueMud's deffered command system, evennia's Command.func has been overridden.
@@ -64,6 +65,7 @@ class Command(BaseCommand):
     can_not_target_self = False  # if True this command will end with a message if the Character targets themself
     cmd_type = False  # Should be a string of the cmd type. IE: 'evasion' for an evasion cmd
     target_inherits_from = False  # a tuple, position 0 string of a class type, position 1 is a string to show on mismatch
+    search_caller_only = False  # if True the command will only search the caller for targets
     # -------------------------------------------------------------
     #
     # The default commands inherit from
@@ -234,7 +236,12 @@ class Command(BaseCommand):
         caller = self.caller
         # find the commands target
         target_name = self.lhs.strip()
-        target = caller.search(target_name, quiet=True)
+        target = None
+        # if set search the caller only, if not search the room
+        if self.search_caller_only:
+            target = caller.search(target_name, quiet=True, candidates=caller.contents)
+        else:
+            target = caller.search(target_name, quiet=True)
         if target:
             self.target = target[0]
             target = self.target
@@ -258,8 +265,16 @@ class Command(BaseCommand):
                     caller.msg(f"If you need help try |lc{cmd_suggestion}|lt{cmd_suggestion}|le.")
                     return
                 else:
-                    caller.msg(f'{target_name} is not here.')
-                    return
+                    if self.search_caller_only:
+                        not_found_msg = f'{target_name} is not here.'
+                        target = caller.search(target_name, nofound_string=not_found_msg)
+                        if target:
+                            cmd_suggestion = f"get {target_name}"
+                            caller.msg(f"Try picking it up first with |lc{cmd_suggestion}|lt{cmd_suggestion}|le.")
+                            return
+                    else:
+                        caller.msg(f'{target_name} is not here.')
+                        return
         # defer the command
         defer_successful = self.defer()
         if defer_successful:

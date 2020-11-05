@@ -33,10 +33,10 @@ class TestCommands(CommandTest):
 
     # misc command test
         # provide a target that does not exist with a command requiring a target
-        command = developer_cmds.CmdMultiCmd
-        arg = "= wear none existant object"
-        wanted_message = "none existant object is not here."
-        self.call(command(), arg, wanted_message)
+        #command = developer_cmds.CmdMultiCmd
+        #arg = "= wear none existant object"
+        #wanted_message = "none existant object is not here."
+        #self.call(command(), arg, wanted_message)
 
     # test deffering commands
         # defer a command and complete it
@@ -193,10 +193,24 @@ class TestCommands(CommandTest):
         wanted_message = "You will be busy for 1 second.\nYou begin to put on test hat.\nChar puts on test hat.\nYou are no longer busy.\nChar allowed you to complete your wear command early with their complete_cmd_early command."
         cmd_result = self.call(command(), arg, caller=self.char1)
         self.assertRegex(cmd_result, wanted_message)
-        # Test wearing an item that is not clothing
+        # Test tring to wear an item not on person also tests Command.search_caller_only
         command = developer_cmds.CmdMultiCmd
         arg = "= wear Obj"
+        wanted_message = "Try picking it up first with get Obj."
+        cmd_result = self.call(command(), arg, caller=self.char1)
+        self.assertRegex(cmd_result, wanted_message)
+        # test tring to wear an item that is not clothing, also tests target_inherits_from
+        command = developer_cmds.CmdMultiCmd
+        arg = "= get Obj"
+        wanted_message = "You pick up Obj."
+        cmd_result = self.call(command(), arg, caller=self.char1)
+        self.assertRegex(cmd_result, wanted_message)
+        arg = "= wear Obj"
         wanted_message = "You can only wear clothing and armor."
+        cmd_result = self.call(command(), arg, caller=self.char1)
+        self.assertRegex(cmd_result, wanted_message)
+        arg = "= drop Obj"
+        wanted_message = "You drop Obj."
         cmd_result = self.call(command(), arg, caller=self.char1)
         self.assertRegex(cmd_result, wanted_message)
         # test removing an item
