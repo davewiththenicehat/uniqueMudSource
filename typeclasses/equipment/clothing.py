@@ -454,7 +454,7 @@ class CmdWear(ClothingCommand):
         clothing.wear(caller, wearstyle)
 
 
-class CmdRemove(Command):
+class CmdRemove(ClothingCommand):
     """
     Takes off an item of clothing.
 
@@ -467,14 +467,23 @@ class CmdRemove(Command):
     """
 
     key = "remove"
-    help_category = "clothing"
-
-    def func(self):
+    def start_message(self):
         """
-        This performs the actual command.
+        Display a message after a command has been successfully deffered.
+
+        Automatically called at the end of Command.func
         """
         caller = self.caller
-        clothing = caller.search(self.args, candidates=caller.contents)
+        target = self.target
+        room_message = f'{caller.usdesc} begins to put on {target.usdesc}.'
+        caller_message = f'You begin to put on {target.usdesc}.'
+        caller.location.msg_contents(room_message, exclude=(caller))
+        caller.msg(caller_message)
+
+    def deferred_action(self):
+        """The command completed, without receiving an attack."""
+        caller = self.caller
+        clothing = self.target
         if not clothing:
             caller.msg("Thing to remove must be carried or worn.")
             return
