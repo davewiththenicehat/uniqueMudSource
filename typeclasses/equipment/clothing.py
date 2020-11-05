@@ -386,24 +386,23 @@ class ClothedCharacter(DefaultCharacter):
 
 class CmdWear(Command):
     """
-    Puts on an item of clothing you are holding.
+    Puts on an item of clothing or armor you are holding.
 
     Usage:
-      wear <obj> [wear style]
+      wear name of attire
 
     Examples:
       wear shirt
-      wear scarf wrapped loosely about the shoulders
+      wear dented armor
 
     All the clothes you are wearing are appended to your description.
-    If you provide a 'wear style' after the command, the message you
-    provide will be displayed after the clothing's name.
     """
 
     key = "wear"
     help_category = "clothing"
     defer_time = 1  # time is seconds for the command to wait before running action of command
     cmd_type = "clothing"  # Should be a string of the command type. IE: 'evasion' for an evasion command
+    target_required = True  # if True and the command has no target, Command.func will stop execution and message the player
 
     def start_message(self):
         """
@@ -412,23 +411,6 @@ class CmdWear(Command):
         Automatically called at the end of Command.func
         """
         caller = self.caller
-
-        if not self.args:
-            caller.msg("Usage: wear <obj> [wear style]")
-            self.stop_forced()
-            return
-        target_name = self.arglist[0]
-        clothing = caller.search(target_name, candidates=caller.contents, quiet=True)
-        wearstyle = True
-        if not clothing:
-            caller.msg(f"You do not have {target_name} to wear.")
-            if caller.search(target_name):
-                cmd_suggestion = 'get '+target_name
-                caller.msg(f'Try picking it up first with |lc{cmd_suggestion}|lt{cmd_suggestion}|le.')
-            self.stop_forced()
-            return
-
-        self.target = clothing[0]
         target = self.target
         room_message = f'{caller.usdesc} begins to put on {target.usdesc}.'
         caller_message = f'You begin to put on {target.usdesc}.'
@@ -461,25 +443,11 @@ class CmdWear(Command):
                     )
                     return
 
+        # check if the player is already wearing the item
         if clothing.db.worn and len(self.arglist) == 1:
             caller.msg("You're already wearing %s." % clothing.name)
             return
-        wearstyle = True
-        if len(self.arglist) > 1:  # If wearstyle arguments given
-            wearstyle_list = self.arglist  # Split arguments into a list of words
-            del wearstyle_list[0]  # Leave first argument (the clothing item) out of the wearstyle
-            wearstring = " ".join(
-                str(e) for e in wearstyle_list
-            )  # Join list of args back into one string
-            if (
-                WEARSTYLE_MAXLENGTH and len(wearstring) > WEARSTYLE_MAXLENGTH
-            ):  # If length of wearstyle exceeds limit
-                caller.msg(
-                    "Please keep your wear style message to less than %i characters."
-                    % WEARSTYLE_MAXLENGTH
-                )
-            else:
-                wearstyle = wearstring
+        wearstyle = True  # removed support for wearstyle
         clothing.wear(caller, wearstyle)
 
 
@@ -630,7 +598,7 @@ class ClothedCharacterCmdSet(default_cmds.CharacterCmdSet):
     version of 'inventory' that differentiates between carried and worn
     items.
 
-    Unit tests for these commands are in commands.tests.TestClothingCmd
+    Unit tests for these commands are in commands.tests.TestCommands
     """
 
     key = "DefaultCharacter"

@@ -9,7 +9,7 @@ class StandardCmdsCmdSet(default_cmds.CharacterCmdSet):
     That must in some way be altered from evennias provided version.
     examples drop, inventory
 
-    Unit tests for these commands are in commands.tests.TestClothingCmd
+    Unit tests for these commands are in commands.tests.TestCommands
     """
 
     key = "DefaultCharacter"

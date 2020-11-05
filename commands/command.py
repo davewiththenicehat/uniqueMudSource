@@ -243,8 +243,14 @@ class Command(BaseCommand):
                 return
         else:
             if self.target_required:
-                caller.msg(f'{target_name} is not here.')
-                return
+                if len(target_name) == 0:
+                    caller.msg(f"What would you like to {self.key}?")
+                    cmd_suggestion = f"help {self.key}"
+                    caller.msg(f"If you need help try |lc{cmd_suggestion}|lt{cmd_suggestion}|le.")
+                    return
+                else:
+                    caller.msg(f'{target_name} is not here.')
+                    return
         # defer the command
         defer_successful = self.defer()
         if defer_successful:

@@ -25,8 +25,6 @@ class TestCommands(CommandTest):
     room_typeclass = Room
     # script_typeclass = DefaultScript
 
-
-
     def test_cmds(self):
 
         # make character names something easy to tell apart
@@ -167,30 +165,35 @@ class TestCommands(CommandTest):
         cmd_result = self.call(command(), arg)
         self.assertRegex(cmd_result, wanted_message)
 
+    # test clothing commands
+        # Make a test hat
+        test_hat = create_object(clothing.Clothing, key="test hat")
+        test_hat.db.clothing_type = "hat"
+        test_hat.location = self.char1
+        # Make a test scarf
+        test_scarf = create_object(clothing.Clothing, key="test scarf")
+        test_scarf.db.clothing_type = "accessory"
+        test_scarf.location = self.char1
+        # Test wear with no arguments.
+        command = clothing.CmdWear
+        arg = ""
+        wanted_message = "What would you like to wear?|If you need help try help wear."
+        cmd_result = self.call(command(), arg, caller=self.char1)
+        self.assertRegex(cmd_result, wanted_message)
+        # Test wearing an item
+        command = developer_cmds.CmdMultiCmd
+        arg = "= wear hat, complete_cmd_early"
+        wanted_message = "You will be busy for 1 second.\nYou begin to put on test hat.\nChar puts on test hat.\nYou are no longer busy.\nChar allowed you to complete your wear command early with their complete_cmd_early command."
+        cmd_result = self.call(command(), arg, caller=self.char1)
+        self.assertRegex(cmd_result, wanted_message)
+
 
 # test commands that have code desicated to clothing module
 from typeclasses.equipment import clothing
 from commands.standard_cmds import CmdDrop, CmdInventory
 
+"""
 
-class TestClothingCmd(CommandTest):
-    def test_clothingcommands(self):
-        wearer = create_object(clothing.ClothedCharacter, key="Wearer")
-        friend = create_object(clothing.ClothedCharacter, key="Friend")
-        room = create_object(Room, key="room")
-        wearer.location = room
-        friend.location = room
-        # Make a test hat
-        test_hat = create_object(clothing.Clothing, key="test hat")
-        test_hat.db.clothing_type = "hat"
-        test_hat.location = wearer
-        # Make a test scarf
-        test_scarf = create_object(clothing.Clothing, key="test scarf")
-        test_scarf.db.clothing_type = "accessory"
-        test_scarf.location = wearer
-        # Test wear command
-        self.call(clothing.CmdWear(), "", "Usage: wear <obj> [wear style]", caller=wearer)
-        self.call(clothing.CmdWear(), "hat", "Wearer puts on test hat.", caller=wearer)
         self.call(
             clothing.CmdWear(),
             "scarf stylishly",
@@ -204,6 +207,7 @@ class TestClothingCmd(CommandTest):
             "Usage: cover <worn clothing> [with] <clothing object>",
             caller=wearer,
         )
+
         self.call(
             clothing.CmdCover(),
             "hat with scarf",
@@ -258,3 +262,4 @@ class TestClothingCmd(CommandTest):
         wanted_message = "You do not have hat to wear.\nTry picking it up first with get hat."
         cmd_result = self.call(command(), arg, caller=wearer)
         self.assertRegex(cmd_result, wanted_message)
+"""
