@@ -186,6 +186,12 @@ class TestCommands(CommandTest):
         wanted_message = "You will be busy for 1 second.\nYou begin to put on test hat.\nChar puts on test hat.\nYou are no longer busy.\nChar allowed you to complete your wear command early with their complete_cmd_early command."
         cmd_result = self.call(command(), arg, caller=self.char1)
         self.assertRegex(cmd_result, wanted_message)
+        # Test wearing an item that is not clothing
+        command = developer_cmds.CmdMultiCmd
+        arg = "= wear Obj"
+        wanted_message = "You can only wear clothing and armor."
+        cmd_result = self.call(command(), arg, caller=self.char1)
+        self.assertRegex(cmd_result, wanted_message)
 
 
 # test commands that have code desicated to clothing module

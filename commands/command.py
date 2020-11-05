@@ -39,6 +39,8 @@ class Command(BaseCommand):
         cmd_type = False  # Should be a string of the cmd type. IE: 'evasion' for an evasion cmd
         target = None  # collected in Command.func if the command has a target
         can_not_target_self = False  # if True this command will end with a message if the Character targets themself
+        target_inherits_from = False  # a tuple, position 0 string of a class type, position 1 is a string to show on mismatch
+            example: target_inherits_from = ("typeclasses.equipment.clothing.Clothing", 'clothing and armor')
     Methods:
         All methods are fully documented in their docstrings.
         func, To more seamlessly support UniqueMud's deffered command system, evennia's Command.func has been overridden.
@@ -61,6 +63,7 @@ class Command(BaseCommand):
     target_required = False  # if True and the command has no target, Command.func will stop execution and message the player
     can_not_target_self = False  # if True this command will end with a message if the Character targets themself
     cmd_type = False  # Should be a string of the cmd type. IE: 'evasion' for an evasion cmd
+    target_inherits_from = False  # a tuple, position 0 string of a class type, position 1 is a string to show on mismatch
     # -------------------------------------------------------------
     #
     # The default commands inherit from
@@ -241,6 +244,12 @@ class Command(BaseCommand):
             if not target.targetable:
                 caller.msg(f'You can not {self.key} {target.usdesc}.')
                 return
+            # if enabled verify inheritens and show message on mismatch
+            if self.target_inherits_from:
+                target_inherits_from, inherit_mismatch_msg = self.target_inherits_from
+                if not utils.inherits_from(target, target_inherits_from):
+                    caller.msg(f"You can only {self.key} {inherit_mismatch_msg}.")
+                    return
         else:
             if self.target_required:
                 if len(target_name) == 0:
