@@ -76,10 +76,10 @@ with which to test the system:
 from evennia import DefaultObject
 from evennia import DefaultCharacter
 from evennia import default_cmds
-from evennia.commands.default.muxcommand import MuxCommand
 from evennia.utils import list_to_string
 from evennia.utils import evtable
 from typeclasses.objects import Object
+from commands.command import Command
 
 # Options start here.
 # Maximum character length of 'wear style' strings, or None for unlimited.
@@ -384,7 +384,7 @@ class ClothedCharacter(DefaultCharacter):
 # COMMANDS START HERE
 
 
-class CmdWear(MuxCommand):
+class CmdWear(Command):
     """
     Puts on an item of clothing you are holding.
 
@@ -402,14 +402,20 @@ class CmdWear(MuxCommand):
 
     key = "wear"
     help_category = "clothing"
+    defer_time = 1  # time is seconds for the command to wait before running action of command
+    cmd_type = "clothing"  # Should be a string of the command type. IE: 'evasion' for an evasion command
 
-    def func(self):
+    def start_message(self):
         """
-        This performs the actual command.
+        Display a message after a command has been successfully deffered.
+
+        Automatically called at the end of Command.func
         """
         caller = self.caller
+
         if not self.args:
             caller.msg("Usage: wear <obj> [wear style]")
+            self.stop_forced()
             return
         target_name = self.arglist[0]
         clothing = caller.search(target_name, candidates=caller.contents, quiet=True)
@@ -419,8 +425,22 @@ class CmdWear(MuxCommand):
             if caller.search(target_name):
                 cmd_suggestion = 'get '+target_name
                 caller.msg(f'Try picking it up first with |lc{cmd_suggestion}|lt{cmd_suggestion}|le.')
+            self.stop_forced()
             return
-        clothing = clothing[0]
+
+        self.target = clothing[0]
+        target = self.target
+        room_message = f'{caller.usdesc} begins to put on {target.usdesc}.'
+        caller_message = f'You begin to put on {target.usdesc}.'
+        caller.location.msg_contents(room_message, exclude=(caller))
+        caller.msg(caller_message)
+
+    def deferred_action(self):
+        """The command completed, without receiving an attack."""
+        caller = self.caller
+        clothing = self.target
+
+        # is the object wearable?
         if not clothing.is_typeclass(CLOTHING_OBJECT_CLASS, exact=False):
             caller.msg(f'{clothing.usdesc} can not be worn.')
             return
@@ -444,6 +464,7 @@ class CmdWear(MuxCommand):
         if clothing.db.worn and len(self.arglist) == 1:
             caller.msg("You're already wearing %s." % clothing.name)
             return
+        wearstyle = True
         if len(self.arglist) > 1:  # If wearstyle arguments given
             wearstyle_list = self.arglist  # Split arguments into a list of words
             del wearstyle_list[0]  # Leave first argument (the clothing item) out of the wearstyle
@@ -462,7 +483,7 @@ class CmdWear(MuxCommand):
         clothing.wear(caller, wearstyle)
 
 
-class CmdRemove(MuxCommand):
+class CmdRemove(Command):
     """
     Takes off an item of clothing.
 
@@ -495,7 +516,7 @@ class CmdRemove(MuxCommand):
         clothing.remove(caller)
 
 
-class CmdCover(MuxCommand):
+class CmdCover(Command):
     """
     Covers a worn item of clothing with another you're holding or wearing.
 
@@ -559,7 +580,7 @@ class CmdCover(MuxCommand):
         to_cover.db.covered_by = cover_with
 
 
-class CmdUncover(MuxCommand):
+class CmdUncover(Command):
     """
     Reveals a worn item of clothing that's currently covered up.
 
