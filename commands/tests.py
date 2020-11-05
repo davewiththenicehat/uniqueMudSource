@@ -31,6 +31,13 @@ class TestCommands(CommandTest):
         self.char1.usdesc = 'Char'
         self.char2.usdesc = 'Char2'
 
+    # misc command test
+        # provide a target that does not exist with a command requiring a target
+        command = developer_cmds.CmdMultiCmd
+        arg = "= wear none existant object"
+        wanted_message = "none existant object is not here."
+        self.call(command(), arg, wanted_message)
+
     # test deffering commands
         # defer a command and complete it
         command = developer_cmds.CmdMultiCmd
