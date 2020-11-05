@@ -383,8 +383,15 @@ class ClothedCharacter(DefaultCharacter):
 
 # COMMANDS START HERE
 
+class ClothingCommand(Command):
+    """A command class for clothing commands"""
+    help_category = "clothing"
+    defer_time = 1  # time is seconds for the command to wait before running action of command
+    cmd_type = "clothing"  # Should be a string of the command type. IE: 'evasion' for an evasion command
+    target_required = True  # if True and the command has no target, Command.func will stop execution and message the player
+    target_inherits_from = (CLOTHING_OBJECT_CLASS, 'clothing and armor') # a tuple, position 0 string of a class type, position 1 is a string to show on mismatch
 
-class CmdWear(Command):
+class CmdWear(ClothingCommand):
     """
     Puts on an item of clothing or armor you are holding.
 
@@ -399,11 +406,6 @@ class CmdWear(Command):
     """
 
     key = "wear"
-    help_category = "clothing"
-    defer_time = 1  # time is seconds for the command to wait before running action of command
-    cmd_type = "clothing"  # Should be a string of the command type. IE: 'evasion' for an evasion command
-    target_required = True  # if True and the command has no target, Command.func will stop execution and message the player
-    target_inherits_from = (CLOTHING_OBJECT_CLASS, 'clothing and armor') # a tuple, position 0 string of a class type, position 1 is a string to show on mismatch
 
     def start_message(self):
         """
