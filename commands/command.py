@@ -66,60 +66,7 @@ class Command(BaseCommand):
     cmd_type = False  # Should be a string of the cmd type. IE: 'evasion' for an evasion cmd
     target_inherits_from = False  # a tuple, position 0 string of a class type, position 1 is a string to show on mismatch
     search_caller_only = False  # if True the command will only search the caller for targets
-    # -------------------------------------------------------------
-    #
-    # The default commands inherit from
-    #
-    #   evennia.commands.default.muxcommand.MuxCommand.
-    #
-    # If you want to make sweeping changes to default commands you can
-    # uncomment this copy of the MuxCommand parent and add
-    #
-    #   COMMAND_DEFAULT_CLASS = "commands.command.MuxCommand"
-    #
-    # to your settings file. Be warned that the default commands expect
-    # the functionality implemented in the parse() method, so be
-    # careful with what you change.
-    #
-    # -------------------------------------------------------------
 
-    # from evennia.utils import utils
-    #
-    #
-    # class MuxCommand(Command):
-    #     """
-    #     This sets up the basis for a MUX command. The idea
-    #     is that most other Mux-related commands should just
-    #     inherit from this and don't have to implement much
-    #     parsing of their own unless they do something particularly
-    #     advanced.
-    #
-    #     Note that the class's __doc__ string (this text) is
-    #     used by Evennia to create the automatic help entry for
-    #     the command, so make sure to document consistently here.
-    #     """
-    #     def has_perm(self, srcobj):
-    #         """
-    #         This is called by the cmdhandler to determine
-    #         if srcobj is allowed to execute this command.
-    #         We just show it here for completeness - we
-    #         are satisfied using the default check in Command.
-    #         """
-    #         return super().has_perm(srcobj)
-    #
-    #     def at_pre_cmd(self):
-    #         """
-    #         This hook is called before self.parse() on all commands
-    #         """
-    #         pass
-    #
-    #     def at_post_cmd(self):
-    #         """
-    #         This hook is called after the command has finished executing
-    #         (after self.func()).
-    #         """
-    #         pass
-    #
     def parse(self):
         """
         This method is called by the cmdhandler once the command name
