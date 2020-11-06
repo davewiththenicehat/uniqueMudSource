@@ -4,7 +4,7 @@ contains functions and variables that interact with game damage.
 Attributes:
     MAP_DICT = dict, a mapping of damage types and full names
         aliase: MAP
-        in format: 'ACD': 'acide'
+        in format: 'ACD': 'acid'
     TYPES = tuple, damage types to iterate through
 
 Modules:
@@ -15,7 +15,7 @@ from random import randint
 
 # a mapping of damage types and full names
 MAP_DICT = {
-    'ACD': 'acide',
+    'ACD': 'acid',
     'BLG': 'bludgeoning',
     'CLD': 'cold',
     'FIR': 'fire',
@@ -48,6 +48,7 @@ def roll(command, use_mod=True, log=False):
 
     Arguments:
         command, the command that is manipulating damage
+        use_mod=True,
         log=False, if True log the variables used
 
     Returns:
