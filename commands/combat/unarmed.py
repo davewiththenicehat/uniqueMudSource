@@ -2,7 +2,7 @@ from commands.command import Command
 from evennia import CmdSet
 from evennia.utils.logger import log_info, log_warn
 from evennia.utils import inherits_from
-from world.rules import stats, actions
+from world.rules import stats, actions, damage
 
 
 class UnarmedCmdSet(CmdSet):
@@ -100,11 +100,11 @@ class CmdPunch(UnarmedCommand):
         target_message += f"You attempt to evade {caller.usdesc}'s {self.key} "
         room_message = f"{caller.usdesc} {self.key}es at {target.usdesc} "
         if result > 0:
-            damage = actions.dmg_roll(self)
-            if damage > 0:  # make certain punch can not heal
-                target.hp -= damage
-            caller_message += f"and connect. Dealing {damage} damage."
-            target_message += f"but fail. Receiving {damage} damage."
+            dmg = damage.roll(self)
+            if dmg > 0:  # make certain punch can not heal
+                target.hp -= dmg
+            caller_message += f"and connect. Dealing {dmg} damage."
+            target_message += f"but fail. Receiving {dmg} damage."
             room_message += "and connects."
             self.successful(True)
         else:
@@ -167,11 +167,11 @@ class CmdKick(UnarmedCommand):
         target_message += f"You attempt to evade {caller.usdesc}'s {self.key} "
         room_message = f"{caller.usdesc} {self.key}s at {target.usdesc} and "
         if result > 0:
-            damage = actions.dmg_roll(self)
-            if damage > 0:  # make certain unarmed attack can not heal
-                target.hp -= damage
-            caller_message += f"and connect. Dealing {damage} damage."
-            target_message += f"but fail. Receiving {damage} damage."
+            dmg = damage.roll(self)
+            if dmg > 0:  # make certain unarmed attack can not heal
+                target.hp -= dmg
+            caller_message += f"and connect. Dealing {dmg} damage."
+            target_message += f"but fail. Receiving {dmg} damage."
             room_message += "connects."
             self.successful(True)
         else:
