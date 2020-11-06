@@ -7,12 +7,12 @@ for allowing Characters to traverse the exit to its destination.
 
 """
 from evennia import DefaultExit
-from typeclasses.mixins import ObjectBaseMixin, AllObjectsMixin, ExitObjectAndRoomMixin
+from typeclasses.mixins import CharExAndObjMixin, AllObjectsMixin, ExitObjectAndRoomMixin
 
 # A tuple of standard exit names
 STANDARD_EXITS = ('north', 'northeast', 'east', 'southeast', 'south', 'southwest', 'west', 'northwest')
 
-class Exit(ExitObjectAndRoomMixin, AllObjectsMixin, ObjectBaseMixin, DefaultExit):
+class Exit(ExitObjectAndRoomMixin, AllObjectsMixin, CharExAndObjMixin, DefaultExit):
     """
     Exits are connectors between rooms. Exits are normal Objects except
     they defines the `destination` property. It also does work in the
@@ -38,7 +38,7 @@ class Exit(ExitObjectAndRoomMixin, AllObjectsMixin, ObjectBaseMixin, DefaultExit
                                         defined, in which case that will simply be echoed.
     UniqueMud:
         INHERITS:
-            typeclasses.mixins.ObjectBaseMixin
+            typeclasses.mixins.CharExAndObjMixin
                 Creates basic attributes that exist on all typeclasses.objects.Objects and typeclasses.characters.Character objects.
             typeclasses.mixins.ExitObjectAndRoomMixin
             typeclasses.mixins.AllObjectsMixin
@@ -51,7 +51,7 @@ class Exit(ExitObjectAndRoomMixin, AllObjectsMixin, ObjectBaseMixin, DefaultExit
                     Use as if it were a stanard attribute.
                     usdesc = 'a happy tree'  # this will change the key of this object
                     caller.msg(f'You attack {target.usdesc}.')
-            Inheirited from ObjectBaseMixin:
+            Inheirited from CharExAndObjMixin:
                 self.hp is an Element, objects's hitpoints.
     """
     pass

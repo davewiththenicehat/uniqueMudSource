@@ -1,12 +1,12 @@
 from utils.element import Element
 
 
-class ObjectBaseMixin:
+class CharExAndObjMixin:
     """
     Creates basic attributes that exist on all typeclasses.objects.Objects and
     typeclasses.characters.Character objects.
     This is a mixin class. Should be a secondary inherit.
-        class Object(ObjectBaseMixin, ContribRPObject):
+        class Object(CharExAndObjMixin, ContribRPObject):
 
     Attributes:
         hp = Element, the objects hit points or health

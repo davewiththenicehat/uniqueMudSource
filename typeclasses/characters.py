@@ -7,7 +7,7 @@ is setup to be the "default" character type created by the default
 creation commands.
 
 """
-from typeclasses.mixins import ObjectBaseMixin, AllObjectsMixin
+from typeclasses.mixins import CharExAndObjMixin, AllObjectsMixin
 from evennia.contrib.gendersub import GenderCharacter, _RE_GENDER_PRONOUN
 from utils.element import Element
 from world import status_functions
@@ -28,7 +28,7 @@ CHARACTER_STAT_SETTINGS = {
     'dbtype': 'db'  # the database type to use can be 'db' or 'ndb'
 }
 
-class Character(AllObjectsMixin, ObjectBaseMixin, ClothedCharacter, GenderCharacter, ContribRPCharacter):
+class Character(AllObjectsMixin, CharExAndObjMixin, ClothedCharacter, GenderCharacter, ContribRPCharacter):
     """
     The Character defaults to reimplementing some of base Object's hook methods with the
     following functionality:
@@ -52,7 +52,7 @@ class Character(AllObjectsMixin, ObjectBaseMixin, ClothedCharacter, GenderCharac
             A simple gender-aware Character class.
         evennia.contrib.rpsystem.ContribRPCharacter
             Roleplaying base system for Evennia
-        typeclasses.mixins.ObjectBaseMixin
+        typeclasses.mixins.CharExAndObjMixin
             Creates basic attributes that exist on all typeclasses.objects.Objects and typeclasses.characters.Character objects.
         typeclasses.mixins.AllObjectsMixin
 
@@ -87,7 +87,7 @@ class Character(AllObjectsMixin, ObjectBaseMixin, ClothedCharacter, GenderCharac
 
             Stats change: when stats change on a Character method Character.cache_stat_modifiers() needs to be called.
 
-        Inheirited from ObjectBaseMixin:
+        Inheirited from CharExAndObjMixin:
             self.hp is an Element, objects's hitpoints.
 
         inheirited from AllObjectsMixin
