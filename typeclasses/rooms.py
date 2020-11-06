@@ -7,10 +7,10 @@ Rooms are simple containers that has no location of their own.
 
 from evennia import DefaultRoom
 from evennia.contrib.rpsystem import ContribRPRoom
-from typeclasses.mixins import ExitObjectAndRoomMixin, AllObjectsMixin
+from typeclasses.mixins import ExObjAndRoomMixin, AllObjectsMixin
 
 
-class Room(AllObjectsMixin, ExitObjectAndRoomMixin, ContribRPRoom):
+class Room(AllObjectsMixin, ExObjAndRoomMixin, ContribRPRoom):
     """
     Rooms are like any Object, except their location is None
     (which is default). They also use basetype_setup() to
@@ -25,11 +25,11 @@ class Room(AllObjectsMixin, ExitObjectAndRoomMixin, ContribRPRoom):
         Inherits:
             evennia.contrib.rpsystem.ContribRPRoom
                 Roleplaying base system for Evennia
-            typeclasses.mixins.ExitObjectAndRoomMixin
+            typeclasses.mixins.ExObjAndRoomMixin
             typeclasses.mixins.AllObjectsMixin
 
         Attributes:
-            inheirited from ExitObjectAndRoomMixin
+            inheirited from ExObjAndRoomMixin
                 usdesc = self.key  # a property to easy get and set the short description on an object.
                     Use as if it were a stanard attribute.
                     usdesc = 'a happy tree'  # this will change the key of this object

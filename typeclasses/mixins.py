@@ -76,9 +76,15 @@ class AllObjectsMixin:
         self.attributes.remove('targetable')
 
 
-class ExitObjectAndRoomMixin:
+class ExObjAndRoomMixin:
     """
-    A mixin for use with exits objects and rooms
+    Creates basic attributes for Exits Objects and Rooms.
+    This is a mixin class. Should be a secondary inherit.
+        class Object(ExObjAndRoomMixin, ContribRPObject):
+
+    Attributes:
+        usdesc = self.key, universal sdesc. Uses self.key.
+        Exits also on Character to allow for cross object support.
     """
 
     @property
