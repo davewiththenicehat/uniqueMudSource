@@ -9,6 +9,33 @@ Modules:
 
 from random import randint
 
+# a mapping of damage types and full names
+MAP_DICT = {
+    'ACD': 'acide',
+    'BLG': 'bludgeoning',
+    'CLD': 'cold',
+    'FIR': 'fire',
+    'ELC': 'electric',
+    'MNT': 'mental',
+    'PRC': 'piercing',
+    'POI': 'poison',
+    'RAD': 'radiation',
+    'SLS': 'slashing'
+}
+
+# damage types to iterate through
+TYPES = (
+    'ACD',
+    'BLG',
+    'CLD',
+    'FIR',
+    'ELC',
+    'MNT',
+    'PRC',
+    'POI',
+    'RAD',
+    'SLS'
+)
 
 def roll(command, log=False):
     """
