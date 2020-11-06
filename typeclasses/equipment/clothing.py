@@ -627,5 +627,5 @@ class ClothedCharacterCmdSet(default_cmds.CharacterCmdSet):
         #
         self.add(CmdWear())
         self.add(CmdRemove())
-        self.add(CmdCover())
-        self.add(CmdUncover())
+        # self.add(CmdCover())
+        # self.add(CmdUncover())
