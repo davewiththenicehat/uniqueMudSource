@@ -151,19 +151,6 @@ class Element:
         except KeyError:  # No log kwarg passed
             self.log = False
 
-        try:
-            if kwargs['name']:
-                name = kwargs.get('name')
-                if name:
-                    if isinstance(name, str):
-                        self.name = name
-                        if self.log:
-                            log_info(f"Element __init__, name passed and used {self.name}")
-                    else:
-                        raise ValueError("Element object, argument 3 or kwarg name must be a string variable or ommited at declaration.")
-        except KeyError:  # No log kwarg passed
-            pass
-
         # collect an instance of the container object
         try:
             if container:
