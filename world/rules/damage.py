@@ -2,6 +2,10 @@
 contains functions and variables that interact with game damage.
 
 Attributes:
+    MAP_DICT = dict, a mapping of damage types and full names
+        aliase: MAP
+        in format: 'ACD': 'acide'
+    TYPES = tuple, damage types to iterate through
 
 Modules:
     roll, Get a damage roll adjusted by a character's damage stat modifier.
@@ -22,6 +26,7 @@ MAP_DICT = {
     'RAD': 'radiation',
     'SLS': 'slashing'
 }
+MAP = MAP_DICT
 
 # damage types to iterate through
 TYPES = (
