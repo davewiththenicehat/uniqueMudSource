@@ -42,7 +42,7 @@ TYPES = (
     'SLS'
 )
 
-def roll(command, log=False):
+def roll(command, use_mod=True, log=False):
     """
     Get a damage roll adjusted by a character's damage stat modifier.
 
@@ -66,9 +66,11 @@ def roll(command, log=False):
     caller = command.caller
     if hasattr(command, 'dmg_max'):  # if the command has a damage maximum use it instead
         dmg_max = getattr(command, 'dmg_max')
-    if hasattr(command, 'dmg_mod_stat'):  # if the command has a custom damage modifier stat use it instead
-        dmg_mod_stat = getattr(command, 'dmg_mod_stat')
-    dmg_mod_name = dmg_mod_stat+'_dmg_mod'
-    if hasattr(caller, dmg_mod_name):  # if the caller of the command has the stat damage modifier use it.
-        dmg_mod = getattr(caller, dmg_mod_name)
+    # only get stat modifier if use_mod is True
+    if use_mod:
+        if hasattr(command, 'dmg_mod_stat'):  # if the command has a custom damage modifier stat use it instead
+            dmg_mod_stat = getattr(command, 'dmg_mod_stat')
+        dmg_mod_name = dmg_mod_stat+'_dmg_mod'
+        if hasattr(caller, dmg_mod_name):  # if the caller of the command has the stat damage modifier use it.
+            dmg_mod = getattr(caller, dmg_mod_name)
     return randint(1, dmg_max) + dmg_mod
