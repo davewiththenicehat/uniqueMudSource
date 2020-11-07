@@ -250,6 +250,7 @@ class CmdViewObj(Command):
 
         Usage:
             view_obj/switches target=view_group_name,attribute_name
+            Providing no view_group_name or attribute_name will dump the objects __dict__
 
     Switches:
         v, to view in veribose mode
@@ -289,9 +290,11 @@ class CmdViewObj(Command):
     def func(self):
         target = self.lhs.strip()
         target = self.caller.search(target, quiet=True)
-        view_list = self.rhslist
-        if not target:
+        if target:
+            target = target[0]
+        else:
             target = self.caller
+        view_list = self.rhslist
         if 'v' in self.switches:
             self.caller.msg(f'target: {target} | view_list: {view_list}')
         for view_type in view_list:
@@ -300,9 +303,9 @@ class CmdViewObj(Command):
                 self.view_cache_stat_modifiers(target)
             else:
                 if hasattr(target, view_type):
-                    self.caller.msg(f'{target.name}.{view_type} == {getattr(target, view_type)}')
+                    self.caller.msg(f'{target}.{view_type} == {getattr(target, view_type)}')
                 else:
-                    self.caller.msg(f'{target.name}.{view_type} does not exist.')
+                    self.caller.msg(f'{target.__dict__}')
 
 
 class CmdContrlOther(Command):

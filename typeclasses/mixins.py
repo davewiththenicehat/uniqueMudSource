@@ -1,4 +1,5 @@
 from utils.element import Element
+from world.rules.damage import DamageElement
 
 
 class CharExAndObjMixin:
@@ -30,6 +31,25 @@ class CharExAndObjMixin:
     def hp(self):
         self._hp.delete()
         del self._hp
+
+    # define objects's Damage Reduction
+    @property
+    def dr(self):
+        try:
+            if self._dr:
+                pass
+        except AttributeError:
+            self._dr = DamageElement(self)
+            self._dr.verify()
+        return self._dr
+
+    @dr.setter
+    def dr(self, value):
+        self._dr.set(value)
+
+    @dr.deleter
+    def dr(self):
+        self._dr.delete()
 
 
 class AllObjectsMixin:

@@ -210,6 +210,31 @@ class TestObjects(CommandTest):
         self.obj1.usdesc = 'Obj'
         self.exit.usdesc = 'out'
 
+        # Test damage reduction dr & world.rules.damage.DamageElement
+        # Test directly setting a damage reduction attribute
+        self.assertFalse(char.attributes.has('dr_acd'))
+        char.dr.ACD = 1
+        self.assertEqual(char.attributes.get('dr_acd'), 1)
+        char.dr.ACD = 0
+        # tests all damage types
+        from world.rules.damage import TYPES
+        for type in TYPES:
+            db_key = 'dr_'+type.lower()
+            self.assertFalse(char.attributes.has(db_key))
+            setattr(char.dr, type, 1)
+            self.assertEqual(char.attributes.get(db_key), 1)
+            # make certain setting to 0 removes the attr from database
+            setattr(char.dr, type, 0)
+            self.assertFalse(char.attributes.has(db_key))
+            setattr(char.dr, type, 1)  # set to test dr.delete
+        # test deleting a dr element
+        self.assertEqual(char.attributes.get('dr_acd'), 1)
+        char.dr.delete()
+        for type in TYPES:
+            db_key = 'dr_'+type.lower()
+            self.assertFalse(char.attributes.has(db_key))
+        self.assertEqual(char.dr.ACD, 0)
+
 
 # Testing of emoting / sdesc / recog system
 
