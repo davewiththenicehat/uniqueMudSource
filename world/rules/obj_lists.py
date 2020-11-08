@@ -1,13 +1,6 @@
-# used to represent types of damage in UM
-DAMAGE_TYPES = (
-    'ACD',
-    'BLG',
-    'CLD',
-    'FIR',
-    'ELC',
-    'MNT',
-    'PRC',
-    'POI',
-    'RAD',
-    'SLS'
-)
+"""
+Used to hold lists used through the project.
+That would otherwise create import loops.
+"""
+
+# Reserved for later use

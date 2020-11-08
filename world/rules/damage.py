@@ -26,7 +26,6 @@ Notes
 
 from random import randint
 from utils.element import ListElement
-from world.rules.obj_lists import DAMAGE_TYPES
 
 # a mapping of damage types and full names
 MAP_DICT = {
@@ -44,7 +43,18 @@ MAP_DICT = {
 MAP = MAP_DICT
 
 # damage types to iterate through
-TYPES = DAMAGE_TYPES
+TYPES = (
+    'ACD',
+    'BLG',
+    'CLD',
+    'FIR',
+    'ELC',
+    'MNT',
+    'PRC',
+    'POI',
+    'RAD',
+    'SLS'
+)
 
 
 def roll(command, use_mod=True, log=False):
@@ -80,11 +90,3 @@ def roll(command, use_mod=True, log=False):
         if hasattr(caller, dmg_mod_name):  # if the caller of the command has the stat damage modifier use it.
             dmg_mod = getattr(caller, dmg_mod_name)
     return randint(1, dmg_max) + dmg_mod
-
-
-class DamageElement(ListElement):
-    """
-    A child of ListElement used to represent damage.
-    It uses list (tuple) world.rules.obj_lists.DamageTypes
-    """
-    pass

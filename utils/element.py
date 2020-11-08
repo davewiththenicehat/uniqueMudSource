@@ -1,33 +1,6 @@
 import weakref
 from evennia.utils.logger import log_info, log_warn
 from evennia.utils import inherits_from
-from world.rules.obj_lists import DAMAGE_TYPES
-
-# Used in ListElement to get a list of attributes to manage
-LIST_DICT = {
-    'damage': DAMAGE_TYPES,
-}
-
-
-def get_el_list(instance):
-    """
-    Used to get the proper list for a child of ListElement.
-
-    To add a child type do so as:
-        elif 'NameElement':
-            return LIST_DICT['name']
-
-    Follow the Creation section in ListElement for complete details on
-    creating a ListElement.
-    """
-    inst_type = type(instance)
-    inst_type = str(inst_type)
-    if 'DamageElement' in inst_type:
-        return LIST_DICT['damage']
-    elif 'ListElement' in inst_type:
-        return False
-    else:
-        return False
 
 
 class ListElement:
@@ -40,57 +13,55 @@ class ListElement:
                 damage bonus on a weapon.
                 body parts on Characters
     Within a ListElement there are attributes for each key in the list.
-    Lists exist in the module world.rules.obj_lists
         Each key is used as an attribute.
             For example:
-                LikeElement.ACD
+                ListElement.ACD
         Each key is used to create a database resentation of the attribute.
             Example:
                 character.dr.ACD = 3, would appear as 'dr_acd' in the database
         Do not use a ListElement's datbase entry.
         Usage is explained in the Usage section.
 
+    Arguments:
+        ListElement(container, el_list, log=True, name=None)
+        container, is the container this Element will be stored on.
+        el_list, is the list to turn into Elements
+        log=True, if none error logging should be enabled.
+        name=None, is the name of the ListElement.
+            It is HIGHLY recommended that you do no use this.
+            ListElement will get the name you gave the attribute
+            in created.
+                IE:
+                dr for
+                self._dr = DamageElement(self, DAMAGE_TYPES)
+
     Creation:
-    You will need to create a list or even better a tuple of attributes to be
-    used in a ListElement in world.rules.obj_lists
-        Example: DAMAGE_TYPES = ('ACD', 'BLG', 'CLD', 'FIR', 'ELC', 'MNT')
-    You will need to create a blank object that inherits ListElement
-        Example:
-            from utils.element import ListElement
-            class DamageElement(ListElement):
-                pass
-    You will need to add your list to LIST_DICT
-        Example:
-            from world.rules.obj_lists import DAMAGE_TYPES
-            LIST_DICT = {
-                'damage': DAMAGE_TYPES
-            }
-    You will need to add your ListElement's name to get_el_list
-        Example:
-            if 'DamageElement' in inst_type:
-                return LIST_DICT['damage']
-    You will need to make a propery on the class that will contain the ListElement
+    You will need to make a propery on the class that will contain the
+    ListElement.
+    In the example below, self._dr = DamageElement(self, DAMAGE_TYPES)
+        self, is the container this ListElement will be stored in.
+        DAMAGE_TYPES, is a tuple of damage. Could be a list also.
     Here is an example of a ListElement on a class named FakeCharacter:
-        class FakeCharacter(Object):
-            # define characters's damage reduction
-            @property
-            def dr(self):
-                try:
-                    if self._dr:
-                        pass
-                except AttributeError:
-                    self._dr = DamageElement(self)
-                    self._dr.verify()
-                return self._dr
 
-            @dr.setter
-            def dr(self, value):
-                self._dr.set(value)
+    class FakeCharacter(Character):
+        # define objects's Damage Reduction
+        @property
+        def dr(self):
+            try:
+                if self._dr:
+                    pass
+            except AttributeError:
+                self._dr = DamageElement(self, DAMAGE_TYPES)
+                self._dr.verify()
+            return self._dr
 
-            @dr.deleter
-            def dr(self):
-                self._dr.delete()
-    Usage is explained in the Usage: section
+        @dr.setter
+        def dr(self, value):
+            self._dr.set(value)
+
+        @dr.deleter
+        def dr(self):
+            self._dr.delete()
 
     Creation settings:
     Two key word arguments are supported.
@@ -126,16 +97,18 @@ class ListElement:
 
 
     Notes:
-    Default values will NOT record to the database.
+    Default values 0 will NOT record to the database.
     Do NOT access a ListElements database entry directory.
     self.db_fields_dict is a dictionary of damage types and their default value
-        example: self.dbfields = [(key),(default_value)]
+        example: self.db_fields_dict = [(key),(default_value)]
         default_value should be 0
+    It is recommended store only, numbers, strings and booleans.
+        Anything more complex may be difficult to work with in code.
     self.__str__ returns a representation of the ListElement
         IE: ACD: 3 | BLG: 0 | CLD: 0 | FIR: 0 | ELC: 0 | MNT: 0
     """
 
-    def __init__(self, container, **kwargs):
+    def __init__(self, container, el_list, **kwargs):
         """
         Initialize a ListElement object.
 
@@ -166,6 +139,10 @@ class ListElement:
             raise ValueError("ListElement Object, must inherit evennia.objects.models.ObjectDB")
         # create a reference of the database attribute
         self.db = weakref.proxy(container.attributes)
+        if isinstance(el_list, list) or isinstance(el_list, tuple):
+            self.el_list = el_list
+        else:
+            raise ValueError("ListElement Object, argument 2 must be a list or tuple.")
 
     def get(self, instance=None, owner=None):
         """Returns a reference of the ListElement"""
@@ -193,14 +170,14 @@ class ListElement:
         """
         self.verify()  # verify this object instance if it has not been already
         str_ver = ''
-        for attr in get_el_list(self):
+        for attr in self.el_list:
             attr_value = getattr(self, attr)
             str_ver = f"{str_ver}{attr}: {attr_value} | "
         return str(str_ver)
 
     def delete(self):
         """Delete all attributes' database entries, leaving the Element."""
-        for attr in get_el_list(self):
+        for attr in self.el_list:
             delattr(self, attr)
 
     def verify(self):
@@ -235,13 +212,10 @@ class ListElement:
                 pass
         except AttributeError:
             raise RuntimeError("ListElement object declaration received a container reference that does not contain the element instance created.")
-        # Make certain the child instance of ListElement has its lists
-        if not get_el_list:
-            raise RuntimeError(f"ListElement {self.name} for db object {self.container.dbref}, list setup imcomplete.")
         # Create a dictionary to easily reference attributes & database keys
         self.db_fields_dict = dict()
         el_def_value = 0  # default value for a ListElement attribute
-        for attr in get_el_list(self):
+        for attr in self.el_list:
             el_db_key = self.name+'_'+attr
             self.db_fields_dict.update({attr: (el_db_key, el_def_value)})
 
@@ -282,8 +256,10 @@ class ListElement:
         If not in database default damageElement attribute of 0 is returned
         """
         # if the attribute is a database attribute retreive it from the database
+        if name == 'el_list':
+            return object.__getattribute__(self, name)
         if super(ListElement, self).__getattribute__('verified'):
-            if name in get_el_list(self):
+            if name in self.el_list:
                 db_key, db_key_def_val = self.db_fields_dict.get(name)
                 value = self.db.get(db_key, default=db_key_def_val)
                 if self.log:
@@ -299,7 +275,7 @@ class ListElement:
         Will remove a ListElement's entry in the database.
             There is no actual attribute to delete
         """
-        if name in get_el_list(self):
+        if name in self.el_list:
             el_db_key = self.name+'_'+name
             el_db_key, _ = self.db_fields_dict.get(name, el_db_key)
             # if the attribute exists in the database, remove it
@@ -424,7 +400,7 @@ class Element:
     self.value is the local reference to Element's value. Changing this changes the Element's attribute as well as database field.
     self.db is a reference of the attributes or nattributes method for the object containing the Element.
     self.db_fields_list is a list of two tuples containing a key and default value for database fields.
-        example: self.dbfields = [(key),(value)]
+        example: self. = [(key),(value)]
     self.db_fields_dict, contains a dictionary of the elements database fields.
         Using the setting kwarg from creation as the key
         value is a tuple with the db field, and default value
