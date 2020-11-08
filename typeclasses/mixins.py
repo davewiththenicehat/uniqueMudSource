@@ -1,5 +1,5 @@
-from utils.element import Element
 from world.rules.damage import DamageElement
+from utils.element import Element, ListElement
 
 
 class CharExAndObjMixin:
@@ -50,6 +50,25 @@ class CharExAndObjMixin:
     @dr.deleter
     def dr(self):
         self._dr.delete()
+
+    @property
+    def le(self):
+        try:
+            if self._le:
+                pass
+        except AttributeError:
+            #element.LIST = ('tst1', 'tst2')
+            self._le = ListElement(self)
+            self._le.verify()
+        return self._le
+
+    @le.setter
+    def le(self, value):
+        self._le.set(value)
+
+    @le.deleter
+    def le(self):
+        self._le.delete()
 
 
 class AllObjectsMixin:
