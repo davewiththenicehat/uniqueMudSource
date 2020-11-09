@@ -247,9 +247,21 @@ class Clothing(Object):
     """
     Class of clothing objects.
 
+    Attributes:
+        type_limit=dict, The maximum number of each type of clothes that can be worn. Unlimited if untyped or not specified.
+            example: {"clothing_type": 1}, where 1 is the number of cloths that can be worn on that location.
+        type_autocover=dict, What types of clothes will automatically cover what other types of clothes when worn.
+            Note that clothing only gets auto-covered if it's already worn when you put something
+            on that auto-covers it - for example, it's perfectly possible to have your underpants
+            showing if you put them on after your pants!
+            example: {"clothing_type_covering": ["clothing_type_to_cover"]}
+
     Inherits:
         typeclasses.objects.Object
     """
+
+    type_limit = CLOTHING_TYPE_LIMIT
+    type_autocover = CLOTHING_TYPE_AUTOCOVER
 
     def at_object_creation(self):
         super().at_object_creation()
@@ -276,11 +288,11 @@ class Clothing(Object):
         self.db.worn = wearstyle
         # Auto-cover appropirate clothing types, as specified above
         to_cover = []
-        if self.db.clothing_type and self.db.clothing_type in CLOTHING_TYPE_AUTOCOVER:
+        if self.db.clothing_type and self.db.clothing_type in self.type_autocover:
             for garment in get_worn_clothes(wearer):
                 if (
                     garment.db.clothing_type
-                    and garment.db.clothing_type in CLOTHING_TYPE_AUTOCOVER[self.db.clothing_type]
+                    and garment.db.clothing_type in self.type_autocover[self.db.clothing_type]
                 ):
                     to_cover.append(garment)
                     garment.db.covered_by = self
@@ -440,8 +452,8 @@ class CmdWear(ClothingCommand):
         # Apply individual clothing type limits.
         if clothing.db.clothing_type and not clothing.db.worn:
             type_count = single_type_count(get_worn_clothes(caller), clothing.db.clothing_type)
-            if clothing.db.clothing_type in list(CLOTHING_TYPE_LIMIT.keys()):
-                if type_count >= CLOTHING_TYPE_LIMIT[clothing.db.clothing_type]:
+            if clothing.db.clothing_type in list(clothing.type_limit.keys()):
+                if type_count >= clothing.type_limit[clothing.db.clothing_type]:
                     caller.msg(
                         "You can't wear any more clothes of the type '%s'."
                         % clothing.db.clothing_type
