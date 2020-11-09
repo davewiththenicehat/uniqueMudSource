@@ -1,5 +1,6 @@
 from world.rules.damage import TYPES as DAMAGE_TYPES
 from utils.element import Element, ListElement
+from world.rules.body import PART_STATUS, HUMANOID_BODY
 
 
 class CharExAndObjMixin:
@@ -11,6 +12,26 @@ class CharExAndObjMixin:
 
     Attributes:
         hp = Element, the objects hit points or health
+        dr=ListElement, a series of damage types. Used to represent a
+            characters flat damage reduction. This is used in addition to
+            dr received from worn equiptment.
+        body=object, body is a blank object. It contains ListElement objects
+            that represent the individual body parts.
+            Body parts are accessable as attributes.
+            IE: py self.msg(body.head), will display the status of your
+            Character's head. "broke: 0 | bleeding: 0 | missing: 0 |"
+            These status can be manipulated directly.
+            self.body.left_arm.bleeding = True
+                Will start the bleeding status on the arm.
+                This will be recorded to the database also.
+                As "head_bleeding = True" or self.db.head_bleeding
+                Do not manipulate Elements' database entries. Work with them
+                via the Element.
+        BODY_PARTS, a list of body parts to reprenst a body on this object.
+            For example humans would be ('head', 'shoulders' so on.
+        body.parts, is a tuple of parts that make up the instances body
+            This will be an exact duplicate of BODY_PARTS.
+            This is intended to make it very easy to iterate through a body.
     """
 
     # define objects's HP
@@ -50,6 +71,30 @@ class CharExAndObjMixin:
     @dr.deleter
     def dr(self):
         self._dr.delete()
+
+    # define objects's Body
+    BODY_PARTS = HUMANOID_BODY
+
+    @property
+    def body(self):
+        try:
+            if self._body:
+                pass
+        except AttributeError:
+            # create an empty object
+            self._body = type('_body', (object,), {})()
+            self._body  # initialize the empty object
+            self._body.parts = self.BODY_PARTS
+            # ListElements will want to know what its db method is
+            self._body.attributes = self.attributes
+            for body_part in self.BODY_PARTS:
+                # create a number of attributes to represent body parts
+                setattr(self._body, body_part,
+                        ListElement(self._body, PART_STATUS))
+                # verify the newly created Element
+                part_inst = getattr(self._body, body_part)
+                part_inst.verify()
+        return self._body
 
 
 class AllObjectsMixin:
@@ -111,12 +156,13 @@ class ExObjAndRoomMixin:
     def usdesc(self):
         """
         Universal method to get and set an object's description.
-        Universal Short Description
+        Stands for Universal Short Description.
 
-        A usdesc exists on each evennia object type Object, Character, Room and Exit
+        A usdesc exists on each evennia object type Object, Character, Room and
+        Exit.
 
-        usdesc refers to self.key on Exits, Objects and rooms
-        usdesc refers to self.sdesc on Characters
+        usdesc refers to self.key on Exits, Objects and rooms.
+        usdesc refers to self.sdesc on Characters.
 
         Usage:
            caller.msg(f'You attack {target.usdesc}.)  # to get

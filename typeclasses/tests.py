@@ -235,6 +235,20 @@ class TestObjects(CommandTest):
             self.assertFalse(char.attributes.has(db_key))
         self.assertEqual(char.dr.ACD, 0)
 
+        # Test body parts
+        from world.rules.body import PART_STATUS, HUMANOID_BODY
+        self.assertEqual(char.body.head.broke, 0)
+        for part in HUMANOID_BODY:
+            part_inst = getattr(char.body, part)
+            for status in PART_STATUS:
+                part_status_inst = getattr(part_inst, status)
+                self.assertEqual(part_status_inst, 0)
+        self.assertFalse(char.attributes.has('head_bleeding'))
+        char.body.head.bleeding = True
+        self.assertEqual(char.attributes.get('head_bleeding'), True)
+        char.body.head.bleeding = False
+        self.assertFalse(char.attributes.has('head_bleeding'))
+
 
 # Testing of emoting / sdesc / recog system
 

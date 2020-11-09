@@ -134,11 +134,13 @@ class ListElement:
                 self.container = weakref.proxy(container)
         except ValueError:
             raise ValueError("ListElement object, positional argument 1 reference of container class required.")
-        # verify container is a db object
-        if not inherits_from(container, "evennia.objects.models.ObjectDB"):
+        try:
+            self.container.attributes
+        except ValueError:
             raise ValueError("ListElement Object, must inherit evennia.objects.models.ObjectDB")
         # create a reference of the database attribute
         self.db = weakref.proxy(container.attributes)
+        # verify the list provided is useable
         if isinstance(el_list, list) or isinstance(el_list, tuple):
             self.el_list = el_list
         else:

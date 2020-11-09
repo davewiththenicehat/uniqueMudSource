@@ -88,7 +88,17 @@ class Character(AllObjectsMixin, CharExAndObjMixin, ClothedCharacter, GenderChar
             Stats change: when stats change on a Character method Character.cache_stat_modifiers() needs to be called.
 
         Inheirited from CharExAndObjMixin:
-            self.hp is an Element, objects's hitpoints.
+            hp is an Element, objects's hitpoints.
+            dr=ListElement, a series of damage types. Used to represent a
+                characters flat damage reduction. This is used in addition to
+                dr received from worn equiptment.
+            body=object, body is a blank object. It contains ListElement objects
+                that represent the individual body parts.
+            body.parts, is a tuple of parts that make up the instances body
+                This will be an exact duplicate of BODY_PARTS
+            BODY_PARTS, a list of body parts to reprenst a body on this object.
+                For example humans would be ('head', 'shoulders' so on.
+
 
         inheirited from AllObjectsMixin
             targetable = True  # can this exit be targeted with an action
