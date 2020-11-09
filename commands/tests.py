@@ -5,6 +5,8 @@ from typeclasses.exits import Exit
 from typeclasses.rooms import Room
 from typeclasses.objects import Object
 from evennia import create_object
+from typeclasses.equipment import clothing
+from commands.standard_cmds import CmdDrop, CmdInventory
 
 
 class TestCommands(CommandTest):
@@ -173,14 +175,25 @@ class TestCommands(CommandTest):
         self.assertRegex(cmd_result, wanted_message)
 
     # test clothing commands
+        # test character with empty inventory
+        command = developer_cmds.CmdMultiCmd
+        arg = "= inv"
+        wanted_message = "You are not carrying or wearing anything."
+        cmd_result = self.call(command(), arg, caller=self.char1)
+        self.assertRegex(cmd_result, wanted_message)
         # Make a test hat
         test_hat = create_object(clothing.Clothing, key="test hat")
         test_hat.db.clothing_type = "hat"
         test_hat.location = self.char1
-        # Make a test scarf
-        test_scarf = create_object(clothing.Clothing, key="test scarf")
-        test_scarf.db.clothing_type = "accessory"
-        test_scarf.location = self.char1
+        # Make a test shirt
+        test_shirt = create_object(clothing.Clothing, key="test shirt")
+        test_shirt.db.clothing_type = "top"
+        test_shirt.location = self.char1
+        # Make a test helmet
+        test_helmet = create_object(clothing.HumanoidArmor, key="test helmet")
+        test_helmet.db.clothing_type = "head"
+        test_helmet.at_init()  # TestCommands will not call at_init hooks.
+        test_helmet.location = self.char1
         # Test wear with no arguments.
         command = clothing.CmdWear
         arg = ""
@@ -219,80 +232,52 @@ class TestCommands(CommandTest):
         wanted_message = "You will be busy for 1 second.\nYou begin to put on test hat.\nChar removes test hat.\nYou are no longer busy.\nChar allowed you to complete your remove command early with their complete_cmd_early command."
         cmd_result = self.call(command(), arg, caller=self.char1)
         self.assertRegex(cmd_result, wanted_message)
-
-
-# test commands that have code desicated to clothing module
-from typeclasses.equipment import clothing
-from commands.standard_cmds import CmdDrop, CmdInventory
-
-"""
-
-        self.call(
-            clothing.CmdWear(),
-            "scarf stylishly",
-            "Wearer wears test scarf stylishly.",
-            caller=wearer,
-        )
-        # Test cover command.
-        self.call(
-            clothing.CmdCover(),
-            "",
-            "Usage: cover <worn clothing> [with] <clothing object>",
-            caller=wearer,
-        )
-
-        self.call(
-            clothing.CmdCover(),
-            "hat with scarf",
-            "Wearer covers test hat with test scarf.",
-            caller=wearer,
-        )
-        # Test remove command.
-        self.call(clothing.CmdRemove(), "", "Could not find ''.", caller=wearer)
-        self.call(
-            clothing.CmdRemove(), "hat", "You have to take off test scarf first.", caller=wearer
-        )
-        self.call(
-            clothing.CmdRemove(),
-            "scarf",
-            "Wearer removes test scarf, revealing test hat.",
-            caller=wearer,
-        )
-        # Test uncover command.
-        test_scarf.wear(wearer, True)
-        test_hat.db.covered_by = test_scarf
-        self.call(clothing.CmdUncover(), "", "Usage: uncover <worn clothing object>", caller=wearer)
-        self.call(clothing.CmdUncover(), "hat", "Wearer uncovers test hat.", caller=wearer)
-        # Test drop command.
-        test_hat.db.covered_by = test_scarf
-        self.call(CmdDrop(), "", "Drop what?", caller=wearer)
-        self.call(
-            CmdDrop(),
-            "hat",
-            "You can't drop that because it's covered by test scarf.",
-            caller=wearer,
-        )
-        self.call(CmdDrop(), "scarf", "You drop test scarf.", caller=wearer)
-        # Test inventory command.
-        command = CmdInventory
-        arg = ""
-        wanted_message = "You are carrying:\n Nothing\\.   \r\nYou are wearing:\n test hat"
-        cmd_result = self.call(command(), arg, caller=wearer)
+        # Put the hat back on to test covering
+        command = developer_cmds.CmdMultiCmd
+        arg = "= wear hat, complete_cmd_early"
+        wanted_message = "You will be busy for 1 second.\nYou begin to put on test hat.\nChar puts on test hat.\nYou are no longer busy.\nChar allowed you to complete your wear command early with their complete_cmd_early command."
+        cmd_result = self.call(command(), arg, caller=self.char1)
         self.assertRegex(cmd_result, wanted_message)
-        #empty inventory
-        command = CmdDrop
-        arg = "hat"
-        wanted_message = "You drop test hat."
-        cmd_result = self.call(command(), arg, wanted_message, caller=wearer)
-        #test empty inventory
-        command = CmdInventory
-        arg = ""
-        wanted_message = "You are not carrying or wearing anything."
-        cmd_result = self.call(command(), arg, wanted_message, caller=wearer)
-        # attempt to wear an item not in inventory
-        command = clothing.CmdWear
-        arg = "hat"
-        wanted_message = "You do not have hat to wear.\nTry picking it up first with get hat."
-        cmd_result = self.call(command(), arg, caller=wearer)
+        # Test wearing a peace of armor
+        command = developer_cmds.CmdMultiCmd
+        arg = "= wear helmet, complete_cmd_early"
+        wanted_message = "You will be busy for 1 second.\nYou begin to put on test helmet.\nChar puts on test helmet, covering test hat.\nYou are no longer busy.\nChar allowed you to complete your wear command early with their complete_cmd_early command."
+        cmd_result = self.call(command(), arg, caller=self.char1)
         self.assertRegex(cmd_result, wanted_message)
-"""
+        # test character with items worn and not
+        command = developer_cmds.CmdMultiCmd
+        arg = "= inv"
+        wanted_message = "You are carrying:\n test shirt   \r\nYou are wearing:\n test hat      \n test helmet"
+        cmd_result = self.call(command(), arg, caller=self.char1)
+        self.assertRegex(cmd_result, wanted_message)
+        #misc tests
+        self.assertEqual(test_hat.db.worn, True)
+        self.assertEqual(test_hat.db.clothing_type, 'hat')
+        self.assertEqual(test_helmet.db.clothing_type, "head")
+        self.assertTrue('head' in test_helmet.type_limit)
+        # Make certain return_appearance is working
+        self.assertEqual(self.char1.return_appearance(self.char1), "You are wearing test helmet.")
+        # Test now with the look command
+        command = developer_cmds.CmdMultiCmd
+        arg = "= l me"
+        wanted_message = "You are wearing test helmet."
+        cmd_result = self.call(command(), arg, caller=self.char1)
+        self.assertRegex(cmd_result, wanted_message)
+        # test clothing covering.
+        # Make a test shirt
+        test_undershirt = create_object(clothing.Clothing, key="test undershirt")
+        test_undershirt.db.clothing_type = "undershirt"
+        test_undershirt.location = self.char1
+        # Test wearing the undershirt
+        command = developer_cmds.CmdMultiCmd
+        arg = "= wear undershirt, complete_cmd_early"
+        wanted_message = "You will be busy for 1 second.\nYou begin to put on test undershirt.\nChar puts on test undershirt.\nYou are no longer busy.\nChar allowed you to complete your wear command early with their complete_cmd_early command."
+        cmd_result = self.call(command(), arg, caller=self.char1)
+        self.assertRegex(cmd_result, wanted_message)
+        # Test wearing the shirt covering the undershirt
+        command = developer_cmds.CmdMultiCmd
+        arg = "= wear shirt, complete_cmd_early"
+        wanted_message = "You will be busy for 1 second.\nYou begin to put on test shirt.\nChar puts on test shirt, covering test undershirt.\nYou are no longer busy.\nChar allowed you to complete your wear command early with their complete_cmd_early command."
+        cmd_result = self.call(command(), arg, caller=self.char1)
+        self.assertRegex(cmd_result, wanted_message)
+        self.assertEqual(test_undershirt.db.covered_by, test_shirt)

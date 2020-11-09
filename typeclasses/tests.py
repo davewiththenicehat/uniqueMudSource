@@ -441,7 +441,7 @@ from commands.standard_cmds import CmdDrop, CmdInventory
 
 class TestClothingFunc(EvenniaTest):
     def test_clothingfunctions(self):
-        wearer = create_object(clothing.ClothedCharacter, key="Wearer")
+        wearer = create_object(Character, key="Wearer")
         room = create_object(Room, key="room")
         wearer.location = room
         # Make a test hat

@@ -80,6 +80,7 @@ from evennia.utils import list_to_string
 from evennia.utils import evtable
 from typeclasses.objects import Object
 from commands.command import Command
+from world.rules.body import HUMANOID_BODY
 
 # Options start here.
 # Maximum character length of 'wear style' strings, or None for unlimited.
@@ -300,7 +301,7 @@ class Clothing(Object):
         if quiet:
             return
         # Echo a message to the room
-        message = "%s puts on %s" % (wearer, self.name)
+        message = f"{wearer.usdesc} puts on {self.usdesc}"
         if wearstyle is not True:
             message = "%s wears %s %s" % (wearer, self.name, wearstyle)
         if to_cover:
@@ -345,6 +346,36 @@ class Clothing(Object):
         """
         self.db.worn = False
 
+class HumanoidArmor(Clothing):
+    """
+    inherits typeclasses.equipment.Clothing
+
+    Armor tested in commands.tests
+    """
+    def at_init(self):
+        """
+        This is always called whenever this object is initiated --
+        that is, whenever it its typeclass is cached from memory. This
+        happens on-demand first time the object is used or activated
+        in some way after being created but also after each server
+        restart or reload.
+
+        UniqueMud:
+            Used to add the armor's body cover type to the self.type_limit attribute
+            and to create an updated self.type_autocover
+        """
+        # add parts of the humanoid body to the humadoid armor type list.
+        # allowing for additional clothing types.
+        for part in HUMANOID_BODY:
+            self.type_limit.update({part: 1})
+        #add to the autocover list. So armor can cover cloths.
+        self.type_autocover.update({
+            "chest": ["undershirt", "top", "fullbody"],
+            "right_foot": ["shoes", "socks"],
+            "left_foot": ["shoes", "socks"],
+            "head": ["hat"],
+        })
+        return super().at_init()  # Here only to support future change to evennia's Object.at_init
 
 class ClothedCharacter(DefaultCharacter):
     """
@@ -371,8 +402,7 @@ class ClothedCharacter(DefaultCharacter):
         if not looker:
             return ""
         # get description, build string
-        string = "|c%s|n\n" % self.get_display_name(looker)
-        desc = self.db.desc
+        string = ""
         worn_string_list = []
         clothes_list = get_worn_clothes(self, exclude_covered=True)
         # Append worn, uncovered clothing to the description
@@ -383,11 +413,13 @@ class ClothedCharacter(DefaultCharacter):
             # Otherwise, append the name and the string value of 'worn'
             elif garment.db.worn:
                 worn_string_list.append("%s %s" % (garment.name, garment.db.worn))
-        if desc:
-            string += "%s" % desc
+        if looker == self:
+            string += "You are "
+        else:
+            string += f"{self.usdesc} is "
         # Append worn clothes.
         if worn_string_list:
-            string += "|/|/%s is wearing %s." % (self, list_to_string(worn_string_list))
+            string += f"wearing {list_to_string(worn_string_list)}."
         else:
             string += "|/|/%s is not wearing anything." % self
         return string
@@ -454,16 +486,19 @@ class CmdWear(ClothingCommand):
             type_count = single_type_count(get_worn_clothes(caller), clothing.db.clothing_type)
             if clothing.db.clothing_type in list(clothing.type_limit.keys()):
                 if type_count >= clothing.type_limit[clothing.db.clothing_type]:
-                    caller.msg(
-                        "You can't wear any more clothes of the type '%s'."
-                        % clothing.db.clothing_type
-                    )
+                    caller.msg(f"You can't wear any more clothes of the type 'clothing.db.clothing_type'.")
                     return
 
         # check if the player is already wearing the item
         if clothing.db.worn and len(self.arglist) == 1:
-            caller.msg("You're already wearing %s." % clothing.name)
+            caller.msg(f"You're already wearing {clothing.name}.")
             return
+
+        # If armor, check if the Character has the body type required for the armor.
+        if not (clothing.db.clothing_type in caller.body.parts or clothing.db.clothing_type in CLOTHING_TYPE_ORDER):
+            caller.msg(f"You do not have a {clothing.db.clothing_type} to equip this to.")
+            return
+
         wearstyle = True  # removed support for wearstyle
         clothing.wear(caller, wearstyle)
 
@@ -510,113 +545,6 @@ class CmdRemove(ClothingCommand):
         clothing.remove(caller)
 
 
-class CmdCover(Command):
-    """
-    Covers a worn item of clothing with another you're holding or wearing.
-
-    Usage:
-        cover <obj> [with] <obj>
-
-    When you cover a clothing item, it is hidden and no longer appears in
-    your description until it's uncovered or the item covering it is removed.
-    You can't remove an item of clothing if it's covered.
-    """
-
-    key = "cover"
-    help_category = "clothing"
-
-    def func(self):
-        """
-        This performs the actual command.
-        """
-        caller = self.caller
-        if len(self.arglist) < 2:
-            caller.msg("Usage: cover <worn clothing> [with] <clothing object>")
-            return
-        # Get rid of optional 'with' syntax
-        if self.arglist[1].lower() == "with" and len(self.arglist) > 2:
-            del self.arglist[1]
-        to_cover = caller.search(self.arglist[0], candidates=caller.contents)
-        cover_with = caller.search(self.arglist[1], candidates=caller.contents)
-        if not to_cover or not cover_with:
-            return
-        if not to_cover.is_typeclass(CLOTHING_OBJECT_CLASS, exact=False):
-            caller.msg("%s is not clothing." % to_cover.name)
-            return
-        if not cover_with.is_typeclass(CLOTHING_OBJECT_CLASS, exact=False):
-            caller.msg("%s is not clothing." % cover_with.name)
-            return
-        if cover_with.db.clothing_type:
-            if cover_with.db.clothing_type in CLOTHING_TYPE_CANT_COVER_WITH:
-                caller.msg("You can't cover anything with that.")
-                return
-        if not to_cover.db.worn:
-            caller.msg("You're not wearing %s." % to_cover.name)
-            return
-        if to_cover == cover_with:
-            caller.msg("You can't cover an item with itself.")
-            return
-        if cover_with.db.covered_by:
-            caller.msg("%s is covered by something else." % cover_with.name)
-            return
-        if to_cover.db.covered_by:
-            caller.msg(
-                "%s is already covered by %s." % (cover_with.name, to_cover.db.covered_by.name)
-            )
-            return
-        if not cover_with.db.worn:
-            cover_with.wear(
-                caller, True
-            )  # Put on the item to cover with if it's not on already
-        caller.location.msg_contents(
-            "%s covers %s with %s." % (caller, to_cover.name, cover_with.name)
-        )
-        to_cover.db.covered_by = cover_with
-
-
-class CmdUncover(Command):
-    """
-    Reveals a worn item of clothing that's currently covered up.
-
-    Usage:
-        uncover <obj>
-
-    When you uncover an item of clothing, you allow it to appear in your
-    description without having to take off the garment that's currently
-    covering it. You can't uncover an item of clothing if the item covering
-    it is also covered by something else.
-    """
-
-    key = "uncover"
-    help_category = "clothing"
-
-    def func(self):
-        """
-        This performs the actual command.
-        """
-        caller = self.caller
-
-        if not self.args:
-            caller.msg("Usage: uncover <worn clothing object>")
-            return
-
-        to_uncover = caller.search(self.args, candidates=caller.contents)
-        if not to_uncover:
-            return
-        if not to_uncover.db.worn:
-            caller.msg(f"You're not wearing {to_uncover.name}.")
-            return
-        if not to_uncover.db.covered_by:
-            caller.msg("%s isn't covered by anything." % to_uncover.name)
-            return
-        covered_by = to_uncover.db.covered_by
-        if covered_by.db.covered_by:
-            caller.msg("%s is under too many layers to uncover." % (to_uncover.name))
-            return
-        caller.location.msg_contents("%s uncovers %s." % (caller, to_uncover.name))
-        to_uncover.db.covered_by = None
-
-
 class ClothedCharacterCmdSet(default_cmds.CharacterCmdSet):
     """
     Command set for clothing, including new versions of 'drop'
@@ -639,5 +567,3 @@ class ClothedCharacterCmdSet(default_cmds.CharacterCmdSet):
         #
         self.add(CmdWear())
         self.add(CmdRemove())
-        # self.add(CmdCover())
-        # self.add(CmdUncover())
