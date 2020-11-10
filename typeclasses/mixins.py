@@ -15,6 +15,7 @@ class CharExAndObjMixin:
         dr=ListElement, a series of damage types. Used to represent a
             characters flat damage reduction. This is used in addition to
             dr received from worn equiptment.
+        dr.types, a list (tuple) of damage types this object supports.
         body=object, body is a blank object. It contains ListElement objects
             that represent the individual body parts.
             Body parts are accessable as attributes.
@@ -29,9 +30,21 @@ class CharExAndObjMixin:
                 via the Element.
         BODY_PARTS, a list of body parts to reprenst a body on this object.
             For example humans would be ('head', 'shoulders' so on.
+            Note, this could be used for obects ('left_turret', 'right_turret')
         body.parts, is a tuple of parts that make up the instances body
             This will be an exact duplicate of BODY_PARTS.
             This is intended to make it very easy to iterate through a body.
+        body.part_name, where part_name is a part from the objects body.parts list
+           Using body.head as a reference of a possible body part.
+           body.head.dr, an object containing dr values in a simular format to Object.dr
+               THESE ARE CACHED VARIABLES. part dr ratings are provided by armor.
+               Changing this will result in a temp change until the character wears anything,
+               the server restarts, or the Character is initialized for any reason.
+           body.head.dr.el_list, a list of dr values this body part is covered with.
+           body.head.dr.DAMAGE_TYPE=int, dr value of a type from the DAMAGE_TYPES list
+               for example body.head.dr.PRC for peirce
+           body.head.PART_STATUS=boolean, a status from the PART_STATUS list.
+               for example body.head.bleeding, for bleeding
     """
 
     # define objects's HP
@@ -73,7 +86,7 @@ class CharExAndObjMixin:
         self._dr.delete()
 
     # define untyped Object bodies
-    BODY_PARTS = ('object')
+    BODY_PARTS = ()
 
     @property
     def body(self):
@@ -84,17 +97,62 @@ class CharExAndObjMixin:
             # create an empty object
             self._body = type('_body', (object,), {})()
             self._body  # initialize the empty object
-            self._body.parts = self.BODY_PARTS
+            self._body.parts = self.BODY_PARTS  # make copy of the parts list
             # ListElements will want to know what its db method is
             self._body.attributes = self.attributes
             for body_part in self.BODY_PARTS:
-                # create a number of attributes to represent body parts
-                setattr(self._body, body_part,
-                        ListElement(self._body, PART_STATUS))
+                # create attributes to represent body parts
+                setattr(self._body, body_part, ListElement(self._body, PART_STATUS))
                 # verify the newly created Element
                 part_inst = getattr(self._body, body_part)
+                setattr(part_inst, 'dr', type('dr', (object,), {})())
                 part_inst.verify()
         return self._body
+
+    def cache_body_dr(self):
+        """
+        caches dr for a body part.
+        Currently dr for a body part is received only from worn armor.
+
+        example:
+        body.head.dr.DAMAGE_TYPE=int, dr value of a type from the DAMAGE_TYPES list
+            for example body.head.dr.PRC for peirce
+
+        This is automatically called in:
+        typeclasses.equipment.clothing.Clothing.wear
+        typeclasses.equipment.clothing.Clothing.Clothing.remove
+        typeclasses.objects.at_init
+        typeclasses.characters.at_init
+        typeclasses.exits.at_init
+
+        Unit test for this in commands.test
+        """
+        for item in self.contents:
+            if item.db.worn:
+                # if this item covers a body part
+                if item.db.clothing_type in self.body.parts:
+                    # get the body part this item covers
+                    body_part = getattr(self.body, item.db.clothing_type)
+                    # give the body part a list of dr types the armor supports, to mimic an Objects.dr
+                    setattr(body_part.dr, 'el_list', item.dr.el_list)
+                    # for damage types in the dr element list
+                    for dmg_type in item.dr.el_list:
+                        dmg_type_dr_rating = getattr(item.dr, dmg_type)
+                        setattr(body_part.dr, dmg_type, dmg_type_dr_rating)
+
+    def at_init(self):
+        """
+        This is always called whenever this object is initiated --
+        that is, whenever it its typeclass is cached from memory. This
+        happens on-demand first time the object is used or activated
+        in some way after being created but also after each server
+        restart or reload.
+
+        UniqueMud:
+            Used to cache dr values for objects body parts.
+        """
+        self.cache_body_dr()  # cache dr worn on body
+        return super().at_init()  # Here only to support future change to evennia's Character.at_init
 
 
 class AllObjectsMixin:

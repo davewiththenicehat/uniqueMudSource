@@ -193,6 +193,11 @@ class TestCommands(CommandTest):
         test_helmet.db.clothing_type = "head"
         test_helmet.at_init()  # TestCommands will not call at_init hooks.
         test_helmet.location = self.char1
+        # give the helmet an armor rating
+        test_helmet.dr.PRC = 3
+        test_helmet.dr.ACD = 3
+        self.assertEqual(test_helmet.attributes.get('dr_PRC'), 3)
+        self.assertEqual(test_helmet.dr.PRC, 3)
         # Test wear with no arguments.
         command = clothing.CmdWear
         arg = ""
@@ -280,3 +285,7 @@ class TestCommands(CommandTest):
         cmd_result = self.call(command(), arg, caller=self.char1)
         self.assertRegex(cmd_result, wanted_message)
         self.assertEqual(test_undershirt.db.covered_by, test_shirt)
+        #verify that the helmet's armor rating has been cached in the wearer
+        self.assertEqual(self.char1.body.head.dr.PRC, 3)
+        self.assertEqual(self.char1.body.head.dr.ACD, 3)
+        self.assertEqual(self.char1.body.head.dr.BLG, 0)

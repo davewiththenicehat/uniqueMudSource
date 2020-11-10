@@ -89,16 +89,10 @@ class Character(AllObjectsMixin, CharExAndObjMixin, ClothedCharacter, GenderChar
             Stats change: when stats change on a Character method Character.cache_stat_modifiers() needs to be called.
 
         Inheirited from CharExAndObjMixin:
-            hp is an Element, objects's hitpoints.
-            dr=ListElement, a series of damage types. Used to represent a
-                characters flat damage reduction. This is used in addition to
-                dr received from worn equiptment.
-            body=object, body is a blank object. It contains ListElement objects
-                that represent the individual body parts.
-            body.parts, is a tuple of parts that make up the instances body
-                This will be an exact duplicate of BODY_PARTS
-            BODY_PARTS, a list of body parts to reprenst a body on this object.
-                For example humans would be ('head', 'shoulders' so on.
+            A large number of attributes are inheirited from CharExAndObjMixin.
+            refer to CharExAndObjMixin doc string for full details.
+            Nearly all variables that are used in combat are inheiried from CharExAndObjMixin.
+            There are several methods inherited also.
 
 
         inheirited from AllObjectsMixin
@@ -135,7 +129,7 @@ class Character(AllObjectsMixin, CharExAndObjMixin, ClothedCharacter, GenderChar
             Used to cache stat modifiers.
         """
         self.cache_stat_modifiers()  # load stats cache when Character is initialized.
-        return super().at_init()  # Here only to support future change to evennia's Character.at_init
+        return super().at_init()  # call at_init below this one, ie typeclasses.mixins.CharExAndObjMixin:
 
     def at_object_creation(self):
         """Runs when Character is created."""

@@ -287,6 +287,8 @@ class Clothing(Object):
         """
         # Set clothing as worn
         self.db.worn = wearstyle
+        # cache dr change for body parts, incase clothing is armor
+        wearer.cache_body_dr()
         # Auto-cover appropirate clothing types, as specified above
         to_cover = []
         if self.db.clothing_type and self.db.clothing_type in self.type_autocover:
@@ -319,6 +321,9 @@ class Clothing(Object):
             quiet (bool): If false, does not message the room
         """
         self.db.worn = False
+        # cache dr change for body parts, incase clothing is armor
+        wearer.cache_body_dr()
+
         remove_message = "%s removes %s." % (wearer, self.name)
         uncovered_list = []
 
