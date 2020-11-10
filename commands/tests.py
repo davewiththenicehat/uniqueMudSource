@@ -1,12 +1,11 @@
 from evennia.commands.default.tests import CommandTest
 from commands import developer_cmds
-from typeclasses.characters import Character
+from typeclasses.races import Human
 from typeclasses.exits import Exit
 from typeclasses.rooms import Room
 from typeclasses.objects import Object
 from evennia import create_object
 from typeclasses.equipment import clothing
-from commands.standard_cmds import CmdDrop, CmdInventory
 
 
 class TestCommands(CommandTest):
@@ -22,7 +21,7 @@ class TestCommands(CommandTest):
     """
     # account_typeclass = DefaultAccount
     object_typeclass = Object
-    character_typeclass = Character
+    character_typeclass = Human
     exit_typeclass = Exit
     room_typeclass = Room
     # script_typeclass = DefaultScript

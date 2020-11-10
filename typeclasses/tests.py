@@ -1,6 +1,7 @@
 from evennia.commands.default.tests import CommandTest
 from evennia import create_object
 from typeclasses.characters import Character, CHARACTER_STAT_SETTINGS
+from typeclasses.races import Human
 from typeclasses.exits import Exit
 from typeclasses.rooms import Room
 from typeclasses.objects import Object
@@ -18,14 +19,14 @@ class TestObjects(CommandTest):
     """
     # account_typeclass = DefaultAccount
     object_typeclass = Object
-    character_typeclass = Character
+    character_typeclass = Human
     exit_typeclass = Exit
     room_typeclass = Room
     # script_typeclass = DefaultScript
     def test_objects(self):
 
         # test the character's gender and the abilit to run the @gender command
-        char = create_object(Character, key="Gendered", location=self.room1)
+        char = create_object(Human, key="Gendered", location=self.room1)
         txt = "Test |p gender"
         self.assertEqual(gendersub._RE_GENDER_PRONOUN.sub(char._get_pronoun, txt), "Test their gender")
         char.execute_cmd("gender male")

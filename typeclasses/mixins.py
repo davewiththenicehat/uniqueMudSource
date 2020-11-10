@@ -1,6 +1,6 @@
 from world.rules.damage import TYPES as DAMAGE_TYPES
 from utils.element import Element, ListElement
-from world.rules.body import PART_STATUS, HUMANOID_BODY
+from world.rules.body import PART_STATUS
 
 
 class CharExAndObjMixin:
@@ -72,8 +72,8 @@ class CharExAndObjMixin:
     def dr(self):
         self._dr.delete()
 
-    # define objects's Body
-    BODY_PARTS = HUMANOID_BODY
+    # define untyped Object bodies
+    BODY_PARTS = ('object')
 
     @property
     def body(self):

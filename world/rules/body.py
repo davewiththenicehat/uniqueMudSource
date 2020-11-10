@@ -9,7 +9,7 @@ PART_STATUS = (
     'missing',
 )
 
-# represent's a standard humanoid's body.
+# represents a standard humanoid's body.
 HUMANOID_BODY = (
     'head',
     'shoulders',

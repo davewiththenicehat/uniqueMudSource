@@ -28,6 +28,7 @@ CHARACTER_STAT_SETTINGS = {
     'dbtype': 'db'  # the database type to use can be 'db' or 'ndb'
 }
 
+
 class Character(AllObjectsMixin, CharExAndObjMixin, ClothedCharacter, GenderCharacter, ContribRPCharacter):
     """
     The Character defaults to reimplementing some of base Object's hook methods with the
