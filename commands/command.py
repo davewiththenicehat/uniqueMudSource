@@ -9,7 +9,8 @@ from evennia import Command as BaseCommand
 from evennia import default_cmds
 from world import status_functions
 from evennia import utils
-from evennia.utils.logger import log_warn
+from evennia.utils.logger import log_warn, log_info
+from random import randint
 
 
 class Command(default_cmds.MuxCommand):
@@ -96,6 +97,8 @@ class Command(default_cmds.MuxCommand):
         target_inherits_from = False  # a tuple, position 0 string of a class type, position 1 is a string to show on mismatch
             example: target_inherits_from = ("typeclasses.equipment.clothing.Clothing", 'clothing and armor')
         search_caller_only = False  # if True the command will only search the caller for targets
+        hit_count = 1  # the number of times this command will hit the target.
+            This is automatically used in Command.hit_body_part()
     Methods:
         All methods are fully documented in their docstrings.
         func, To more seamlessly support UniqueMud's deffered command system, evennia's Command.func has been overridden.
@@ -108,6 +111,7 @@ class Command(default_cmds.MuxCommand):
         successful(success=True), records if a command was successful
         target_out_of_melee(), returns true if the commands target is out of melee range.
         act_vs_msg(action_result, evade_result), Returns two strings to display at the start of an actions message.
+        hit_body_part(hit_count=None), Used to see what body part the action hit. Uses self.hit_count if no argument is provided.
     """
     status_type = 'busy'  # Character status type used to track the command
     defer_time = 3  # time is seconds for the command to wait before running action of command
@@ -121,6 +125,7 @@ class Command(default_cmds.MuxCommand):
     cmd_type = False  # Should be a string of the cmd type. IE: 'evasion' for an evasion cmd
     target_inherits_from = False  # a tuple, position 0 string of a class type, position 1 is a string to show on mismatch
     search_caller_only = False  # if True the command will only search the caller for targets
+    hit_count = 1  # the number of times this command will hit the target.
 
     def func(self):
         """
@@ -413,3 +418,42 @@ class Command(default_cmds.MuxCommand):
         if not target:
             caller.msg(f'You can no longer reach {self.target.usdesc}.')
             return True
+
+    def hit_body_part(self, target=None, hit_count=None, log=False):
+        """
+        Used to see what body part the action hit.
+
+        Arguments:
+            target=None, an Object target for hit_body_part if None self.target will be used
+            hit_count=None, the number of times this commands hits a body part
+            log=False, if True log the variables used
+
+        Returns:
+            parts_hit, a list of body parts the action hit.
+                It is possible for the same location to be hit twice.
+                In that case the list will have the same name twice.
+            False, if this object has no body parts to hit.
+        """
+        caller = self.caller
+        if not hasattr(self, 'target'):
+            if log:
+                log_info(f"{self.key}.hit_body_part, caller id {caller.id}: no target in command and none passed on function call.")
+            return False
+        if not target:
+            target = self.target
+        if not hit_count:  # if hits possible was not provided by command line use command's default
+            hit_count = self.hit_count
+        parts_count = len(target.body.parts)  # get a max key count
+        parts_count -= 1  # because indexing starts at 0
+        if parts_count < 1:  # return false is there are no body parts to hit
+            if log:
+                log_info(f"{self.key}.hit_body_part, caller id {caller.id}: parts_count: {parts_count} | hit_count: {hit_count} . No parts found on target.")
+            return False
+        parts_hit = []
+        for _ in range(0, hit_count):
+            location_key = randint(0, parts_count)
+            location = target.body.parts[location_key]
+            parts_hit.append(location)
+        if log:
+            log_info(f"{self.key}.hit_body_part, caller id {caller.id}: parts_count: {parts_count} | hit_count: {hit_count} | location_key: {location_key} | location: {location} | parts_hit: {parts_hit}")
+        return parts_hit

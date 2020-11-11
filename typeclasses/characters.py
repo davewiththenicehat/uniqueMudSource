@@ -136,6 +136,28 @@ class Character(AllObjectsMixin, CharExAndObjMixin, ClothedCharacter, GenderChar
         self.targetable = True
         return super().at_object_creation()
 
+    @property
+    def usdesc(self):
+        """
+        Universal method to get and set an object's description.
+        Universal Short Description
+
+        A usdesc exists on each evennia object type Object, Character, Room and Exit
+
+        usdesc refers to self.key on Exits, Objects and rooms
+        usdesc refers to self.sdesc on Characters
+
+        Usage:
+           caller.msg(f'You attack {target.usdesc}.)  # to get
+           target.usdesc = 'a happy tree'  # to set
+        """
+        return self.sdesc.get()
+
+    @usdesc.setter
+    def usdesc(self, value):
+        """Setter property for usdesc"""
+        self.sdesc.add(value)
+
     # define characters's strength
     @property
     def STR(self):
@@ -447,25 +469,3 @@ class Character(AllObjectsMixin, CharExAndObjMixin, ClothedCharacter, GenderChar
         setattr(self, 'busy_mod', stats.busy_mod(self))
         setattr(self, 'stunned_mod', stats.stunned_mod(self))
         setattr(self, 'purchase_mod', stats.purchase_mod(self))
-
-    @property
-    def usdesc(self):
-        """
-        Universal method to get and set an object's description.
-        Universal Short Description
-
-        A usdesc exists on each evennia object type Object, Character, Room and Exit
-
-        usdesc refers to self.key on Exits, Objects and rooms
-        usdesc refers to self.sdesc on Characters
-
-        Usage:
-           caller.msg(f'You attack {target.usdesc}.)  # to get
-           target.usdesc = 'a happy tree'  # to set
-        """
-        return self.sdesc.get()
-
-    @usdesc.setter
-    def usdesc(self, value):
-        """Setter property for usdesc"""
-        self.sdesc.add(value)

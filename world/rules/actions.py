@@ -24,6 +24,8 @@ def targeted_action(caller, target, log=False):
     # get reference of the command creating the action
     action_cmd = caller.nattributes.get('deffered_command')
     if not action_cmd:
+        if log:
+            log_info(f"actions.targeted_action, caller id {caller.id}: caller has no deffered actions.")
         caller.msg('You no longer have an action waiting.')
         return
     action_result = action_roll(caller, log)
@@ -32,7 +34,7 @@ def targeted_action(caller, target, log=False):
     if inherits_from(target, 'typeclasses.characters.Character'):
         evade_result = evade_roll(target, action_cmd.evade_mod_stat, log)
     if log:
-        log_info(f'caller id {caller.id}: action_result: {action_result} | evade_result {evade_result}')
+        log_info(f'actions.targeted_action, caller id {caller.id}: action_result: {action_result} | evade_result {evade_result}')
     return action_result - evade_result, action_result, evade_result
 
 

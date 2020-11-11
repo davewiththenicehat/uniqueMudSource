@@ -24,6 +24,7 @@ class DeveloperCmdSet(CmdSet):
         self.add(CmdCompleteCmdEarly)
         self.add(CmdViewObj)
         self.add(CmdContrlOther)
+        self.add(CmdCmdFuncTest)
 
 
 class CmdDeferCmd(Command):
@@ -317,7 +318,7 @@ class CmdContrlOther(Command):
         Will also be used in unit testing.
 
     usage:
-    control_other <target>=command
+        control_other <target>=command
     """
     key = "control_other"
     help_category = "developer"
@@ -338,3 +339,52 @@ class CmdContrlOther(Command):
         for cmd in cmd_list:
             cmd = cmd.lower()
             target.execute_cmd(cmd)
+
+
+class CmdCmdFuncTest(Command):
+    """
+    Used to test an individual function in the command module.
+
+    Reason:
+        Used to test functions outside commands.
+        Will also be used in unit testing.
+
+    usage:
+        cmd_func_test <function name>,<target>=<arg1>,<arg2>...
+        only <function name> is required
+        Can pass 0 or more arguments after =
+            CmdCmdFuncTest will attempt to convert arguments to number.
+            Any argument that can be turned into an int will be.
+
+        The target of this command is saved as self.target, for the function to use also.
+    """
+    key = "cmd_func_test"
+    help_category = "developer"
+    locks = "cmd:perm(Developer)"
+
+    def func(self):
+        caller = self.caller
+        func_name, target_name = self.lhslist
+        target = None
+        if target_name:
+            target = caller.search(target_name, quiet=True)
+            if target:
+                target=target[0]
+                self.target = target
+            else:
+                caller.msg(f'{target_name} is not here.')
+                return
+        if hasattr(self, func_name):
+            func_inst = getattr(self, func_name)
+            # convert strings to ints if they are ints.
+            arguments = []
+            for argument in self.rhslist:
+                if int(argument):
+                    arguments.append(int(argument))
+                else:
+                    arguments.append(argument)
+            func_return = func_inst(*arguments)
+            if 'r' in self.switches:
+                caller.msg(f'{func_name} returned: {func_return}')
+        else:
+            caller.msg(f'No function {func_name} found.')
