@@ -197,10 +197,10 @@ class TestCommands(CommandTest):
         test_helmet.at_init()  # TestCommands will not call at_init hooks.
         test_helmet.location = self.char1
         # give the helmet an armor rating
-        test_helmet.dr.PRC = 3
+        test_helmet.dr.PRC = 2
         test_helmet.dr.ACD = 3
-        self.assertEqual(test_helmet.attributes.get('dr_PRC'), 3)
-        self.assertEqual(test_helmet.dr.PRC, 3)
+        self.assertEqual(test_helmet.attributes.get('dr_PRC'), 2)
+        self.assertEqual(test_helmet.dr.PRC, 2)
         # Test wear with no arguments.
         command = clothing.CmdWear
         arg = ""
@@ -289,7 +289,7 @@ class TestCommands(CommandTest):
         self.assertRegex(cmd_result, wanted_message)
         self.assertEqual(test_undershirt.db.covered_by, test_shirt)
         #verify that the helmet's armor rating has been cached in the wearer
-        self.assertEqual(self.char1.body.head.dr.PRC, 3)
+        self.assertEqual(self.char1.body.head.dr.PRC, 2)
         self.assertEqual(self.char1.body.head.dr.ACD, 3)
         self.assertEqual(self.char1.body.head.dr.BLG, 0)
 
@@ -304,4 +304,37 @@ class TestCommands(CommandTest):
         arg = "/r hit_body_part, obj"
         wanted_message = r"^hit_body_part returned: False"
         cmd_result = self.call(command(), arg)
+        self.assertRegex(cmd_result, wanted_message)
+
+        # test function damage after damage reduction
+        command = developer_cmds.CmdCmdFuncTest
+        command.dmg_types = ["ACD", "PRC"]  # give two types whose armor has different values
+        arg = "/r dmg_after_dr, char = 3, head"
+        wanted_message = "dmg_after_dr returned: 1"
+        cmd_result = self.call(command(), arg, caller=self.char2)
+        self.assertRegex(cmd_result, wanted_message)
+        # make certain the lowest number returned is 0
+        command = developer_cmds.CmdCmdFuncTest
+        command.dmg_types = ["ACD", "PRC"]  # give two types whose armor has different values
+        arg = "/r dmg_after_dr, char = 0, head"
+        wanted_message = "dmg_after_dr returned: 0"
+        cmd_result = self.call(command(), arg, caller=self.char2)
+        self.assertRegex(cmd_result, wanted_message)
+        # now change the targets dr to make certain that affects
+        self.char1.dr.ACD = 3
+        self.char1.dr.PRC = 1
+        command = developer_cmds.CmdCmdFuncTest
+        command.dmg_types = ["ACD", "PRC"]  # give two types whose armor has different values
+        arg = "/r dmg_after_dr, char = 3, head"
+        wanted_message = "dmg_after_dr returned: 0"
+        cmd_result = self.call(command(), arg, caller=self.char2)
+        self.assertRegex(cmd_result, wanted_message)
+        # Verify giving None as dmg_dealt works
+        self.char1.dr.ACD = 3
+        self.char1.dr.PRC = 1
+        command = developer_cmds.CmdCmdFuncTest
+        command.dmg_types = ["ACD", "PRC"]  # give two types whose armor has different values
+        arg = "/r dmg_after_dr, char = None, head"
+        wanted_message = r"dmg_after_dr returned: \d+"
+        cmd_result = self.call(command(), arg, caller=self.char2)
         self.assertRegex(cmd_result, wanted_message)

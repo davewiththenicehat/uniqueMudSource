@@ -11,6 +11,7 @@ from world import status_functions
 from evennia import utils
 from evennia.utils.logger import log_warn, log_info
 from random import randint
+from world.rules import damage
 
 
 class Command(default_cmds.MuxCommand):
@@ -99,6 +100,8 @@ class Command(default_cmds.MuxCommand):
         search_caller_only = False  # if True the command will only search the caller for targets
         hit_count = 1  # the number of times this command will hit the target.
             This is automatically used in Command.hit_body_part()
+        dmg_types = None  # tuple of list of damage types this command can manupulate
+            list of types is in world.rules.damage.TYPES
     Methods:
         All methods are fully documented in their docstrings.
         func, To more seamlessly support UniqueMud's deffered command system, evennia's Command.func has been overridden.
@@ -126,6 +129,7 @@ class Command(default_cmds.MuxCommand):
     target_inherits_from = False  # a tuple, position 0 string of a class type, position 1 is a string to show on mismatch
     search_caller_only = False  # if True the command will only search the caller for targets
     hit_count = 1  # the number of times this command will hit the target.
+    dmg_types = None  # tuple of list of damage types this command can manupulate
 
     def func(self):
         """
@@ -457,3 +461,38 @@ class Command(default_cmds.MuxCommand):
         if log:
             log_info(f"{self.key}.hit_body_part, caller id {caller.id}: parts_count: {parts_count} | hit_count: {hit_count} | location_key: {location_key} | location: {location} | parts_hit: {parts_hit}")
         return parts_hit
+
+
+    def dmg_after_dr(self, dmg_dealt=None, body_part_name=None):
+        """
+        Get damage dealt after damage reduction.
+        Minimum return value is 0.
+
+        Arguments
+            dmg_dealt=None, the damage the command dealth
+                If None is provided dmg_after_dr will use self.dmg_dealt
+                if self.dmg_dealt does not exist a random roll will be processed.
+                    using standard rules: dmg_dealt = damage.roll(self)
+                    where self.dmg_max is the max damage possible and self.dmg_mod_stat modifies the damage
+            body_part_name=None, the body part the command is manipulating.
+                Leave blank if you want to ignore dr for armor
+            log=False, should this function log messages
+
+        Usage:
+            dmg_result = self.dmg_after_dr()
+
+        equation:
+            Each action has a list of damage types they can manipulate.
+
+            Action's damage is reduced by
+                targets lowest dr value, that the action manipulates.
+
+                If the action hit a body part.
+                It is ALSO reduced by that body parts lowest dr value, that the action manipulates.
+                Normally this would be the armor's dr value for that body part.
+
+        Returns:
+            damage dealt after dr for the body part hit and the target
+            The minimum value this method returns is 0
+        """
+        return damage.get_dmg_after_dr(self, dmg_dealt, body_part_name)

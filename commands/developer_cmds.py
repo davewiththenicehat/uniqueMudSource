@@ -374,16 +374,22 @@ class CmdCmdFuncTest(Command):
             else:
                 caller.msg(f'{target_name} is not here.')
                 return
-        if hasattr(self, func_name):
+        if hasattr(self, func_name): # find this function in the command module
             func_inst = getattr(self, func_name)
-            # convert strings to ints if they are ints.
             arguments = []
             for argument in self.rhslist:
-                if int(argument):
-                    arguments.append(int(argument))
-                else:
+                # convert strings to ints if they are ints.
+                try:
+                    int_arg = int(argument)
+                    arguments.append(int_arg)
+                except ValueError:
+                    # if None was passed as an argument turn it into None
+                    if argument.strip() == 'None':
+                        argument = None
                     arguments.append(argument)
+            # Call the function capturing any returns.
             func_return = func_inst(*arguments)
+            # show the return to screen if the r switch was used
             if 'r' in self.switches:
                 caller.msg(f'{func_name} returned: {func_return}')
         else:
