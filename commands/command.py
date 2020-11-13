@@ -115,6 +115,7 @@ class Command(default_cmds.MuxCommand):
         target_out_of_melee(), returns true if the commands target is out of melee range.
         act_vs_msg(action_result, evade_result), Returns two strings to display at the start of an actions message.
         hit_body_part(hit_count=None), Used to see what body part the action hit. Uses self.hit_count if no argument is provided.
+        dmg_after_dr(dmg_dealt=None, body_part_name=None), Returns damage dealt after damage reduction.
     """
     status_type = 'busy'  # Character status type used to track the command
     defer_time = 3  # time is seconds for the command to wait before running action of command
@@ -465,7 +466,7 @@ class Command(default_cmds.MuxCommand):
 
     def dmg_after_dr(self, dmg_dealt=None, body_part_name=None):
         """
-        Get damage dealt after damage reduction.
+        Returns damage dealt after damage reduction.
         Minimum return value is 0.
 
         Arguments

@@ -30,7 +30,7 @@ def targeted_action(caller, target, log=False):
         return
     action_result = action_roll(caller, log)
     # only roll an evade if the target is a Character
-    evade_result = 5
+    evade_result = 5  # default evade for non Character Objects
     if inherits_from(target, 'typeclasses.characters.Character'):
         evade_result = evade_roll(target, action_cmd.evade_mod_stat, log)
     if log:
