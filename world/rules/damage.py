@@ -26,7 +26,7 @@ Notes
 
 from random import randint
 from utils.element import ListElement
-from evennia.utils.logger import log_info
+from evennia.utils.logger import log_info, log_warn
 
 # a mapping of damage types and full names
 MAP_DICT = {
@@ -145,14 +145,17 @@ def get_dmg_after_dr(command, dmg_dealt=None, body_part_name=None, log=False):
                 # it displays the full list at command line
                 # have attempted searching and getting a local instance of target
                 body_part_inst = getattr(target.body, body_part_name)
+                if not body_part_inst:
+                    log_warn(f"command {command.key}, Character id: {command.caller.id} | failed to get body_part_inst after finding it in target.body.parts")
     # find drs on the target and their body part hit
     if command.dmg_types:
         for dmg_type in command.dmg_types:
-            # find the body part's dr values that match the commands damage types
-            if hasattr(body_part_inst.dr, dmg_type):
-                dr_value = getattr(body_part_inst.dr, dmg_type)
-                if dr_value and dr_value > 0:
-                    body_part_dr_values[dmg_type] = dr_value
+            if body_part_inst:  # if the object had that body part
+                # find the body part's dr values that match the commands damage types
+                if hasattr(body_part_inst.dr, dmg_type):
+                    dr_value = getattr(body_part_inst.dr, dmg_type)
+                    if dr_value and dr_value > 0:
+                        body_part_dr_values[dmg_type] = dr_value
             # find the targets dr values that match the commands damage types
             if hasattr(target.dr, dmg_type):
                 dr_value = getattr(target.dr, dmg_type)

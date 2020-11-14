@@ -102,6 +102,7 @@ class Command(default_cmds.MuxCommand):
             This is automatically used in Command.hit_body_part()
         dmg_types = None  # tuple of list of damage types this command can manupulate
             list of types is in world.rules.damage.TYPES
+            dmg_types = ('BLG') is not a tuple it is a string. dmg_types = ('BLG',), will return a tuple
         caller_message = None  # text to message the caller. Will not call automatically, here to pass between Command functions
         target_message = None  # text to message the target. Will not call automatically, here to pass between Command functions
         room_message = None  # text to message the room. Will not call automatically, here to pass between Command functions
@@ -598,9 +599,9 @@ class Command(default_cmds.MuxCommand):
         if result > 0:  # the action hit
             # get the body part that was hit
             part_hit = self.hit_body_part()
-            dmg_dealt = self.dmg_after_dr(body_part_name=part_hit)
             if part_hit:
                 part_hit = part_hit[0]
+            dmg_dealt = self.dmg_after_dr(body_part_name=part_hit)
             if dmg_dealt > 0:  # make certain the combat action adjusts hp only when needed
                 target.hp -= dmg_dealt
             caller_msg += " and connect."
@@ -626,7 +627,6 @@ class Command(default_cmds.MuxCommand):
         if utils.inherits_from(target, 'typeclasses.characters.Character'):
             target.msg(target_msg)
         caller.location.msg_contents(room_msg, exclude=(target, caller))
-        log = True
         if log:
             log_info(f'Command.combat_action, Character ID: {caller.id} | result {result}')
             log_info("caller message: "+caller_msg)
