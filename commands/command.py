@@ -11,7 +11,7 @@ from world import status_functions
 from evennia import utils
 from evennia.utils.logger import log_warn, log_info
 from random import randint
-from world.rules import damage
+from world.rules import damage, actions
 
 
 class Command(default_cmds.MuxCommand):
@@ -102,6 +102,14 @@ class Command(default_cmds.MuxCommand):
             This is automatically used in Command.hit_body_part()
         dmg_types = None  # tuple of list of damage types this command can manupulate
             list of types is in world.rules.damage.TYPES
+        caller_message = None  # text to message the caller. Will not call automatically, here to pass between Command functions
+        target_message = None  # text to message the target. Will not call automatically, here to pass between Command functions
+        room_message = None  # text to message the room. Will not call automatically, here to pass between Command functions
+        caller_weapon = None  # weapon name that will show up in Command.combat_action's automated messages
+            Will be automatically filled in Command.func when a Character weapon system is developed.
+        desc = None  # a present tense description for the action of this command. IE: "kicks"
+            If None when self.func is called, it will give assigned self.key
+
     Methods:
         All methods are fully documented in their docstrings.
         func, To more seamlessly support UniqueMud's deffered command system, evennia's Command.func has been overridden.
@@ -131,6 +139,12 @@ class Command(default_cmds.MuxCommand):
     search_caller_only = False  # if True the command will only search the caller for targets
     hit_count = 1  # the number of times this command will hit the target.
     dmg_types = None  # tuple of list of damage types this command can manupulate
+    caller_message = None  # text to message the caller. Will not call automatically, here to pass between Command functions
+    target_message = None  # text to message the target. Will not call automatically, here to pass between Command functions
+    room_message = None  # text to message the room. Will not call automatically, here to pass between Command functions
+    caller_weapon = None  # weapon name that will show up in Command.combat_action's automated messages
+    desc = None  # a present tense description for the action of this command. IE: "kicks"
+
 
     def func(self):
         """
@@ -192,6 +206,9 @@ class Command(default_cmds.MuxCommand):
                     else:
                         caller.msg(f'{target_name} is not here.')
                         return
+        # give an action description if none was provided
+        if not self.desc:
+            self.desc = self.key
         # defer the command
         defer_successful = self.defer()
         if defer_successful:
@@ -497,3 +514,122 @@ class Command(default_cmds.MuxCommand):
             The minimum value this method returns is 0
         """
         return damage.get_dmg_after_dr(self, dmg_dealt, body_part_name)
+
+    def combat_action(self, action_mod=None, caller_msg=None, target_msg=None, room_msg=None, log=None):
+        """
+        A command method intended to be a used to easily facilitate basic combat actions.
+        This is indeded for basic combat actions.
+        Complex combat actions, or ones with intricate descriptions need to be custom made.
+        combat_action can be very useful as an outline for more complex actions
+
+        Arguments
+            action_mod=None, an int to add to the caller's action roll.
+            log, if this method and methods and functions used within should log messages
+
+        Usage:
+            Below is an example taken from unarmed.CmdPunch
+                def deferred_action(self):
+                    action_mod = self.unarmed_str_mod  # add half of the caller's str modifier to the attack
+                    return self.combat_action(action_mod)
+
+        Notes:
+            This action will:
+                Verify the target is within the Command's range.
+                    currently with Command.target_out_of_melee()
+                    will be updated when combat ranged attack are developed
+                use actions.target_action to roll for an attack
+                On success
+                    get a body part hit with Command.hit_body_part()
+                    get damage dealt with Command.dmg_after_dr(part_hit)
+                    adjust target's hp if damage dealt was greater than 0
+                create a basic message to show caller, target and other in the room
+
+            combat_action intentionally does not accept a damage modifier
+            Damage should be modified with Command.dmg_max
+            Keeping on the idea of uncertain outcomes that the player is more likely to succeed at.
+
+
+        Returns:
+            True, if the action completed successfully.
+            None, if there are python exceptions
+            False, if there is a rules based reason for failure.
+                Example: self.target_out_of_melee()
+
+        todo:
+            add damage type messages
+            f" Hitting {target.usdesc}'s {part_hit}."
+            f" {dmg_type_desc} {target.usdesc}'s {part_hit}."
+
+        """
+        # stop the method if target is out of range
+        if self.target_out_of_melee():
+            return False
+        caller = self.caller
+        target = self.target
+        cmd_desc = self.desc
+        caller_weapon = self.caller_weapon
+        passed_caller_msg = caller_msg
+        passed_target_msg = target_msg
+        passed_room_msg = room_msg
+        result, action_result, evade_result = actions.targeted_action(caller, target, log)
+        if action_mod:  # if passed, add action mod to results
+            result += action_mod
+            action_result += action_mod
+        caller_msg, target_msg = self.act_vs_msg(action_result, evade_result)
+        # use passed messages if they were not provided, make messages
+        if passed_caller_msg:  # if a custom caller message was passed
+            caller_msg += passed_caller_msg
+        else:  # no custom caller message was passed
+            caller_msg += f"You {self.key} at {target.usdesc}"
+            if caller_weapon:  # if the Command instance has a caller_weapon saved
+                caller_msg += f" with your {caller_weapon}"
+        if passed_target_msg:  # if a custom target message was pssed
+            target_msg += passed_target_msg
+        else:  # no custom target message was passed
+            target_msg += f"{caller.usdesc} {cmd_desc} at you"
+            if caller_weapon:  # if the Command instance has a caller_weapon saved
+                target_msg += f" with {caller.get_pronoun('|p')} {caller_weapon}"
+        if passed_room_msg:  # if a custom room message was passed
+            room_msg = passed_room_msg
+        else:  # no custom room message was passed
+            room_msg = f"{caller.usdesc} {cmd_desc} at {target.usdesc}"
+            if caller_weapon:  # if the Command instance has a caller_weapon saved
+                room_msg += f" with {caller.get_pronoun('|p')} {caller_weapon}"
+        if result > 0:  # the action hit
+            # get the body part that was hit
+            part_hit = self.hit_body_part()
+            dmg_dealt = self.dmg_after_dr(body_part_name=part_hit)
+            if part_hit:
+                part_hit = part_hit[0]
+            if dmg_dealt > 0:  # make certain the combat action adjusts hp only when needed
+                target.hp -= dmg_dealt
+            caller_msg += " and connect."
+            target_msg += " and connects."
+            room_msg += " and connects."
+            if part_hit:  # if that target had parts to hit, add it to the action's messages
+                part_hit = part_hit.replace('_', ' ')  # change "side_name" to "side name"
+                caller_msg += f" Hitting {target.usdesc}'s {part_hit}."
+                target_msg += f" Hitting your {part_hit}."
+                room_msg += f" Hitting {target.usdesc}'s {part_hit}."
+            caller_msg += f" Dealing {dmg_dealt} damage."
+            target_msg += f" You take {dmg_dealt} damage."
+            self.successful(True)  # record the success
+        else:  # the action missed
+            caller_msg += " but miss."
+            target_msg += f" but you successfully evade the {self.key}."
+            room_msg += " and misses."
+            self.successful(False)  # record the failure
+        # display messages to caller, target and everyone else in the room
+        caller.msg(caller_msg)
+        # only show message to target if it is a Character
+        # should be switched to if controlled by a session
+        if utils.inherits_from(target, 'typeclasses.characters.Character'):
+            target.msg(target_msg)
+        caller.location.msg_contents(room_msg, exclude=(target, caller))
+        log = True
+        if log:
+            log_info(f'Command.combat_action, Character ID: {caller.id} | result {result}')
+            log_info("caller message: "+caller_msg)
+            log_info("target message: "+target_msg)
+            log_info("room message: "+room_msg)
+        return True

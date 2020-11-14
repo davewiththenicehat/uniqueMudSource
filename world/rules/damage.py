@@ -128,10 +128,10 @@ def get_dmg_after_dr(command, dmg_dealt=None, body_part_name=None, log=False):
     """
     target = command.target
     #
-    if dmg_dealt == None:
+    if dmg_dealt is None:
         if hasattr(command, 'dmg_dealt'):
             dmg_dealt = command.dmg_dealt
-        if dmg_dealt == None:
+        if dmg_dealt is None:
             dmg_dealt = roll(command)
     body_part_dr = 0
     body_part_inst = None
@@ -141,6 +141,9 @@ def get_dmg_after_dr(command, dmg_dealt=None, body_part_name=None, log=False):
     if target.body.parts:
         if body_part_name:
             if body_part_name in target.body.parts:
+                # bug this instance of target.body will not provide a full parts list
+                # it displays the full list at command line
+                # have attempted searching and getting a local instance of target
                 body_part_inst = getattr(target.body, body_part_name)
     # find drs on the target and their body part hit
     if command.dmg_types:

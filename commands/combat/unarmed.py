@@ -38,6 +38,7 @@ class UnarmedCommand(Command):
     cmd_type = 'unarmed'  # Should be a string of the cmd type. IE: 'evasion' for an evasion cmd
     unarmed_str_mod = 0  # half of the unarmed command caller's strength modifier
     can_not_target_self = True  # if True this command will end with a message if the Character targets themself
+    #dmg_types = ('BLG')  # tuple of list of damage types this command can manupulate
 
     def at_pre_cmd(self):
         """
@@ -75,6 +76,8 @@ class CmdPunch(UnarmedCommand):
     defer_time = 3  # time is seconds for the command to wait before running action of command
     dmg_max = 2  # the maximum damage this command can cause
     cmd_type = 'unarmed'  # Should be a string of the command type. IE: 'evasion' for an evasion command
+    caller_weapon = "fist"  # weapon name that will show up in Command.combat_action's automated messages
+    desc = "punches"  # a present tense description for the action of this command. IE: "kicks"
 
     def start_message(self):
         """
@@ -88,35 +91,8 @@ class CmdPunch(UnarmedCommand):
 
     def deferred_action(self):
         """Causes the action of the punch command."""
-        # stop the method if target is out of range
-        if self.target_out_of_melee():
-            return
-        caller = self.caller
-        target = self.target
-        result, action_result, evade_result = actions.targeted_action(caller, target)
-        result += self.unarmed_str_mod
-        caller_message, target_message = self.act_vs_msg(action_result, evade_result)
-        caller_message += f"You {self.key} at {target.usdesc} "
-        target_message += f"You attempt to evade {caller.usdesc}'s {self.key} "
-        room_message = f"{caller.usdesc} {self.key}es at {target.usdesc} "
-        if result > 0:
-            dmg = damage.roll(self)
-            if dmg > 0:  # make certain punch can not heal
-                target.hp -= dmg
-            caller_message += f"and connect. Dealing {dmg} damage."
-            target_message += f"but fail. Receiving {dmg} damage."
-            room_message += "and connects."
-            self.successful(True)
-        else:
-            caller_message += "but miss."
-            target_message += "and are successful."
-            room_message += "and misses."
-            self.successful(False)
-        caller.msg(caller_message)
-        if inherits_from(target, 'typeclasses.characters.Character'):
-            target.msg(target_message)
-        caller.location.msg_contents(room_message, exclude=(target, caller))
-        return True
+        action_mod = self.unarmed_str_mod
+        return self.combat_action(action_mod)
 
 
 class CmdKick(UnarmedCommand):
@@ -137,6 +113,8 @@ class CmdKick(UnarmedCommand):
     key = "kick"
     defer_time = 5  # time is seconds for the command to wait before running action of command
     dmg_max = 4  # the maximum damage this command can cause
+    caller_weapon = "foot"  # weapon name that will show up in Command.combat_action's automated messages
+    desc = "kicks"  # a present tense description for the action of this command. IE: "kicks"
 
     def start_message(self):
         """
@@ -154,32 +132,5 @@ class CmdKick(UnarmedCommand):
 
     def deferred_action(self):
         """Causes the action of the kick command."""
-        caller = self.caller
-        target_name = self.lhs.strip()
-        # stop the method if target is out of range
-        if self.target_out_of_melee():
-            return
-        target = self.target
-        result, action_result, evade_result = actions.targeted_action(caller, target)
-        result += self.unarmed_str_mod
-        caller_message, target_message = self.act_vs_msg(action_result, evade_result)
-        caller_message += f"You {self.key} at {target.usdesc} "
-        target_message += f"You attempt to evade {caller.usdesc}'s {self.key} "
-        room_message = f"{caller.usdesc} {self.key}s at {target.usdesc} and "
-        if result > 0:
-            dmg = damage.roll(self)
-            if dmg > 0:  # make certain unarmed attack can not heal
-                target.hp -= dmg
-            caller_message += f"and connect. Dealing {dmg} damage."
-            target_message += f"but fail. Receiving {dmg} damage."
-            room_message += "connects."
-            self.successful(True)
-        else:
-            caller_message += "but miss."
-            target_message += "and are successful."
-            room_message += "misses."
-            self.successful(False)
-        caller.msg(caller_message)
-        target.msg(target_message)
-        caller.location.msg_contents(room_message, exclude=(target, caller))
-        return True
+        action_mod = self.unarmed_str_mod
+        return self.combat_action(action_mod)

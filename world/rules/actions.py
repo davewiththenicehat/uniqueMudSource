@@ -91,8 +91,9 @@ def evade_roll(char, evade_mod_stat, log=False):
         evade_mod = getattr(char, evade_mod_name)
     else:
         log_warn(f'Character ID: {char.id} missing stat modifier cache: {evade_mod_name}')
+    result = randint(1, roll_max) + evade_mod
     if log:
-        log_info(f'stats.evade_roll | Character ID: {char.id} | roll_max: {roll_max} | evade_mod: {evade_mod} | evade_mod_stat: {evade_mod_stat } | evade_mod_name: {evade_mod_name}')
+        log_info(f'actions.evade_roll, Character ID: {char.id} | result {result} | roll_max: {roll_max} | evade_mod: {evade_mod} | evade_mod_stat: {evade_mod_stat } | evade_mod_name: {evade_mod_name}')
     return randint(1, roll_max) + evade_mod
 
 
@@ -132,6 +133,7 @@ def action_roll(char, log=False):
         action_mod = getattr(char, action_mod_name)
     else:
         log_warn(f'Character ID: {char.id}: missing stat modifier cache: {action_mod_name}')
+    result = randint(1, roll_max) + action_mod
     if log:
-        log_info(f'Character ID: {char.id}: action_mod: {action_mod}| action_mod_stat: {action_mod_stat} | evade_mod_name: {action_mod_name}')
-    return randint(1, roll_max) + action_mod
+        log_info(f'actions.action_roll, Character ID: {char.id}: result {result} | roll_max: {roll_max} | action_mod: {action_mod}| action_mod_stat: {action_mod_stat} | evade_mod_name: {action_mod_name}')
+    return result
