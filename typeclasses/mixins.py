@@ -1,6 +1,7 @@
 from world.rules.damage import TYPES as DAMAGE_TYPES
 from utils.element import Element, ListElement
 from world.rules.body import PART_STATUS
+from world.rules import body
 
 
 class CharExAndObjMixin:
@@ -45,6 +46,10 @@ class CharExAndObjMixin:
                for example body.head.dr.PRC for peirce
            body.head.PART_STATUS=boolean, a status from the PART_STATUS list.
                for example body.head.bleeding, for bleeding
+
+    Methods:
+        get_body_part(no_understore=False), Return the name of a body part that exists on this Object
+        cache_body_dr(), caches dr for all this Object's body parts
     """
 
     # define objects's HP
@@ -139,6 +144,22 @@ class CharExAndObjMixin:
                     for dmg_type in item.dr.el_list:
                         dmg_type_dr_rating = getattr(item.dr, dmg_type)
                         setattr(body_part.dr, dmg_type, dmg_type_dr_rating)
+
+    def get_body_part(self, no_understore=False, log=False):
+        """
+        Return the name of a body part that exists on this Object
+
+        Arguments:
+            no_understore=False, if True underscores '_' will be removed from the returned part name.
+            log=False, if True log the variables used
+
+        Returns:
+            str, in the form of a body part description.
+                Example: "head" or "waist"
+            False, if this object has no body parts to hit.
+            None, the function failed on the python level.
+        """
+        return body.get_part(self, no_understore, log)
 
     def at_init(self):
         """

@@ -7,7 +7,7 @@ from typeclasses.rooms import Room
 from typeclasses.objects import Object
 from evennia.contrib import gendersub
 from evennia.utils.test_resources import EvenniaTest
-from commands import developer_cmds
+from world.rules import body
 
 
 class TestObjects(CommandTest):
@@ -250,6 +250,10 @@ class TestObjects(CommandTest):
         self.assertEqual(char.attributes.get('head_bleeding'), True)
         char.body.head.bleeding = False
         self.assertFalse(char.attributes.has('head_bleeding'))
+
+        # test Object.get_part()
+        body_part = self.char1.get_body_part()
+        self.assertTrue(body_part in self.char1.body.parts)
 
 
 # Testing of emoting / sdesc / recog system

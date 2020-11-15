@@ -5,13 +5,11 @@ Commands describe the input the account can do to the game.
 
 """
 
-from evennia import Command as BaseCommand
 from evennia import default_cmds
 from world import status_functions
 from evennia import utils
-from evennia.utils.logger import log_warn, log_info
-from random import randint
-from world.rules import damage, actions
+from evennia.utils.logger import log_info
+from world.rules import damage, actions, body
 
 
 class Command(default_cmds.MuxCommand):
@@ -98,8 +96,6 @@ class Command(default_cmds.MuxCommand):
         target_inherits_from = False  # a tuple, position 0 string of a class type, position 1 is a string to show on mismatch
             example: target_inherits_from = ("typeclasses.equipment.clothing.Clothing", 'clothing and armor')
         search_caller_only = False  # if True the command will only search the caller for targets
-        hit_count = 1  # the number of times this command will hit the target.
-            This is automatically used in Command.hit_body_part()
         dmg_types = None  # tuple of list of damage types this command can manupulate
             list of types is in world.rules.damage.TYPES
             dmg_types = ('BLG') is not a tuple it is a string. dmg_types = ('BLG',), will return a tuple
@@ -123,7 +119,7 @@ class Command(default_cmds.MuxCommand):
         successful(success=True), records if a command was successful
         target_out_of_melee(), returns true if the commands target is out of melee range.
         act_vs_msg(action_result, evade_result), Returns two strings to display at the start of an actions message.
-        hit_body_part(hit_count=None), Used to see what body part the action hit. Uses self.hit_count if no argument is provided.
+        get_body_part(target, no_understore), returns the name of a body part on target
         dmg_after_dr(dmg_dealt=None, body_part_name=None), Returns damage dealt after damage reduction.
     """
     status_type = 'busy'  # Character status type used to track the command
@@ -138,7 +134,6 @@ class Command(default_cmds.MuxCommand):
     cmd_type = False  # Should be a string of the cmd type. IE: 'evasion' for an evasion cmd
     target_inherits_from = False  # a tuple, position 0 string of a class type, position 1 is a string to show on mismatch
     search_caller_only = False  # if True the command will only search the caller for targets
-    hit_count = 1  # the number of times this command will hit the target.
     dmg_types = None  # tuple of list of damage types this command can manupulate
     caller_message = None  # text to message the caller. Will not call automatically, here to pass between Command functions
     target_message = None  # text to message the target. Will not call automatically, here to pass between Command functions
@@ -442,45 +437,34 @@ class Command(default_cmds.MuxCommand):
             caller.msg(f'You can no longer reach {self.target.usdesc}.')
             return True
 
-    def hit_body_part(self, target=None, hit_count=None, log=False):
+    def get_body_part(self, target=None, no_understore=False, log=False):
         """
-        Used to see what body part the action hit.
+        Return the name of a body part that exists on target
 
         Arguments:
-            target=None, an Object target for hit_body_part if None self.target will be used
-            hit_count=None, the number of times this commands hits a body part
+            target, an Object target for get_part to choose a body part from
+            no_understore=False, if True underscores '_' will be removed from the returned part name.
             log=False, if True log the variables used
 
         Returns:
-            parts_hit, a list of body parts the action hit.
-                It is possible for the same location to be hit twice.
-                In that case the list will have the same name twice.
+            str, in the form of a body part description.
+                Example: "head" or "waist"
             False, if this object has no body parts to hit.
-        """
-        caller = self.caller
-        if not hasattr(self, 'target'):
-            if log:
-                log_info(f"{self.key}.hit_body_part, caller id {caller.id}: no target in command and none passed on function call.")
-            return False
-        if not target:
-            target = self.target
-        if not hit_count:  # if hits possible was not provided by command line use command's default
-            hit_count = self.hit_count
-        parts_count = len(target.body.parts)  # get a max key count
-        parts_count -= 1  # because indexing starts at 0
-        if parts_count < 1:  # return false is there are no body parts to hit
-            if log:
-                log_info(f"{self.key}.hit_body_part, caller id {caller.id}: parts_count: {parts_count} | hit_count: {hit_count} . No parts found on target.")
-            return False
-        parts_hit = []
-        for _ in range(0, hit_count):
-            location_key = randint(0, parts_count)
-            location = target.body.parts[location_key]
-            parts_hit.append(location)
-        if log:
-            log_info(f"{self.key}.hit_body_part, caller id {caller.id}: parts_count: {parts_count} | hit_count: {hit_count} | location_key: {location_key} | location: {location} | parts_hit: {parts_hit}")
-        return parts_hit
+            None, the function failed on the python level.
 
+        Notes:
+            If not passed, target is a reference of self.target
+            if self.target has no object instance, target is self.caller
+        """
+        if not target:
+            if hasattr(self, 'target'):
+                if self.target:
+                    target = self.target  # use target when available
+                else:
+                    target = self.caller
+            else:
+                target = self.caller
+        return body.get_part(target, no_understore, log)
 
     def dmg_after_dr(self, dmg_dealt=None, body_part_name=None):
         """
@@ -540,7 +524,7 @@ class Command(default_cmds.MuxCommand):
                     will be updated when combat ranged attack are developed
                 use actions.target_action to roll for an attack
                 On success
-                    get a body part hit with Command.hit_body_part()
+                    get a body part hit with Command.get_body_part()
                     get damage dealt with Command.dmg_after_dr(part_hit)
                     adjust target's hp if damage dealt was greater than 0
                 create a basic message to show caller, target and other in the room
@@ -596,11 +580,10 @@ class Command(default_cmds.MuxCommand):
             room_msg = f"{caller.usdesc} {cmd_desc} at {target.usdesc}"
             if caller_weapon:  # if the Command instance has a caller_weapon saved
                 room_msg += f" with {caller.get_pronoun('|p')} {caller_weapon}"
-        if result > 0:  # the action hit
+        #if result > 0:  # the action hit
+        if True:
             # get the body part that was hit
-            part_hit = self.hit_body_part()
-            if part_hit:
-                part_hit = part_hit[0]
+            part_hit = self.get_body_part()
             dmg_dealt = self.dmg_after_dr(body_part_name=part_hit)
             if dmg_dealt > 0:  # make certain the combat action adjusts hp only when needed
                 target.hp -= dmg_dealt

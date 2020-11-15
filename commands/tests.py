@@ -293,16 +293,16 @@ class TestCommands(CommandTest):
         self.assertEqual(self.char1.body.head.dr.ACD, 3)
         self.assertEqual(self.char1.body.head.dr.BLG, 0)
 
-        # test function hit_body_part
+        # test function get_body_part
         command = developer_cmds.CmdCmdFuncTest
-        arg = "/r hit_body_part, Char2"
-        wanted_message = r"^hit_body_part returned: \['"
+        arg = "/r get_body_part, char2"
+        wanted_message = r"get_body_part returned: False"
         cmd_result = self.call(command(), arg)
-        self.assertRegex(cmd_result, wanted_message)
+        self.assertFalse(cmd_result == wanted_message)
         # now test an object with no body parts
         command = developer_cmds.CmdCmdFuncTest
-        arg = "/r hit_body_part, obj"
-        wanted_message = r"^hit_body_part returned: False"
+        arg = "/r get_body_part, obj"
+        wanted_message = r"^get_body_part returned: False"
         cmd_result = self.call(command(), arg)
         self.assertRegex(cmd_result, wanted_message)
 
