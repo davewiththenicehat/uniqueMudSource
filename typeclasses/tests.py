@@ -251,9 +251,22 @@ class TestObjects(CommandTest):
         char.body.head.bleeding = False
         self.assertFalse(char.attributes.has('head_bleeding'))
 
-        # test Object.get_part()
+        # test Character, Object, Exit; .get_part()
         body_part = self.char1.get_body_part()
         self.assertTrue(body_part in self.char1.body.parts)
+        obj_part = self.obj1.get_body_part()  # this object has no parts
+        self.assertFalse(obj_part)
+
+        # test Caracter.position
+        self.assertEqual(char.attributes.get('position'), "standing")
+        self.assertEqual(char.position, "standing")
+        char.position = 'sitting'
+        self.assertEqual(char.attributes.get('position'), "sitting")
+        self.assertEqual(char.position, "sitting")
+        char.position = 'laying'
+        self.assertEqual(char.attributes.get('position'), "laying")
+        self.assertEqual(char.position, "laying")
+
 
 
 # Testing of emoting / sdesc / recog system

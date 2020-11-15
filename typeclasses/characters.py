@@ -12,7 +12,7 @@ from evennia.contrib.gendersub import GenderCharacter, _RE_GENDER_PRONOUN
 from utils.element import Element
 from world import status_functions
 from evennia import utils
-from world.rules import stats
+from world.rules import stats, body
 from evennia.contrib.rpsystem import ContribRPCharacter
 from typeclasses.equipment.clothing import ClothedCharacter
 
@@ -58,10 +58,12 @@ class Character(AllObjectsMixin, CharExAndObjMixin, ClothedCharacter, GenderChar
         typeclasses.mixins.AllObjectsMixin
 
     ATTRIBUTES:
+        Many attributes are inheirited, refer to the docstring of that object for details.
+            It is very likely what you are looking for is in typeclasses.mixins.CharExAndObjMixin
         ONLY interact with Elements via the characters Element reference.
             Do not change the database entries directly
             Do not change the protected _attribute_name attribute directly
-        If a Character attribute is not described here, it is not intended to be interacted with.
+        If a Character attribute is not described here, or in inheirited docstring it is not intended to be interacted with.
 
         Character stats are referenced as uppercase abbriviations.
         Character stats are instance of utils.Elements
@@ -102,6 +104,16 @@ class Character(AllObjectsMixin, CharExAndObjMixin, ClothedCharacter, GenderChar
             Use as if it were a stanard attribute.
             usdesc = 'a happy tree'
             caller.msg(f'You attack {target.usdesc}.')
+        position=str, used to control if character is sitting standing laying.
+            full list of positions in world.rules.body.POSITIONS
+            This is a python property and will control setting database.
+            It will not allow you to incorrectly set the position.
+            Usesage:
+                character_position = char.position
+                char.position = "standing"
+                char.position = "not standing"  # this will throw a ValueError
+                del char.position  # will set position to "standing"
+                    It is important that position exist. It should not be deleted
 
     Methods:
         All methods are fully documented in their docstrings.
@@ -134,7 +146,35 @@ class Character(AllObjectsMixin, CharExAndObjMixin, ClothedCharacter, GenderChar
     def at_object_creation(self):
         """Runs when Character is created."""
         self.targetable = True
+        self.position = 'standing'
         return super().at_object_creation()
+
+    # define characters's position ('sitting', 'standing', 'laying')
+    @property
+    def position(self):
+        """Get the Chracter.position attribute."""
+        return self.db.position
+
+    @position.setter
+    def position(self, value):
+        """set Character.position attribute. Checking for incorrect value."""
+        if isinstance(value, str):
+            value = value.lower()
+            if value in body.POSITIONS:  # verify it is an allowed position
+                self.db.position = value
+            else:
+                raise ValueError(f"Character ID {self.id}.stance, {value} is not an allowed position. Positions are: {body.POSITIONS}")
+        else:
+            raise ValueError(f"Character ID {self.id}.stance, can not be set to non str 'non-string' value")
+
+    @position.deleter
+    def position(self):
+        """
+        Deleter for Character.position.
+        Simply returns Character to default position of 'standing'.
+        Does NOT delete the attribute.
+        """
+        self.db.position = 'standing'
 
     @property
     def usdesc(self):

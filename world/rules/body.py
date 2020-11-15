@@ -28,6 +28,13 @@ HUMANOID_BODY = (
     'left_foot'
 )
 
+# represents Character positions
+POSITIONS = (
+    'sitting',
+    'standing',
+    'laying',
+)
+
 
 def get_part(target, no_underscore=False, log=None):
     """
@@ -43,6 +50,11 @@ def get_part(target, no_underscore=False, log=None):
             Example: "head" or "waist"
         False, if this object has no body parts to hit.
         None, the function failed on the python level.
+
+    todo:
+        option to return an instance.
+            option to return a specific part
+        option to target low middle or high
     """
     if hasattr(target, 'body'):
         if not hasattr(target.body, 'parts'):
