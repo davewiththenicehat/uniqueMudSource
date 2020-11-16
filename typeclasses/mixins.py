@@ -161,6 +161,20 @@ class CharExAndObjMixin:
         """
         return body.get_part(self, no_understore, log)
 
+    def break_func(self):
+        """
+        Here to be overridden.
+        This is automatically called when an object's hp reaches 0.
+        """
+
+    def destroy(self):
+        """
+        Here to be overridden.
+        This is automatically called an an object's hp reaches self.hp.min
+            normally -100
+            Characters with a hp_max_mod, will reflect on the minimum also.
+        """
+
     def at_init(self):
         """
         This is always called whenever this object is initiated --
@@ -173,6 +187,8 @@ class CharExAndObjMixin:
             Used to cache dr values for objects body parts.
         """
         self.cache_body_dr()  # cache dr worn on body
+        self.hp.breakpoint_func = self.break_func
+        self.hp.min_func = self.destroy
         return super().at_init()  # Here only to support future change to evennia's Character.at_init
 
 

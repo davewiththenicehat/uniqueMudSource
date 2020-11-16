@@ -113,13 +113,20 @@ class TestUtils(CommandTest):
         def br_func():
             char.break_reached = True
         char.hp.breakpoint_func = br_func
-        char.hp -= 101
+        char.hp = -1
         self.assertTrue(char.break_reached)
+        # reset it and do it again
+        char.break_reached = False
+        char.hp = 1
+        self.assertFalse(char.break_reached)
+        char.hp = -1
+        self.assertTrue(char.break_reached)
+
 
         def min_test_func():
             char.min_reached = True
         char.hp.min_func = min_test_func
-        char.hp -= 110
+        char.hp -= 400
         self.assertTrue(char.min_reached)
 
         def max_test_func():

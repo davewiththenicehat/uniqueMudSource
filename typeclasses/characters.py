@@ -18,12 +18,13 @@ from typeclasses.equipment.clothing import ClothedCharacter
 from evennia.contrib.rpsystem import RPSystemCmdSet
 
 # Used to adjust Element settings for stats, and the unit test for Character also
+# min_func and breakpoint_func are set in self.at_init
 CHARACTER_STAT_SETTINGS = {
     'name': None,  # name of the Element, highly recommend leaving default
     'min': -100,  # the min number the Element can be, if reached min_func runs
-    'min_func': None,  # reference to a function to run when the self.value attribute reaches self.min
+    # 'min_func': None,  # reference to a function to run when the self.value attribute reaches self.min
     'breakpoint': 0,  # number a breakpoint point occurs like falling unconshious or an object breakpoint
-    'breakpoint_func': None,  # When passed breakpoint_func runs
+    # 'breakpoint_func': None,  # When passed breakpoint_func runs
     'max': 100,  # the max number the Element can be. When reached self.max_fun() runs
     'max_func': None,  # reference to a function to run when the self.value attribute reachs the self.max
     'dbtype': 'db'  # the database type to use can be 'db' or 'ndb'

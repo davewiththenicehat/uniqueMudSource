@@ -625,9 +625,10 @@ class Element:
                 value = self.db.get(el_db_key)
             if value != el_def_value:  # do not a global default Element value
                 setattr(self, el_key, value)
-        # create local attributes
+        # create local attributes, if they were not set at init
         for attr_key, attr_value in ELEMENT_LOCAL_ATTRIBUTES:
-            setattr(self, attr_key, attr_value)
+            if not hasattr(self, attr_key):
+                setattr(self, attr_key, attr_value)
 
     def percent(self):
         "returns the percent the element is from 0 to its max number."
