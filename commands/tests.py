@@ -338,3 +338,39 @@ class TestCommands(CommandTest):
         wanted_message = r"dmg_after_dr returned: \d+"
         cmd_result = self.call(command(), arg, caller=self.char2)
         self.assertRegex(cmd_result, wanted_message)
+
+        # test sit stand lay also tests Character.set_position
+        command = developer_cmds.CmdMultiCmd
+        arg = "= sit"
+        wanted_message = "You sit down."
+        cmd_result = self.call(command(), arg, wanted_message, caller=self.char1)
+        # test character already sitting
+        command = developer_cmds.CmdMultiCmd
+        arg = "= sit"
+        wanted_message = "You are already sitting."
+        cmd_result = self.call(command(), arg, wanted_message, caller=self.char1)
+        # stand up
+        command = developer_cmds.CmdMultiCmd
+        arg = "= stand"
+        wanted_message = "You stand up."
+        cmd_result = self.call(command(), arg, wanted_message, caller=self.char1)
+        # test character already standing
+        command = developer_cmds.CmdMultiCmd
+        arg = "= stand"
+        wanted_message = "You are already standing."
+        cmd_result = self.call(command(), arg, wanted_message, caller=self.char1)
+        # lay down
+        command = developer_cmds.CmdMultiCmd
+        arg = "= lay"
+        wanted_message = "You lay down."
+        cmd_result = self.call(command(), arg, wanted_message, caller=self.char1)
+        # test character already laying
+        command = developer_cmds.CmdMultiCmd
+        arg = "= lay"
+        wanted_message = "You are already laying."
+        cmd_result = self.call(command(), arg, wanted_message, caller=self.char1)
+        # stand up
+        command = developer_cmds.CmdMultiCmd
+        arg = "= stand"
+        wanted_message = "You stand up."
+        cmd_result = self.call(command(), arg, wanted_message, caller=self.char1)

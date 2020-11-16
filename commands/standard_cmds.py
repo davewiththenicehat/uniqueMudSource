@@ -21,6 +21,10 @@ class StandardCmdsCmdSet(default_cmds.CharacterCmdSet):
         super().at_cmdset_creation()
         self.add(CmdDrop)
         self.add(CmdInventory)
+        self.add(CmdSit)
+        self.add(CmdStand)
+        self.add(CmdLay)
+
 
 class CmdDrop(MuxCommand):
     """
@@ -116,3 +120,54 @@ class CmdInventory(MuxCommand):
             wear_table.add_row("|CNothing.|n", "")
         string += "|/|wYou are wearing:\n%s" % wear_table
         caller.msg(string)
+
+
+class CmdSit(MuxCommand):
+    """
+    sit down
+
+    Usage:
+      sit
+    """
+
+    key = "sit"
+    locks = "cmd:all()"
+    arg_regex = r"\s|$"
+
+    def func(self):
+        """Implement command"""
+        self.caller.sit()
+
+
+class CmdStand(MuxCommand):
+    """
+    stand up
+
+    Usage:
+      stand
+    """
+
+    key = "stand"
+    locks = "cmd:all()"
+    arg_regex = r"\s|$"
+
+    def func(self):
+        """Implement command"""
+        self.caller.stand()
+
+
+class CmdLay(MuxCommand):
+    """
+    lay down
+
+    Usage:
+      lay
+    """
+
+    key = "lay"
+    locks = "cmd:all()"
+    arg_regex = r"\s|$"
+
+    def func(self):
+        """Implement command"""
+        self.caller.lay()

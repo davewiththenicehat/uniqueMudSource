@@ -509,3 +509,86 @@ class Character(AllObjectsMixin, CharExAndObjMixin, ClothedCharacter, GenderChar
         setattr(self, 'busy_mod', stats.busy_mod(self))
         setattr(self, 'stunned_mod', stats.stunned_mod(self))
         setattr(self, 'purchase_mod', stats.purchase_mod(self))
+
+    def stand(self, quiet=False, force=False):
+        """
+        Cause the Charter to stand up
+
+        Arguments:
+            quiet=False, if True no messages will be displayed to the room.
+            force=False, change position even if player is in that position
+
+        unit test in commands.tests
+        """
+        self.set_position('standing', quiet, force)
+
+    def sit(self, quiet=False, force=False):
+        """
+        Cause the Charter to sit down
+
+        Arguments:
+            quiet=False, if True no messages will be displayed to the room.
+            force=False, change position even if player is in that position
+
+        unit test in commands.tests
+        """
+        self.set_position('sitting', quiet, force)
+
+    def lay(self, quiet=False, force=False):
+        """
+        Cause the Charter to lay down
+
+        Arguments:
+            quiet=False, if True no messages will be displayed to the room.
+            force=False, change position even if player is in that position
+
+        unit test in commands.tests
+        """
+        self.set_position('laying', quiet, force)
+
+    def set_position(self, position, quiet=False, force=False):
+        """
+        Change a character's position.
+
+        Arguments:
+            position, str of a position.
+                example: 'sitting', 'standing' or 'laying'
+                Full list in world.rules.body.POSITIONS
+            quiet=False, if True no messages will be displayed to the room.
+            force=False, change position even if player is in that position
+
+        Includes:
+            checking if the character is already in that position.
+            messaging the Character and room
+
+        unit test in commands.tests
+
+        todo:
+            support for sitting or laying on objects
+        """
+        if position not in body.POSITIONS:
+            raise ValueError(f"Character ID {self.id}.stance, {position} is not an allowed position. Positions are: {body.POSITIONS}")
+        if force:
+            self.position = position
+        else:
+            if self.position == position:
+                self.msg(f'You are already {position}.')
+                return False
+            else:
+                self.position = position
+        if position == 'standing':
+            room_msg = f"{self.usdesc} stands up."
+            self.msg("You stand up.")
+        elif position == 'laying' or position == 'sitting':
+            if position == 'laying':
+                room_pos_tense = 'lays'
+                self_pos_tense = 'lay'
+                room_msg = f"{self.usdesc} {room_pos_tense} down."
+            else:
+                room_pos_tense = 'sits'
+                self_pos_tense = 'sit'
+                room_msg = f"{self.usdesc} {room_pos_tense} down."
+            self.msg(f"You {self_pos_tense} down.")
+        if not quiet:
+            self.location.msg_contents(room_msg, exclude=(self,))
+        return True

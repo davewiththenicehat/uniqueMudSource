@@ -267,8 +267,6 @@ class TestObjects(CommandTest):
         self.assertEqual(char.attributes.get('position'), "laying")
         self.assertEqual(char.position, "laying")
 
-
-
 # Testing of emoting / sdesc / recog system
 
 
