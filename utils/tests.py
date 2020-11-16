@@ -111,16 +111,23 @@ class TestUtils(CommandTest):
 
         # test element functions
         def br_func():
-            char.break_reached = True
-        char.hp.breakpoint_func = br_func
+            char.descending_breakpoint_reached = True
+        def as_br_func():
+            char.ascending_breakpoint_reached = True
+        char.hp.descending_breakpoint_func = br_func
+        char.hp.ascending_breakpoint_func = as_br_func
         char.hp = -1
-        self.assertTrue(char.break_reached)
+        self.assertTrue(char.descending_breakpoint_reached)
         # reset it and do it again
-        char.break_reached = False
+        char.descending_breakpoint_reached = False
         char.hp = 1
-        self.assertFalse(char.break_reached)
+        self.assertTrue(char.ascending_breakpoint_reached)  # test ascending breakpoints
+        self.assertFalse(char.descending_breakpoint_reached)  # test descending breakpoints a second time.
         char.hp = -1
-        self.assertTrue(char.break_reached)
+        self.assertTrue(char.descending_breakpoint_reached)
+        # clean up temp variables
+        char.ascending_breakpoint_reached = None
+        char.descending_breakpoint_reached = None
 
 
         def min_test_func():

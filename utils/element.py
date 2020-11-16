@@ -300,7 +300,8 @@ ELEMENT_LOCAL_ATTRIBUTES = [
     ('dbtype', 'db'),
     ('min_func', None),
     ('max_func', None),
-    ('breakpoint_func', None)
+    ('descending_breakpoint_func', None),
+    ('ascending_breakpoint_func', None)
 ]
 ELEMENT_OPTIONS = ELEMENT_DB_FIELDS + ELEMENT_LOCAL_ATTRIBUTES
 # Used to check if an attribute of the Element is a database element
@@ -324,9 +325,12 @@ class Element:
                 will not allow operators to set the Element above max
                     will run Element.max_func when max is reached
                 has a breakpoint attribute default is 0
-                    will run Element.breakpoint_func when passed
+                    will run Element.descending_breakpoint_func when the element's value falls below the breakpoint after being above it.
                         will ONLY run when it is passed
-                        if element is 10 below the break point and is subtracted further the breakpoint_func will not run.
+                        if element is 10 below the break point and is subtracted further the descending_breakpoint_func will not run.
+                    will run Element.ascending_breakpoint_func when the element's value rises above the breakpoint after being below it.
+                        Will only run when it is passed
+                        Rising an element that is already above the breakpoint will not trigger this function
         Declaration of the Element requires creating a class attribute that is a proper which steps to do so is covered here.
 
     Creation:
@@ -364,7 +368,8 @@ class Element:
             'min': -100,  # the min number the Element can be, if reached min_func runs
             'min_func': None,  # reference to a function to run when the self.value attribute reaches self.min
             'breakpoint': 0,  # number a breakpoint point occurs like falling unconshious or an object breakpoint
-            'breakpoint_func': None,  # When passed breakpoint_func runs
+            'descending_breakpoint_func': None,  # When Element's value falls below the breakpoint after being above it, this function is called.
+            'ascending_breakpoint_func': None,  # When Element's value rises above breakpoint after being below it, this function is called
             'max': 100,  # the max number the Element can be. When reached self.max_fun() runs
             'max_func': None  # reference to a function to run when the self.value attribute reachs the self.max
             'dbtype': 'db',  # the database type to use can be 'db' or 'ndb'
@@ -537,7 +542,7 @@ class Element:
         """
         Internal method, do not use.
         Checks is Element's breakpoint number has been reached.
-        Runs self.breakpoint_func if breakpoint was reached.
+        Runs self.descending_breakpoint_func if breakpoint was reached.
         Call only after value was verified by verify_num_arg
         Call only after the the math has been completed on the value but before it has been written to the database.
         """
@@ -545,9 +550,16 @@ class Element:
         if el_current_value > self.breakpoint:
             if value <= self.breakpoint:
                 if self.log:
-                    log_info(f"Element {self.name} for db object {self.container.dbref}, method breakpoint_check encountered breakpoint.")
-                if self.breakpoint_func:
-                    self.breakpoint_func()
+                    log_info(f"Element {self.name} for db object {self.container.dbref}, method breakpoint_check encountered descending breakpoint.")
+                if self.descending_breakpoint_func:
+                    self.descending_breakpoint_func()
+                return value
+        elif el_current_value <= self.breakpoint:
+            if value > self.breakpoint:
+                if self.log:
+                    log_info(f"Element {self.name} for db object {self.container.dbref}, method breakpoint_check encountered ascending breakpoint.")
+                if self.ascending_breakpoint_func:
+                    self.ascending_breakpoint_func()
                 return value
         return value
 
@@ -916,7 +928,7 @@ class Element:
     def __getattribute__(self, name):
         """
         Used to access any attribute in the Element.
-        Including min, min_func, max, max_func, breakpoint, breakpoint_func
+        Including min, min_func, max, max_func, breakpoint, descending_breakpoint_func and ascending_breakpoint_func
         """
         # if the attribute is a database attribute retreive it from the database
         if super(Element, self).__getattribute__('verified'):

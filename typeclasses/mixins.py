@@ -50,8 +50,10 @@ class CharExAndObjMixin:
     Methods:
         get_body_part(no_understore=False), Return the name of a body part that exists on this Object
         cache_body_dr(), caches dr for all this Object's body parts
-        self.break_func, This is automatically called when an object's hp reaches 0.
-            Intended to be overriden with a typeclass
+        ascending_breakpoint(self), is automatically called when an object's hp rises above it's breakpoint (likely 0), when it was previous below it's breakpoint.
+            Is intended to be overridden
+        descending_breakpoint(), is automatically called when an object's hp falls below it's breakpoint (likely 0), when it was previous above it's breakpoint.
+            Is intended to be overridden
         self.destroy, This is automatically called an an object's hp reaches self.hp.min
             Intended to be overriden with a typeclass
 
@@ -166,11 +168,19 @@ class CharExAndObjMixin:
         """
         return body.get_part(self, no_understore, log)
 
-    def break_func(self):
+    def ascending_breakpoint(self):
         """
+        This is automatically called when an object's hp rises above it's breakpoint (likely 0), when it was previous below it's breakpoint.
         Here to be overridden.
-        This is automatically called when an object's hp reaches 0.
         """
+        self.msg('Ascending breakpoint.')
+
+    def descending_breakpoint(self):
+        """
+        This is automatically called when an object's hp falls below it's breakpoint (likely 0), when it was previous above it's breakpoint.
+        Here to be overridden.
+        """
+        self.msg('Descending breakpoint.')
 
     def destroy(self):
         """
@@ -192,7 +202,8 @@ class CharExAndObjMixin:
             Used to cache dr values for objects body parts.
         """
         self.cache_body_dr()  # cache dr worn on body
-        self.hp.breakpoint_func = self.break_func
+        self.hp.descending_breakpoint_func = self.descending_breakpoint
+        self.hp.ascending_breakpoint_func = self.ascending_breakpoint
         self.hp.min_func = self.destroy
         return super().at_init()  # Here only to support future change to evennia's Character.at_init
 
