@@ -1,6 +1,9 @@
 from evennia.utils import evtable
 from evennia.commands.default.muxcommand import MuxCommand
 from evennia import default_cmds
+from evennia.contrib import rpsystem
+from evennia import CmdSet
+
 
 class StandardCmdsCmdSet(default_cmds.CharacterCmdSet):
     """
@@ -171,3 +174,39 @@ class CmdLay(MuxCommand):
     def func(self):
         """Implement command"""
         self.caller.lay()
+
+
+class UMRPSystemCmdSet(CmdSet):
+    """
+    Overridden RP system's commands.
+
+    Reason:
+        deny access to commands sdesc, pose and mask to those without builder permision
+    """
+
+    def at_cmdset_creation(self):
+        self.add(rpsystem.CmdEmote())
+        self.add(rpsystem.CmdSay())
+        self.add(rpsystem.CmdRecog())
+        # commands that have been overridden locally
+        self.add(CmdSdesc())
+        self.add(CmdPose())
+        self.add(CmdMask())
+
+
+class CmdPose(rpsystem.CmdPose):
+    # rpsystem overriden CmdPose
+    locks = "perm(Builder)"
+    help_category = "Building"
+
+
+class CmdSdesc(rpsystem.CmdSdesc):
+    # rpsystem overriden CmdSdesc
+    locks = "perm(Builder)"
+    help_category = "Building"
+
+
+class CmdMask(rpsystem.CmdMask):
+    # rpsystem overriden CmdMask
+    locks = "perm(Builder)"
+    help_category = "Building"

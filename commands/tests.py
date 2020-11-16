@@ -409,3 +409,96 @@ class TestCommands(CommandTest):
         arg = "= stand"
         wanted_message = "You stand up."
         cmd_result = self.call(command(), arg, wanted_message, caller=self.char2)
+
+        # test permision lock down for pose, sdesc and mask
+        # test commands on a character without the permission
+        for cmd in ('mask', 'sdesc', 'pose'):
+            command = developer_cmds.CmdMultiCmd
+            arg = f"= {cmd}"
+            wanted_message = f"Command '{cmd}' is not available."
+            cmd_result = self.call(command(), arg, caller=self.char2)
+            self.assertRegex(cmd_result, wanted_message)
+        # on on a character with permission
+        # mask
+        command = developer_cmds.CmdMultiCmd
+        arg = "= mask"
+        wanted_message = "Usage: (un)mask sdesc"
+        cmd_result = self.call(command(), arg, wanted_message, caller=self.char1)
+        # pose
+        command = developer_cmds.CmdMultiCmd
+        arg = "= pose"
+        wanted_message = "Usage: pose <pose-text> OR pose obj = <pose-text>"
+        cmd_result = self.call(command(), arg, wanted_message, caller=self.char1)
+        # sdesc
+        command = developer_cmds.CmdMultiCmd
+        arg = "= sdesc"
+        wanted_message = "Usage: sdesc <sdesc-text>"
+        cmd_result = self.call(command(), arg, wanted_message, caller=self.char1)
+
+        # test rpsytem commands
+        # emote
+        command = developer_cmds.CmdMultiCmd
+        arg = "= emote test emote"
+        wanted_message = "Char2 test emote."
+        cmd_result = self.call(command(), arg, caller=self.char2)
+        self.assertRegex(cmd_result, wanted_message)
+        # veryfy emote echos to room properly
+        command = developer_cmds.CmdMultiCmd
+        arg = "= control_other char2=emote test emote"
+        wanted_message = "Char2 test emote."
+        cmd_result = self.call(command(), arg, caller=self.char1)
+        self.assertRegex(cmd_result, wanted_message)
+        # say
+        command = developer_cmds.CmdMultiCmd
+        arg = "= say test message"
+        wanted_message = r"Char2 says, \"test message\""
+        cmd_result = self.call(command(), arg, caller=self.char2)
+        self.assertRegex(cmd_result, wanted_message)
+        # verify say echos to room properly
+        command = developer_cmds.CmdMultiCmd
+        arg = "= control_other Char2=say test message"
+        wanted_message = r"Char2 says, \"test message\""
+        cmd_result = self.call(command(), arg, caller=self.char1)
+        self.assertRegex(cmd_result, wanted_message)
+        # test recog
+        command = developer_cmds.CmdMultiCmd
+        arg = "= recog Char2 as a test change"
+        wanted_message = r"Char will now remember Char2 as a test change."
+        self.call(command(), arg, wanted_message, caller=self.char1)
+        command = developer_cmds.CmdMultiCmd
+        arg = "= l"
+        wanted_message = r"a test change\(#7\) is standing here\."
+        cmd_result = self.call(command(), arg, caller=self.char1)
+        self.assertRegex(cmd_result, wanted_message)
+        command = developer_cmds.CmdMultiCmd
+        arg = "= forget test change"
+        wanted_message = r"Char will now know them only as 'Char2'."
+        self.call(command(), arg, wanted_message, caller=self.char1)
+        # test mask
+        command = developer_cmds.CmdMultiCmd
+        arg = "= mask test change"
+        wanted_message = r"You wear a mask as 'test change [masked]'."
+        self.call(command(), arg, wanted_message, caller=self.char1)
+        command = developer_cmds.CmdMultiCmd
+        arg = "= l"
+        wanted_message = r"test change"
+        cmd_result = self.call(command(), arg, caller=self.char2)
+        self.assertRegex(cmd_result, wanted_message)
+        command = developer_cmds.CmdMultiCmd
+        arg = "= unmask"
+        wanted_message = r"You remove your mask and are again 'Char'."
+        self.call(command(), arg, wanted_message, caller=self.char1)
+        # test pose
+        command = developer_cmds.CmdMultiCmd
+        arg = "= pose obj= test pose"
+        wanted_message = r"Pose will read 'Obj test pose.'."
+        self.call(command(), arg, wanted_message, caller=self.char1)
+        command = developer_cmds.CmdMultiCmd
+        arg = "= l"
+        wanted_message = r"Obj\(#4\) test pose\."
+        cmd_result = self.call(command(), arg, caller=self.char1)
+        self.assertRegex(cmd_result, wanted_message)
+        command = developer_cmds.CmdMultiCmd
+        arg = "= pose reset obj="
+        wanted_message = r"Pose will read 'Obj is here.'."
+        self.call(command(), arg, wanted_message, caller=self.char1)

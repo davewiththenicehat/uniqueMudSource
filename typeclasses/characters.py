@@ -15,6 +15,7 @@ from evennia import utils
 from world.rules import stats, body
 from evennia.contrib.rpsystem import ContribRPCharacter
 from typeclasses.equipment.clothing import ClothedCharacter
+from evennia.contrib.rpsystem import RPSystemCmdSet
 
 # Used to adjust Element settings for stats, and the unit test for Character also
 CHARACTER_STAT_SETTINGS = {
@@ -147,7 +148,9 @@ class Character(AllObjectsMixin, CharExAndObjMixin, ClothedCharacter, GenderChar
         """Runs when Character is created."""
         self.targetable = True
         self.position = 'standing'
-        return super().at_object_creation()
+        super_return = super().at_object_creation()  # itentionally before RPSystemCmdSet removal
+        self.cmdset.remove(RPSystemCmdSet)  # overridden and added back in at commands.standard_cmds.UMRPSystemCmdSet
+        return super_return
 
     # define characters's position ('sitting', 'standing', 'laying')
     @property
