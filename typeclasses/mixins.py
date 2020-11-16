@@ -50,6 +50,11 @@ class CharExAndObjMixin:
     Methods:
         get_body_part(no_understore=False), Return the name of a body part that exists on this Object
         cache_body_dr(), caches dr for all this Object's body parts
+        self.break_func, This is automatically called when an object's hp reaches 0.
+            Intended to be overriden with a typeclass
+        self.destroy, This is automatically called an an object's hp reaches self.hp.min
+            Intended to be overriden with a typeclass
+
     """
 
     # define objects's HP
