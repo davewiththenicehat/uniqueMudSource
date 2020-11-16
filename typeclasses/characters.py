@@ -156,14 +156,15 @@ class Character(AllObjectsMixin, CharExAndObjMixin, ClothedCharacter, GenderChar
         return self.db.position
 
     @position.setter
-    def position(self, value):
+    def position(self, position):
         """set Character.position attribute. Checking for incorrect value."""
-        if isinstance(value, str):
-            value = value.lower()
-            if value in body.POSITIONS:  # verify it is an allowed position
-                self.db.position = value
+        if isinstance(position, str):
+            position = position.lower()
+            if position in body.POSITIONS:  # verify it is an allowed position
+                self.db.position = position
+                self.db.pose = f'is {position} here.'
             else:
-                raise ValueError(f"Character ID {self.id}.stance, {value} is not an allowed position. Positions are: {body.POSITIONS}")
+                raise ValueError(f"Character ID {self.id}.stance, {position} is not an allowed position. Positions are: {body.POSITIONS}")
         else:
             raise ValueError(f"Character ID {self.id}.stance, can not be set to non str 'non-string' value")
 
