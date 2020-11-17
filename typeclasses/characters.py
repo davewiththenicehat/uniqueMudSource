@@ -9,7 +9,7 @@ creation commands.
 """
 from typeclasses.mixins import CharExAndObjMixin, AllObjectsMixin
 from evennia.contrib.gendersub import GenderCharacter, _RE_GENDER_PRONOUN
-from utils.element import Element
+from utils.element import Element, ListElement
 from world import status_functions
 from evennia import utils
 from world.rules import stats, body
@@ -116,6 +116,14 @@ class Character(AllObjectsMixin, CharExAndObjMixin, ClothedCharacter, GenderChar
                 char.position = "not standing"  # this will throw a ValueError
                 del char.position  # will set position to "standing"
                     It is important that position exist. It should not be deleted
+        condition=ListElement, an object to represent a Character's condition.
+            Exmaple: char.condition.dead, char.condition.unconscious
+            Interact with as a list Element
+            char.condition.dead = True, this will be saved to the database.
+            All conditions are the negative form of the condition.
+                For example dead rather than alive.
+            Do not interect with database entries for Elements directly.
+                Manage them through the element. char.condition.attribute_name
 
     Methods:
         All methods are fully documented in their docstrings.
@@ -152,6 +160,25 @@ class Character(AllObjectsMixin, CharExAndObjMixin, ClothedCharacter, GenderChar
         super_return = super().at_object_creation()  # itentionally before RPSystemCmdSet removal
         self.cmdset.remove(RPSystemCmdSet)  # overridden and added back in at commands.standard_cmds.UMRPSystemCmdSet
         return super_return
+
+    # define objects's condition
+    @property
+    def condition(self):
+        try:
+            if self._condition:
+                pass
+        except AttributeError:
+            self._condition = ListElement(self, body.CHARACTER_CONDITIONS)
+            self._condition.verify()
+        return self._condition
+
+    @condition.setter
+    def condition(self, value):
+        self._condition.set(value)
+
+    @condition.deleter
+    def condition(self):
+        self._condition.delete()
 
     # define characters's position ('sitting', 'standing', 'laying')
     @property
@@ -357,7 +384,7 @@ class Character(AllObjectsMixin, CharExAndObjMixin, ClothedCharacter, GenderChar
 
     def ready(self):
         """
-        Check if player is ready for a command that requires a ready state.
+        Check if player is ready for a command that requires a ready status.
         This command is automatically called in Command.defer.
         It will handle the player notification message automatically.
 
@@ -596,4 +623,42 @@ class Character(AllObjectsMixin, CharExAndObjMixin, ClothedCharacter, GenderChar
             self.msg(f"You {self_pos_tense} down.")
         if not quiet:
             self.location.msg_contents(room_msg, exclude=(self,))
+        return True
+
+    def set_conscious(self, state=True):
+        """
+        Change a characters conscious state.
+
+        Arguments:
+            state=True, True of conscious False for unconscious
+        """
+
+    def at_msg_receive(self, text=None, from_obj=None, **kwargs):
+        """
+        This hook is called whenever someone sends a message to this
+        object using the `msg` method.
+
+        Note that from_obj may be None if the sender did not include
+        itself as an argument to the obj.msg() call - so you have to
+        check for this. .
+
+        Consider this a pre-processing method before msg is passed on
+        to the user session. If this method returns False, the msg
+        will not be passed on.
+
+        Args:
+            text (str, optional): The message received.
+            from_obj (any, optional): The object sending the message.
+
+        Kwargs:
+            This includes any keywords sent to the `msg` method.
+
+        Returns:
+            receive (bool): If this message should be received.
+
+        Notes:
+            If this method returns False, the `msg` operation
+            will abort without sending the message.
+
+        """
         return True

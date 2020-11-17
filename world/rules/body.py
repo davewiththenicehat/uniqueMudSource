@@ -35,6 +35,16 @@ POSITIONS = (
     'laying',
 )
 
+# keep list of Character states
+# do not add busy or stunned
+# default state is falsely (0). Use negative condition names. IE: dead rather than alive
+CHARACTER_CONDITIONS = (
+    'unconscious',
+    'dead',
+    'poisoned',
+    'sick',
+)
+
 
 def get_part(target, no_underscore=False, log=None):
     """

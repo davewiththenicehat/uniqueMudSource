@@ -267,6 +267,16 @@ class TestObjects(CommandTest):
         self.assertEqual(char.attributes.get('position'), "laying")
         self.assertEqual(char.position, "laying")
 
+        # test Character.condition
+        for cond_name in body.CHARACTER_CONDITIONS:
+            db_cond_name = 'condition_'+cond_name
+            self.assertFalse(char.attributes.has(db_cond_name))
+            self.assertEqual(getattr(char.condition, cond_name), 0)
+            setattr(char.condition, cond_name, True)
+            self.assertTrue(char.attributes.has(db_cond_name))
+            self.assertTrue(char.attributes.get(db_cond_name))
+
+
 # Testing of emoting / sdesc / recog system
 
 
