@@ -276,6 +276,12 @@ class TestObjects(CommandTest):
             self.assertTrue(char.attributes.has(db_cond_name))
             self.assertTrue(char.attributes.get(db_cond_name))
 
+        # test Character.condition.unconscious
+        char.set_unconscious()
+        self.assertFalse(char.ready())
+        char.set_unconscious(False)
+        self.assertTrue(char.ready())
+
 
 # Testing of emoting / sdesc / recog system
 

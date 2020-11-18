@@ -90,6 +90,7 @@ def status_delay_stop(target, status_type, complete_cmd):
         it is used to remove the instance of utilsdelay
         This is a TaskHandler method
     """
+    # stop the function if there is no status of this type on the Character
     if not target.nattributes.has(f'{status_type}_status'):
         return False
     delay_status_inst = target.nattributes.get(f'{status_type}_status')

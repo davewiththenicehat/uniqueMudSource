@@ -124,6 +124,7 @@ class Character(AllObjectsMixin, CharExAndObjMixin, ClothedCharacter, GenderChar
                 For example dead rather than alive.
             Do not interect with database entries for Elements directly.
                 Manage them through the element. char.condition.attribute_name
+        condition.unconscious, special note: Refer to self.set_unconscious() for full details.
 
     Methods:
         All methods are fully documented in their docstrings.
@@ -391,6 +392,11 @@ class Character(AllObjectsMixin, CharExAndObjMixin, ClothedCharacter, GenderChar
         Usage:
             if Character.ready():
         """
+        # Player is not ready if they are unconscious
+        if self.condition.unconscious:
+            self.msg("You can not do that while unconscious.")
+            return False
+        # Player is not ready if they have a status active.
         for status_type in status_functions.STATUS_TYPES:
             if self.attributes.has(status_type):
                 delay_remaining = status_functions.status_delay_get(self, status_type)
@@ -398,7 +404,7 @@ class Character(AllObjectsMixin, CharExAndObjMixin, ClothedCharacter, GenderChar
                     plural_sec = 's' if delay_remaining > 1.99 else ''
                     self.msg(f'You will be {status_type} for {round(delay_remaining)} second{plural_sec}.')
                     return False  # Tell command character is currently occupied
-        return True
+        return True  # player is ready
 
     def get_pronoun(self, pattern):
         """
@@ -625,13 +631,28 @@ class Character(AllObjectsMixin, CharExAndObjMixin, ClothedCharacter, GenderChar
             self.location.msg_contents(room_msg, exclude=(self,))
         return True
 
-    def set_conscious(self, state=True):
+    def set_unconscious(self, state=True):
         """
         Change a characters conscious state.
 
         Arguments:
-            state=True, True of conscious False for unconscious
+            state=True, True for unconscious and False for conscious
+
+        Notes:
+            if a character is unconscious they will not have access to:
+                any commands that require the ready state, Character.ready()
         """
+        # if already in the passed state, do nothing
+        if state == self.condition.unconscious:
+            return
+
+        self.condition.unconscious = state
+
+        if state:  #if setting unconscious to True
+            self.msg('You fall unconscious.')
+            #stop any deffered commands
+            self.status_stop()
+
 
     def at_msg_receive(self, text=None, from_obj=None, **kwargs):
         """
