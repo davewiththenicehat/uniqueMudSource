@@ -106,6 +106,8 @@ class Command(default_cmds.MuxCommand):
             Will be automatically filled in Command.func when a Character weapon system is developed.
         desc = None  # a present tense description for the action of this command. IE: "kicks"
             If None when self.func is called, it will give assigned self.key
+        requires_ready = True  # if true this command requires the ready status before it can do anything.
+            deferal commands still require ready to defer, even is requires_ready is false.
 
     Methods:
         All methods are fully documented in their docstrings.
@@ -140,6 +142,7 @@ class Command(default_cmds.MuxCommand):
     room_message = None  # text to message the room. Will not call automatically, here to pass between Command functions
     caller_weapon = None  # weapon name that will show up in Command.combat_action's automated messages
     desc = None  # a present tense description for the action of this command. IE: "kicks"
+    requires_ready = True  # if true this command requires the ready status before it can do anything. deferal commands still require ready to defer
 
 
     def func(self):
@@ -209,6 +212,19 @@ class Command(default_cmds.MuxCommand):
         defer_successful = self.defer()
         if defer_successful:
             self.start_message()
+
+    def at_pre_cmd(self):
+        """
+        stops execution if character requires ready status, and is not ready.
+        Evennia note: at_pre_cmd(): If this returns anything truthy, execution is aborted.
+        Behavior note: returning anything stops the exection of the command.
+        """
+        if self.requires_ready:
+            caller_ready = self.caller.ready()
+            if not caller_ready:
+                return True
+        return super().at_pre_cmd()
+
 
     def start_message(self):
         """

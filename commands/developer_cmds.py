@@ -45,6 +45,7 @@ class CmdDeferCmd(Command):
     status_type = 'busy'
     defer_time = 5
     locks = "cmd:perm(Developer)"
+    requires_ready = False
 
     def func(self):
         defer_successful = self.defer()
@@ -73,6 +74,7 @@ class CmdInterruptCmd(Command):
     key = "interrupt_cmd"
     help_category = "developer"
     locks = "cmd:perm(Developer)"
+    requires_ready = False
 
     def func(self):
         target = None
@@ -108,6 +110,7 @@ class CmdStopCmd(Command):
     key = "stop_cmd"
     help_category = "developer"
     locks = "cmd:perm(Developer)"
+    requires_ready = False
 
     def func(self):
         target = None
@@ -135,6 +138,7 @@ class CmdCompleteCmdEarly(Command):
     key = "complete_cmd_early"
     help_category = "developer"
     locks = "cmd:perm(Developer)"
+    requires_ready = False
 
     def func(self):
         target = None
@@ -159,6 +163,7 @@ class CmdTestCmd(Command):
     key = "test_cmd"
     help_category = "developer"
     locks = "cmd:perm(Developer)"
+    requires_ready = False
 
     def func(self):
         self.caller.msg("Test command ran successfully.")
@@ -181,6 +186,7 @@ class CmdStunSelf(Command):
     key = "stun_self"
     help_category = "developer"
     locks = "cmd:perm(Developer)"
+    requires_ready = False
 
     def func(self):
         self.caller.stun(3)
@@ -202,6 +208,7 @@ class CmdStopStun(Command):
     key = "stop_stun"
     help_category = "developer"
     locks = "cmd:perm(Developer)"
+    requires_ready = False
 
     def func(self):
         stop_success = self.caller.status_stop('stunned', "Stunned stopped message successful.", 'test_cmd')
@@ -234,6 +241,7 @@ class CmdMultiCmd(Command):
     key = "multi_cmd"
     help_category = "developer"
     locks = "cmd:perm(Developer)"
+    requires_ready = False
 
     def func(self):
         commands = self.rhslist
@@ -265,6 +273,7 @@ class CmdViewObj(Command):
     key = "view_obj"
     help_category = "developer"
     locks = "cmd:perm(Developer)"
+    requires_ready = False
 
     def view_cache_stat_modifiers(self, target=None):
         if not target:
@@ -323,6 +332,7 @@ class CmdContrlOther(Command):
     key = "control_other"
     help_category = "developer"
     locks = "cmd:perm(Developer)"
+    requires_ready = False
 
     def func(self):
         caller = self.caller
@@ -361,6 +371,7 @@ class CmdCmdFuncTest(Command):
     key = "cmd_func_test"
     help_category = "developer"
     locks = "cmd:perm(Developer)"
+    requires_ready = False
 
     def func(self):
         caller = self.caller
