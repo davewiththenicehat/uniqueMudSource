@@ -134,6 +134,16 @@ class Character(AllObjectsMixin, CharExAndObjMixin, ClothedCharacter, GenderChar
         self.status_stop(status_type=str, stop_message=str, stop_cmd=str), stop a stun status early
         status_stop_request(stop_message=None, stop_cmd=None), Request for a player to stop a status.
         cache_stat_modifiers(), Creates "Stat modifiers" mentioned in the Attributes section of this docstring
+        at_msg_receive(force=None, force_on_unconscious=None), a Character will silence messages when they are unconscious or dead.
+            To force reciving a certain message always use the force kwarg.
+            This is also the argument to use to force a message when a Character is dead.
+                Example:
+                    char.msg('This is a message', force=True)
+                    room.msg_contents('this is a message', force=True)
+            To force reciving a certain message when the Character is unconscious use the force_on_unconscious kwarg.
+            Example:
+                char.msg('This is a message', force_on_unconscious=True)
+                room.msg_contents('this is a message', force_on_unconscious=True)
 
     Final Notes:
         unit testing for Character status is done in the commands.tests.TestCommands unit test
@@ -394,7 +404,7 @@ class Character(AllObjectsMixin, CharExAndObjMixin, ClothedCharacter, GenderChar
         """
         # Player is not ready if they are unconscious
         if self.condition.unconscious:
-            self.msg("You can not do that while unconscious.")
+            self.msg("You can not do that while unconscious.", force=True)
             return False
         # Player is not ready if they have a status active.
         for status_type in status_functions.STATUS_TYPES:
@@ -603,6 +613,7 @@ class Character(AllObjectsMixin, CharExAndObjMixin, ClothedCharacter, GenderChar
 
         todo:
             support for sitting or laying on objects
+            Make it use the ready function
         """
         if position not in body.POSITIONS:
             raise ValueError(f"Character ID {self.id}.stance, {position} is not an allowed position. Positions are: {body.POSITIONS}")
@@ -641,6 +652,9 @@ class Character(AllObjectsMixin, CharExAndObjMixin, ClothedCharacter, GenderChar
         Notes:
             if a character is unconscious they will not have access to:
                 any commands that require the ready state, Character.ready()
+
+        to do:
+            make exit usage require a ready state.
         """
         # if already in the passed state, do nothing
         if state == self.condition.unconscious:
@@ -649,7 +663,7 @@ class Character(AllObjectsMixin, CharExAndObjMixin, ClothedCharacter, GenderChar
         self.condition.unconscious = state
 
         if state:  #if setting unconscious to True
-            self.msg('You fall unconscious.')
+            self.msg('You fall unconscious.', force=True)
             #stop any deffered commands
             self.status_stop()
 
@@ -682,4 +696,21 @@ class Character(AllObjectsMixin, CharExAndObjMixin, ClothedCharacter, GenderChar
             will abort without sending the message.
 
         """
+        # if force message is sent, always send the message.
+        if kwargs.get('force', False):
+            return True
+
+        # silent messages when Character is unconscious
+        if self.condition.unconscious:
+            # force the message if character is unconscious, but no other silencing conditions
+            if kwargs.get('force_on_unconscious', False):
+                return True
+            return False
+
+        # silent messages when Character is dead.
+        # Only the force kwarg will show a message when the Character is dead
+        if self.condition.dead:
+            return False
+
+        # no silent conditions found, show message
         return True

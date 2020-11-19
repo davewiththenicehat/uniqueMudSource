@@ -8,6 +8,7 @@ from typeclasses.objects import Object
 from evennia.contrib import gendersub
 from evennia.utils.test_resources import EvenniaTest
 from world.rules import body
+from commands import developer_cmds
 
 
 class TestObjects(CommandTest):
@@ -279,6 +280,14 @@ class TestObjects(CommandTest):
         # test Character.condition.unconscious
         char.set_unconscious()
         self.assertFalse(char.ready())
+
+        # Test things a character should not be able to do while unconscious.
+        command = developer_cmds.CmdMultiCmd
+        for uncon_cmd in ('punch 2-a normal person',):
+            arg = f"= {uncon_cmd}"
+            wanted_message = r"You can not do that while unconscious."
+            self.call(command(), arg, wanted_message, caller=char)
+        #wake char back up
         char.set_unconscious(False)
         self.assertTrue(char.ready())
 
