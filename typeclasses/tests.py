@@ -28,7 +28,8 @@ class TestObjects(CommandTest):
     def test_objects(self):
 
         # test the character's gender and the abilit to run the @gender command
-        char = create_object(Human, key="Gendered", location=self.room1)
+        #char = create_object(Human, key="Gendered", location=self.room1)
+        char = self.char1
         txt = "Test |p gender"
         self.assertEqual(gendersub._RE_GENDER_PRONOUN.sub(char._get_pronoun, txt), "Test their gender")
         char.execute_cmd("gender male")
@@ -279,17 +280,19 @@ class TestObjects(CommandTest):
 
         # test Character.condition.unconscious
         char.set_unconscious()
+        # Was not able to get this to work. Works in command.tests
+        # self.assertEqual(char.db.pose, 'is unconscious here.')
         self.assertFalse(char.ready())
-
         # Test things a character should not be able to do while unconscious.
         command = developer_cmds.CmdMultiCmd
-        for uncon_cmd in ('punch 2-a normal person', 'punch not here'):
+        for uncon_cmd in ('punch 2-a normal person', 'punch not here', 'out'):
             arg = f"= {uncon_cmd}"
             wanted_message = r"You can not do that while unconscious."
             self.call(command(), arg, wanted_message, caller=char)
         #wake char back up
         char.set_unconscious(False)
         self.assertTrue(char.ready())
+        self.assertEqual(char.db.pose, 'is laying here.')
 
 
 # Testing of emoting / sdesc / recog system

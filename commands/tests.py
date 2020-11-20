@@ -510,7 +510,7 @@ class TestCommands(CommandTest):
 
 
         # test actions against an unconscious characer
-        self.char1.condition.unconscious = True
+        self.char1.set_unconscious()
         self.assertFalse(self.char1.ready())
         command = developer_cmds.CmdMultiCmd
         arg = "= control_other Char2=punch Char, complete_cmd_early Char2"
@@ -521,3 +521,16 @@ class TestCommands(CommandTest):
         arg = "= out"
         wanted_message = r"You can not do that while unconscious."
         cmd_result = self.call(command(), arg, wanted_message,  caller=self.char1)
+        command = developer_cmds.CmdMultiCmd
+        # make certain Character's pose shows unconscious
+        arg = "= l"
+        wanted_message = r"Char is unconscious here"
+        cmd_result = self.call(command(), arg, caller=self.char2)
+        self.assertRegex(cmd_result, wanted_message)
+        self.char1.set_unconscious(False)  # wake the character up
+        # make certain Character is in laying position after waking up.
+        command = developer_cmds.CmdMultiCmd
+        arg = "= l"
+        wanted_message = r"Char is laying here"
+        cmd_result = self.call(command(), arg, caller=self.char2)
+        self.assertRegex(cmd_result, wanted_message)

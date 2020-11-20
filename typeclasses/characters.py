@@ -663,6 +663,8 @@ class Character(AllObjectsMixin, CharExAndObjMixin, ClothedCharacter, GenderChar
                         force a message to unconscious Character with
                             char.msg(message, force_on_unconscious=True)
 
+            character pose while unconscious unit test is in commands.tests
+
         to do:
 
         """
@@ -673,10 +675,18 @@ class Character(AllObjectsMixin, CharExAndObjMixin, ClothedCharacter, GenderChar
         self.condition.unconscious = state  # Set the unconscious state
 
         if state:  #if setting unconscious to True
-            self.msg('You fall unconscious.', force=True)
             # stop any deffered commands
             self.status_stop()
-
+            self.msg('You fall unconscious.', force=True)
+            self.position = 'laying'
+            self.db.pose = 'is unconscious here.'
+            room_msg = f"{self.usdesc} falls unconscious."
+            self.location.msg_contents(room_msg, exclude=(self,))
+        else:
+            self.msg('You recover consciousness.', force=True)
+            self.db.pose = f'is {self.position} here.'
+            room_msg = f"{self.usdesc} recovers consciousness."
+            self.location.msg_contents(room_msg, exclude=(self,))
 
     def at_msg_receive(self, text=None, from_obj=None, **kwargs):
         """
