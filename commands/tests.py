@@ -512,3 +512,7 @@ class TestCommands(CommandTest):
         wanted_message = r"\nevade 5 VS punch"
         cmd_result = self.call(command(), arg, caller=self.char1)
         self.assertRegex(cmd_result, wanted_message)
+        command = developer_cmds.CmdMultiCmd
+        arg = "= out"
+        wanted_message = r"You can not do that while unconscious."
+        cmd_result = self.call(command(), arg, wanted_message,  caller=self.char1)

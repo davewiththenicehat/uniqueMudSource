@@ -172,6 +172,33 @@ class Character(AllObjectsMixin, CharExAndObjMixin, ClothedCharacter, GenderChar
         self.cmdset.remove(RPSystemCmdSet)  # overridden and added back in at commands.standard_cmds.UMRPSystemCmdSet
         return super_return
 
+    def at_before_move(self, destination, **kwargs):
+        """
+        Called just before starting to move this object to
+        destination.
+
+        Args:
+            destination (Object): The object we are moving to
+            **kwargs (dict): Arbitrary, optional arguments for users
+                overriding the call (unused by default).
+
+        Returns:
+            shouldmove (bool): If we should move or not.
+
+        Notes:
+            If this method returns False/None, the move is cancelled
+            before it is even started.
+
+            Unit tests in commands.tests
+
+        To Do:
+            Allow others moving an unconscious character
+        """
+        if self.condition.unconscious:  # unconscious Characters can not move
+            self.msg("You can not do that while unconscious.", force_on_unconscious=True)
+        # return has_perm(self, destination, "can_move")
+        return super().at_before_move(destination, **kwargs)
+
     # define objects's condition
     @property
     def condition(self):
