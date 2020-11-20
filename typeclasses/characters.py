@@ -172,33 +172,6 @@ class Character(AllObjectsMixin, CharExAndObjMixin, ClothedCharacter, GenderChar
         self.cmdset.remove(RPSystemCmdSet)  # overridden and added back in at commands.standard_cmds.UMRPSystemCmdSet
         return super_return
 
-    def at_before_move(self, destination, **kwargs):
-        """
-        Called just before starting to move this object to
-        destination.
-
-        Args:
-            destination (Object): The object we are moving to
-            **kwargs (dict): Arbitrary, optional arguments for users
-                overriding the call (unused by default).
-
-        Returns:
-            shouldmove (bool): If we should move or not.
-
-        Notes:
-            If this method returns False/None, the move is cancelled
-            before it is even started.
-
-            Unit tests in commands.tests
-
-        To Do:
-            Allow others moving an unconscious character
-        """
-        if self.condition.unconscious:  # unconscious Characters can not move
-            self.msg("You can not do that while unconscious.", force_on_unconscious=True)
-        # return has_perm(self, destination, "can_move")
-        return super().at_before_move(destination, **kwargs)
-
     # define objects's condition
     @property
     def condition(self):
@@ -679,9 +652,19 @@ class Character(AllObjectsMixin, CharExAndObjMixin, ClothedCharacter, GenderChar
         Notes:
             if a character is unconscious they will not have access to:
                 any commands that require the ready state, Character.ready()
+                    commands.Command.at_pre_cmd and commands.Command.defer
+                movement
+                    typeclasses.exits.UMExitCommand
+                evade attacks
+                    rules.actions.targeted_action
+                Have very limited access to msg
+                    typeclasses.characters.Character.at_msg_receive
+                        Mostly as it offers a kwarg for msg, force_on_unconscious
+                        force a message to unconscious Character with
+                            char.msg(message, force_on_unconscious=True)
 
         to do:
-            make exit usage require a ready state.
+
         """
         # if already in the passed state, do nothing
         if state == self.condition.unconscious:
@@ -714,6 +697,8 @@ class Character(AllObjectsMixin, CharExAndObjMixin, ClothedCharacter, GenderChar
 
         Kwargs:
             This includes any keywords sent to the `msg` method.
+            force_on_unconscious=False, show message even if Character is unconscious
+            force=False, show message to Character under any circumstance.
 
         Returns:
             receive (bool): If this message should be received.

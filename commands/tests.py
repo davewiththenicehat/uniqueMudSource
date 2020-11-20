@@ -400,6 +400,11 @@ class TestCommands(CommandTest):
         arg = "= lay"
         wanted_message = "You are already laying."
         cmd_result = self.call(command(), arg, wanted_message, caller=self.char1)
+        # a prone Character can not move.
+        command = developer_cmds.CmdMultiCmd
+        arg = "= out"
+        wanted_message = "You must stand up first."
+        cmd_result = self.call(command(), arg, wanted_message, caller=self.char1)
         # stand both characters up
         command = developer_cmds.CmdMultiCmd
         arg = "= stand"

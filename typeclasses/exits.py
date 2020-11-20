@@ -7,10 +7,63 @@ for allowing Characters to traverse the exit to its destination.
 
 """
 from evennia import DefaultExit
+from evennia.commands import command
 from typeclasses.mixins import CharExAndObjMixin, AllObjectsMixin, ExObjAndRoomMixin
 
 # A tuple of standard exit names
 STANDARD_EXITS = ('north', 'northeast', 'east', 'southeast', 'south', 'southwest', 'west', 'northwest')
+
+class UMExitCommand(command.Command):
+    """
+    This is a command that simply cause the caller to traverse
+    the object it is attached to.
+
+    UM:
+        Overidden to stop movement if character is not ready, or is in a prone position.
+    """
+
+    obj = None
+
+    def func(self):
+        """
+        Default exit traverse if no syscommand is defined.
+        """
+        caller = self.caller
+        if not caller.ready():  # Character must be in ready status to move.
+            return
+        # a prone Character can not move.
+        if caller.position == 'sitting' or caller.position == 'laying':
+            caller.msg("You must stand up first.")
+            return
+
+        if self.obj.access(self.caller, "traverse"):
+            # we may traverse the exit.
+            self.obj.at_traverse(self.caller, self.obj.destination)
+        else:
+            # exit is locked
+            if self.obj.db.err_traverse:
+                # if exit has a better error message, let's use it.
+                self.caller.msg(self.obj.db.err_traverse)
+            else:
+                # No shorthand error message. Call hook.
+                self.obj.at_failed_traverse(self.caller)
+
+    def get_extra_info(self, caller, **kwargs):
+        """
+        Shows a bit of information on where the exit leads.
+
+        Args:
+            caller (Object): The object (usually a character) that entered an ambiguous command.
+            **kwargs (dict): Arbitrary, optional arguments for users
+                overriding the call (unused by default).
+
+        Returns:
+            A string with identifying information to disambiguate the command, conventionally with a preceding space.
+        """
+        if self.obj.destination:
+            return " (exit to %s)" % self.obj.destination.get_display_name(caller)
+        else:
+            return " (%s)" % self.obj.get_display_name(caller)
 
 class Exit(ExObjAndRoomMixin, AllObjectsMixin, CharExAndObjMixin, DefaultExit):
     """
@@ -57,4 +110,7 @@ class Exit(ExObjAndRoomMixin, AllObjectsMixin, CharExAndObjMixin, DefaultExit):
                 Nearly all variables that are used in combat are inheiried from CharExAndObjMixin.
                 There are several methods inherited also.
     """
+
+    exit_command = UMExitCommand
+
     pass
