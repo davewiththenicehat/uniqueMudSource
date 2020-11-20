@@ -502,3 +502,13 @@ class TestCommands(CommandTest):
         arg = "= pose reset obj="
         wanted_message = r"Pose will read 'Obj is here.'."
         self.call(command(), arg, wanted_message, caller=self.char1)
+
+
+        # test actions against an unconscious characer
+        self.char1.condition.unconscious = True
+        self.assertFalse(self.char1.ready())
+        command = developer_cmds.CmdMultiCmd
+        arg = "= control_other Char2=punch Char, complete_cmd_early Char2"
+        wanted_message = r"\nevade 5 VS punch"
+        cmd_result = self.call(command(), arg, caller=self.char1)
+        self.assertRegex(cmd_result, wanted_message)
