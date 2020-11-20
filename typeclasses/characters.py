@@ -660,11 +660,11 @@ class Character(AllObjectsMixin, CharExAndObjMixin, ClothedCharacter, GenderChar
         if state == self.condition.unconscious:
             return
 
-        self.condition.unconscious = state
+        self.condition.unconscious = state  # Set the unconscious state
 
         if state:  #if setting unconscious to True
             self.msg('You fall unconscious.', force=True)
-            #stop any deffered commands
+            # stop any deffered commands
             self.status_stop()
 
 

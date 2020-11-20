@@ -624,7 +624,7 @@ class Command(default_cmds.MuxCommand):
         # only show message to target if it is a Character
         # should be switched to if controlled by a session
         if utils.inherits_from(target, 'typeclasses.characters.Character'):
-            target.msg(target_msg)
+            target.msg(target_msg, force_on_unconscious=True)
         caller.location.msg_contents(room_msg, exclude=(target, caller))
         if log:
             log_info(f'Command.combat_action, Character ID: {caller.id} | result {result}')

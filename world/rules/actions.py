@@ -20,6 +20,10 @@ def targeted_action(caller, target, log=False):
         action_result - evade_result  # the literal math result displayed
         action_result  # resulting roll of stats.action_roll
         evade_result  # resulting roll of stats.evade_roll
+
+    Notes:
+        Objects can not evade and have a evade result of 5
+        An unconscious Character can not evade and has an evade result of 5
     """
     # get reference of the command creating the action
     action_cmd = caller.nattributes.get('deffered_command')
@@ -32,7 +36,8 @@ def targeted_action(caller, target, log=False):
     # only roll an evade if the target is a Character
     evade_result = 5  # default evade for non Character Objects
     if inherits_from(target, 'typeclasses.characters.Character'):
-        evade_result = evade_roll(target, action_cmd.evade_mod_stat, log)
+        if not target.condition.unconscious:  # only conscious Characters can dodge
+            evade_result = evade_roll(target, action_cmd.evade_mod_stat, log)
     if log:
         log_info(f'actions.targeted_action, caller id {caller.id}: action_result: {action_result} | evade_result {evade_result}')
     return action_result - evade_result, action_result, evade_result
