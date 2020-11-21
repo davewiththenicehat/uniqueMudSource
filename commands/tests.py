@@ -179,8 +179,14 @@ class TestCommands(CommandTest):
     # test clothing commands
         # test character with empty inventory
         command = developer_cmds.CmdMultiCmd
-        arg = "= inv"
+        arg = "= inv, complete_cmd_early"
         wanted_message = "You are not carrying or wearing anything."
+        cmd_result = self.call(command(), arg, caller=self.char1)
+        self.assertRegex(cmd_result, wanted_message)
+        # make certain it takes time to search inventory
+        command = developer_cmds.CmdMultiCmd
+        arg = "= inv, complete_cmd_early"
+        wanted_message = "You rummage through your possessions, taking inventory"
         cmd_result = self.call(command(), arg, caller=self.char1)
         self.assertRegex(cmd_result, wanted_message)
         # Make a test hat
@@ -253,7 +259,7 @@ class TestCommands(CommandTest):
         self.assertRegex(cmd_result, wanted_message)
         # test character with items worn and not
         command = developer_cmds.CmdMultiCmd
-        arg = "= inv"
+        arg = "= inv, complete_cmd_early"
         wanted_message = "You are carrying:\n test shirt   \r\nYou are wearing:\n test hat      \n test helmet"
         cmd_result = self.call(command(), arg, caller=self.char1)
         self.assertRegex(cmd_result, wanted_message)

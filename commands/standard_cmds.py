@@ -1,8 +1,8 @@
 from evennia.utils import evtable
-from evennia.commands.default.muxcommand import MuxCommand
 from evennia import default_cmds
 from evennia.contrib import rpsystem
 from evennia import CmdSet
+from commands.command import Command
 
 
 class StandardCmdsCmdSet(default_cmds.CharacterCmdSet):
@@ -28,8 +28,14 @@ class StandardCmdsCmdSet(default_cmds.CharacterCmdSet):
         self.add(CmdStand)
         self.add(CmdLay)
 
+    def at_pre_cmd(self):
+        caller = self.caller
+        if not caller.ready():  # Character must be in ready status to move.
+            return
 
-class CmdDrop(MuxCommand):
+
+
+class CmdDrop(Command):
     """
     drop something
 
@@ -79,7 +85,7 @@ class CmdDrop(MuxCommand):
         obj.at_drop(caller)
 
 
-class CmdInventory(MuxCommand):
+class CmdInventory(Command):
     """
     view inventory
 
@@ -97,8 +103,22 @@ class CmdInventory(MuxCommand):
     aliases = ["inv", "i"]
     locks = "cmd:all()"
     arg_regex = r"$"
+    defer_time = 1  # time is seconds for the command to wait before running action of command
 
-    def func(self):
+    def start_message(self):
+        """
+        Display a message after a command has been successfully deffered.
+
+        Automatically called at the end of Command.func
+        """
+        caller = self.caller
+        caller_pronoun = caller.get_pronoun('|a')
+        message = "You rummage through your possessions, taking inventory."
+        room_message = f"{caller.usdesc.capitalize()} begings to quickly look through {caller_pronoun} possessions."
+        caller.msg(message)
+        caller.location.msg_contents(room_message, exclude=(caller,))
+
+    def deferred_action(self):
         """check inventory"""
         caller = self.caller
 
@@ -123,9 +143,13 @@ class CmdInventory(MuxCommand):
             wear_table.add_row("|CNothing.|n", "")
         string += "|/|wYou are wearing:\n%s" % wear_table
         caller.msg(string)
+        # Message the room
+        caller_pronoun = caller.get_pronoun('|a')
+        room_message = f"{caller.usdesc.capitalize()} completes {caller_pronoun} search."
+        caller.location.msg_contents(room_message, exclude=(caller,))
 
 
-class CmdSit(MuxCommand):
+class CmdSit(Command):
     """
     sit down
 
@@ -142,7 +166,7 @@ class CmdSit(MuxCommand):
         self.caller.sit()
 
 
-class CmdStand(MuxCommand):
+class CmdStand(Command):
     """
     stand up
 
@@ -159,7 +183,7 @@ class CmdStand(MuxCommand):
         self.caller.stand()
 
 
-class CmdLay(MuxCommand):
+class CmdLay(Command):
     """
     lay down
 

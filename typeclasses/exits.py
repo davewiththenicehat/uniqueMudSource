@@ -13,6 +13,7 @@ from typeclasses.mixins import CharExAndObjMixin, AllObjectsMixin, ExObjAndRoomM
 # A tuple of standard exit names
 STANDARD_EXITS = ('north', 'northeast', 'east', 'southeast', 'south', 'southwest', 'west', 'northwest')
 
+
 class UMExitCommand(command.Command):
     """
     This is a command that simply cause the caller to traverse

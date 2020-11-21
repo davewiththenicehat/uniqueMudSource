@@ -674,7 +674,7 @@ class Character(AllObjectsMixin, CharExAndObjMixin, ClothedCharacter, GenderChar
 
         self.condition.unconscious = state  # Set the unconscious state
 
-        if state:  #if setting unconscious to True
+        if state:  # if setting unconscious to True
             # stop any deffered commands
             self.status_stop()
             self.msg('You fall unconscious.', force=True)
@@ -682,7 +682,7 @@ class Character(AllObjectsMixin, CharExAndObjMixin, ClothedCharacter, GenderChar
             self.db.pose = 'is unconscious here.'
             room_msg = f"{self.usdesc} falls unconscious."
             self.location.msg_contents(room_msg, exclude=(self,))
-        else:
+        else:  # setting unconscious to False
             self.msg('You recover consciousness.', force=True)
             self.db.pose = f'is {self.position} here.'
             room_msg = f"{self.usdesc} recovers consciousness."
