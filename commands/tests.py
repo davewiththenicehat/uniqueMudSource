@@ -347,14 +347,14 @@ class TestCommands(CommandTest):
 
         # test sit stand lay also tests Character.set_position
         command = developer_cmds.CmdMultiCmd
-        arg = "= sit"
-        wanted_message = "You sit down."
+        arg = "= sit, complete_cmd_early"
+        wanted_message = "You will be busy for 1 second.|You move to sit down.|You sit down.|You are no longer busy.|Char allowed you to complete your sit command early with their complete_cmd_early command."
         cmd_result = self.call(command(), arg, wanted_message, caller=self.char1)
         command = developer_cmds.CmdMultiCmd
         # test other sitting down
         command = developer_cmds.CmdMultiCmd
-        arg = "= control_other char2=sit"
-        wanted_message = "Char2 sits down."
+        arg = "= control_other char2=sit, complete_cmd_early char2"
+        wanted_message = "Char2 moves to sit down.|Char2 sits down."
         cmd_result = self.call(command(), arg, wanted_message, caller=self.char1)
         command = developer_cmds.CmdMultiCmd
         arg = "= l"
@@ -368,13 +368,13 @@ class TestCommands(CommandTest):
         cmd_result = self.call(command(), arg, wanted_message, caller=self.char1)
         # stand up
         command = developer_cmds.CmdMultiCmd
-        arg = "= stand"
-        wanted_message = "You stand up."
+        arg = "= stand, complete_cmd_early"
+        wanted_message = "You will be busy for 3 seconds.|You move to stand up.|You stand up.|You are no longer busy.|Char allowed you to complete your stand command early with their complete_cmd_early command."
         cmd_result = self.call(command(), arg, wanted_message, caller=self.char1)
         # test other standing
         command = developer_cmds.CmdMultiCmd
-        arg = "= control_other char2=stand"
-        wanted_message = "Char2 stands up."
+        arg = "= control_other char2=stand, complete_cmd_early char2"
+        wanted_message = "Char2 moves to stand up.|Char2 stands up."
         cmd_result = self.call(command(), arg, wanted_message, caller=self.char1)
         command = developer_cmds.CmdMultiCmd
         arg = "= l"
@@ -413,13 +413,11 @@ class TestCommands(CommandTest):
         cmd_result = self.call(command(), arg, wanted_message, caller=self.char1)
         # stand both characters up
         command = developer_cmds.CmdMultiCmd
-        arg = "= stand"
-        wanted_message = "You stand up."
+        arg = "= stand, complete_cmd_early"
+        wanted_message = "You will be busy for 3 seconds.|You move to stand up.|You stand up.|You are no longer busy.|Char allowed you to complete your stand command early with their complete_cmd_early command."
         cmd_result = self.call(command(), arg, wanted_message, caller=self.char1)
-        command = developer_cmds.CmdMultiCmd
-        arg = "= stand"
-        wanted_message = "You stand up."
-        cmd_result = self.call(command(), arg, wanted_message, caller=self.char2)
+        self.char2.position = 'standing'
+        self.assertEqual(self.char2.position, 'standing')
 
         # test permision lock down for pose, sdesc and mask
         # test commands on a character without the permission

@@ -160,8 +160,28 @@ class CmdSit(Command):
     key = "sit"
     locks = "cmd:all()"
     arg_regex = r"\s|$"
+    defer_time = 1  # time is seconds for the command to wait before running action of command
 
-    def func(self):
+    def at_pre_cmd(self):
+        caller = self.caller
+        if caller.position == 'sitting':
+            caller.msg("You are already sitting.")
+            return True
+
+    def start_message(self):
+        """
+        Display a message after a command has been successfully deffered.
+
+        Automatically called at the end of Command.func
+        """
+        caller = self.caller
+        caller_pronoun = caller.get_pronoun('|a')
+        message = "You move to sit down."
+        room_message = f"{caller.usdesc.capitalize()} moves to sit down."
+        caller.msg(message)
+        caller.location.msg_contents(room_message, exclude=(caller,))
+
+    def deferred_action(self):
         """Implement command"""
         self.caller.sit()
 
@@ -178,7 +198,25 @@ class CmdStand(Command):
     locks = "cmd:all()"
     arg_regex = r"\s|$"
 
-    def func(self):
+    def at_pre_cmd(self):
+        caller = self.caller
+        if caller.position == 'standing':
+            caller.msg("You are already standing.")
+            return True
+
+    def start_message(self):
+        """
+        Display a message after a command has been successfully deffered.
+
+        Automatically called at the end of Command.func
+        """
+        caller = self.caller
+        message = "You move to stand up."
+        room_message = f"{caller.usdesc.capitalize()} moves to stand up."
+        caller.msg(message)
+        caller.location.msg_contents(room_message, exclude=(caller,))
+
+    def deferred_action(self):
         """Implement command"""
         self.caller.stand()
 

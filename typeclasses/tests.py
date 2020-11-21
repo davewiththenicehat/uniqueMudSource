@@ -285,11 +285,13 @@ class TestObjects(CommandTest):
         self.assertFalse(char.ready())
         # Test things a character should not be able to do while unconscious.
         command = developer_cmds.CmdMultiCmd
-        for uncon_cmd in ('punch 2-a normal person', 'punch not here', 'out', 'inv'):
+        unconscious_commands = ('punch 2-a normal person', 'punch not here',
+                                'out', 'inv', 'sit', 'stand')
+        for uncon_cmd in unconscious_commands:
             arg = f"= {uncon_cmd}"
             wanted_message = r"You can not do that while unconscious."
             self.call(command(), arg, wanted_message, caller=char)
-        #wake char back up
+        # wake char back up
         char.set_unconscious(False)
         self.assertTrue(char.ready())
         self.assertEqual(char.db.pose, 'is laying here.')
