@@ -348,9 +348,9 @@ class TestCommands(CommandTest):
         # test sit stand lay also tests Character.set_position
         command = developer_cmds.CmdMultiCmd
         arg = "= sit, complete_cmd_early"
-        wanted_message = "You will be busy for 1 second.|You move to sit down.|You sit down.|You are no longer busy.|Char allowed you to complete your sit command early with their complete_cmd_early command."
-        cmd_result = self.call(command(), arg, wanted_message, caller=self.char1)
-        command = developer_cmds.CmdMultiCmd
+        wanted_message = r"You will be busy for \d+ second.|You move to sit down.|You sit down.|You are no longer busy.|Char allowed you to complete your sit command early with their complete_cmd_early command."
+        cmd_result = self.call(command(), arg, caller=self.char1)
+        self.assertRegex(cmd_result, wanted_message)
         # test other sitting down
         command = developer_cmds.CmdMultiCmd
         arg = "= control_other char2=sit, complete_cmd_early char2"
@@ -369,8 +369,9 @@ class TestCommands(CommandTest):
         # stand up
         command = developer_cmds.CmdMultiCmd
         arg = "= stand, complete_cmd_early"
-        wanted_message = "You will be busy for 3 seconds.|You move to stand up.|You stand up.|You are no longer busy.|Char allowed you to complete your stand command early with their complete_cmd_early command."
-        cmd_result = self.call(command(), arg, wanted_message, caller=self.char1)
+        wanted_message = r"You will be busy for \d+ seconds.|You move to stand up.|You stand up.|You are no longer busy.|Char allowed you to complete your stand command early with their complete_cmd_early command."
+        cmd_result = self.call(command(), arg, caller=self.char1)
+        self.assertRegex(cmd_result, wanted_message)
         # test other standing
         command = developer_cmds.CmdMultiCmd
         arg = "= control_other char2=stand, complete_cmd_early char2"
@@ -388,13 +389,14 @@ class TestCommands(CommandTest):
         cmd_result = self.call(command(), arg, wanted_message, caller=self.char1)
         # lay down
         command = developer_cmds.CmdMultiCmd
-        arg = "= lay"
-        wanted_message = "You lay down."
-        cmd_result = self.call(command(), arg, wanted_message, caller=self.char1)
+        arg = "= lay, complete_cmd_early"
+        wanted_message = r"You will be busy for \d+ second.|You move to lay down.|You lay down.|You are no longer busy.|Char allowed you to complete your lay command early with their complete_cmd_early command."
+        cmd_result = self.call(command(), arg, caller=self.char1)
+        self.assertRegex(cmd_result, wanted_message)
         # test other laying
         command = developer_cmds.CmdMultiCmd
-        arg = "= control_other char2=lay"
-        wanted_message = "Char2 lays down."
+        arg = "= control_other char2=lay, complete_cmd_early char2"
+        wanted_message = "Char2 moves to lay down.|Char2 lays down."
         cmd_result = self.call(command(), arg, wanted_message, caller=self.char1)
         command = developer_cmds.CmdMultiCmd
         arg = "= l"

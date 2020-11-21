@@ -175,7 +175,6 @@ class CmdSit(Command):
         Automatically called at the end of Command.func
         """
         caller = self.caller
-        caller_pronoun = caller.get_pronoun('|a')
         message = "You move to sit down."
         room_message = f"{caller.usdesc.capitalize()} moves to sit down."
         caller.msg(message)
@@ -232,8 +231,30 @@ class CmdLay(Command):
     key = "lay"
     locks = "cmd:all()"
     arg_regex = r"\s|$"
+    defer_time = 1  # time is seconds for the command to wait before running action of command
 
-    def func(self):
+    def at_pre_cmd(self):
+        caller = self.caller
+        # do not run command if dead or unconscious, or otherwise not ready
+        if not caller.ready():
+            return True
+        if caller.position == 'laying':
+            caller.msg("You are already laying.")
+            return True
+
+    def start_message(self):
+        """
+        Display a message after a command has been successfully deffered.
+
+        Automatically called at the end of Command.func
+        """
+        caller = self.caller
+        message = "You move to lay down."
+        room_message = f"{caller.usdesc.capitalize()} moves to lay down."
+        caller.msg(message)
+        caller.location.msg_contents(room_message, exclude=(caller,))
+
+    def deferred_action(self):
         """Implement command"""
         self.caller.lay()
 
