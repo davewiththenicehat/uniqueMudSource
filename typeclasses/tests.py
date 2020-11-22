@@ -286,7 +286,8 @@ class TestObjects(CommandTest):
         # Test things a character should not be able to do while unconscious.
         command = developer_cmds.CmdMultiCmd
         unconscious_commands = ('punch 2-a normal person', 'punch not here',
-                                'out', 'inv', 'sit', 'stand', 'lay')
+                                'out', 'inv', 'sit', 'stand', 'lay', 'get',
+                                'wear', 'remove')
         for uncon_cmd in unconscious_commands:
             arg = f"= {uncon_cmd}"
             wanted_message = r"You can not do that while unconscious."

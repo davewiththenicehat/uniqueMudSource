@@ -27,12 +27,12 @@ class StandardCmdsCmdSet(default_cmds.CharacterCmdSet):
         self.add(CmdSit)
         self.add(CmdStand)
         self.add(CmdLay)
+        self.add(CmdGet)
 
     def at_pre_cmd(self):
         caller = self.caller
         if not caller.ready():  # Character must be in ready status to move.
             return
-
 
 
 class CmdDrop(Command):
@@ -83,6 +83,78 @@ class CmdDrop(Command):
         caller.location.msg_contents("%s drops %s." % (caller.name, obj.name), exclude=caller)
         # Call the object script's at_drop() method.
         obj.at_drop(caller)
+
+
+class CmdGet(Command):
+    """
+    pick up something
+
+    Usage:
+      get <obj>
+
+    Picks up an object from your location and puts it in
+    your inventory.
+    """
+
+    key = "get"
+    aliases = "grab"
+    locks = "cmd:all()"
+    arg_regex = r"\s|$"
+    defer_time = 1  # time is seconds for the command to wait before running action of command
+    can_not_target_self = True  # if True this command will end with a message if the Character targets themself
+    target_required = True  # if True and the command has no target, Command.func will stop execution and message the player
+
+    def at_pre_cmd(self):
+        """
+        Stop the get command if caller already has the object.
+        Replace when objects in hand is implimented.
+        """
+        caller = self.caller
+        obj = caller.search(self.args.strip(), quiet=True, location=caller)
+        if obj:
+            obj = obj[0]
+            caller.msg(f"You are already carrying {obj.usdesc}.")
+            return True
+        return super().at_pre_cmd()
+
+    def start_message(self):
+        """
+        Display a message after a command has been successfully deffered.
+
+        Automatically called at the end of Command.func
+        """
+        caller = self.caller
+        target = self.target
+        message = f"You reach for {target.usdesc}."
+        room_message = f"{caller.usdesc.capitalize()} reaches for {target.usdesc}."
+        caller.msg(message)
+        caller.location.msg_contents(room_message, exclude=(caller,))
+
+    def deferred_action(self):
+        """implements the command."""
+
+        caller = self.caller
+        obj = self.target
+
+        if not obj.access(caller, "get"):
+            if obj.db.get_err_msg:
+                caller.msg(obj.db.get_err_msg)
+            else:
+                caller.msg("You can't get that.")
+            return
+
+        # calling at_before_get hook method
+        if not obj.at_before_get(caller):
+            return
+
+        success = obj.move_to(caller, quiet=True)
+        if not success:
+            caller.msg(f"{obj.usdesc.capitalize()} can not be picked up.")
+        else:
+            caller.msg(f"You pick up {obj.usdesc}.")
+            caller.location.msg_contents(f"{caller.usdesc} picks up {obj.usdesc}.", exclude=caller)
+            # calling at_get hook method
+            obj.at_get(caller)
 
 
 class CmdInventory(Command):
@@ -167,6 +239,7 @@ class CmdSit(Command):
         if caller.position == 'sitting':
             caller.msg("You are already sitting.")
             return True
+        return super().at_pre_cmd()
 
     def start_message(self):
         """
@@ -202,6 +275,7 @@ class CmdStand(Command):
         if caller.position == 'standing':
             caller.msg("You are already standing.")
             return True
+        return super().at_pre_cmd()
 
     def start_message(self):
         """
@@ -236,7 +310,7 @@ class CmdLay(Command):
     def at_pre_cmd(self):
         caller = self.caller
         # do not run command if dead or unconscious, or otherwise not ready
-        if not caller.ready():
+        if super().at_pre_cmd():
             return True
         if caller.position == 'laying':
             caller.msg("You are already laying.")

@@ -227,10 +227,17 @@ class TestCommands(CommandTest):
         self.assertRegex(cmd_result, wanted_message)
         # test tring to wear an item that is not clothing, also tests target_inherits_from
         command = developer_cmds.CmdMultiCmd
-        arg = "= get Obj"
+        arg = "= get Obj, complete_cmd_early"
         wanted_message = "You pick up Obj."
         cmd_result = self.call(command(), arg, caller=self.char1)
         self.assertRegex(cmd_result, wanted_message)
+        # test getting an object already in possession
+        command = developer_cmds.CmdMultiCmd
+        arg = "= get Obj"
+        wanted_message = "You are already carrying Obj."
+        cmd_result = self.call(command(), arg, caller=self.char1)
+        self.assertRegex(cmd_result, wanted_message)
+        # test wearing an object that is not clothing
         arg = "= wear Obj"
         wanted_message = "You can only wear clothing and armor."
         cmd_result = self.call(command(), arg, caller=self.char1)
