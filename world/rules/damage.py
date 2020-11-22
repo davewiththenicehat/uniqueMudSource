@@ -186,3 +186,21 @@ def get_dmg_after_dr(command, dmg_dealt=None, body_part_name=None, log=False):
     if log:
         log_info(f"command {command.key}, Character id: {command.caller.id} | result: {result} | dmg_dealt {dmg_dealt} | body_part_name {body_part_name} | body_part_inst: {body_part_inst.name} | min_part_key {min_part_key} | min_target_key {min_target_key} | body_part_dr_values: {body_part_dr_values} | target_dr_values: {target_dr_values}")
     return result
+
+
+def restoration_roll(restoration_modifier=0):
+    """
+    Get a number to restore health on an object
+
+    Argument:
+        restoration_modifie=0, gets added to the max number that can be returned
+
+    Equation:
+        Returns a random number between:
+            4 + restoration_modifier
+            The number can not e less than 1
+    """
+    restoration_max = 4 + restoration_modifier
+    if restoration_max < 1:  # restoration max can not be less than 1
+        restoration_max = 1
+    return randint(1, restoration_max)

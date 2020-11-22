@@ -12,7 +12,7 @@ from evennia.contrib.gendersub import GenderCharacter, _RE_GENDER_PRONOUN
 from utils.element import Element, ListElement
 from world import status_functions
 from evennia import utils
-from world.rules import stats, body
+from world.rules import stats, body, damage
 from evennia.contrib.rpsystem import ContribRPCharacter
 from typeclasses.equipment.clothing import ClothedCharacter
 from evennia.contrib.rpsystem import RPSystemCmdSet
@@ -550,6 +550,10 @@ class Character(AllObjectsMixin, CharExAndObjMixin, ClothedCharacter, GenderChar
             mod_value = stats.dmg_mod(self, stat_type)
             mod_name = stat_type + '_dmg_mod'
             setattr(self, mod_name, mod_value)
+            # restoration_mod(caller, stat_type, log=False)
+            mod_value = stats.restoration_mod(self, stat_type)
+            mod_name = stat_type + '_restoration_mod'
+            setattr(self, mod_name, mod_value)
         setattr(self, 'hp_max_mod', stats.hp_max_mod(self))
         setattr(self, 'endurance_max_mod', stats.endurance_max_mod(self))
         setattr(self, 'sanity_max_mod', stats.sanity_max_mod(self))
@@ -736,3 +740,37 @@ class Character(AllObjectsMixin, CharExAndObjMixin, ClothedCharacter, GenderChar
 
         # no silent conditions found, show message
         return True
+
+    def heal(self, modifier=0, ammount=None):
+        """
+        Heal Character.
+
+        Arguments:
+            modifier=0, number to add to the max restoration to heal by.
+            ammount=None, a set ammount to heal by.
+                If passed heal will ignore the standard heal check
+
+        Register on a tickerhandler
+            https://www.evennia.com/docs/latest/TickerHandler.html
+        at_object_creation, add ticker handler
+        at_object_delete, remove ticker handler
+
+
+        rules
+            make there be a chance the heal echos to room
+            make option to force the heal echo
+            make healing pause if character moves while bearing a load
+                Make this pause longer for greater loads.
+                make this pause in a framework.
+                    It will be used for endurance also
+            dead Characters can not heal on a tickerhandler
+        """
+        # dead Characters can not heal
+        if self.condition.dead:
+            return
+        if ammount:  # if ammount pass heal by that ammount
+            self.hp += ammount
+            return
+        # heal according to Character's natural healing
+        restoration_modifier = self.CON_restoration_mod + modifier
+        self.hp += damage.restoration_roll(restoration_modifier)

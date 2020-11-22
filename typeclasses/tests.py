@@ -29,6 +29,8 @@ class TestObjects(CommandTest):
 
         # test the character's gender and the abilit to run the @gender command
         #char = create_object(Human, key="Gendered", location=self.room1)
+        self.char1.at_init()
+        self.char2.at_init()
         char = self.char1
         txt = "Test |p gender"
         self.assertEqual(gendersub._RE_GENDER_PRONOUN.sub(char._get_pronoun, txt), "Test their gender")
@@ -277,6 +279,9 @@ class TestObjects(CommandTest):
             setattr(char.condition, cond_name, True)
             self.assertTrue(char.attributes.has(db_cond_name))
             self.assertTrue(char.attributes.get(db_cond_name))
+            setattr(char.condition, cond_name, False)
+            self.assertFalse(char.attributes.has(db_cond_name))
+            self.assertEqual(getattr(char.condition, cond_name), 0)
 
         # test Character.condition.unconscious
         char.set_unconscious()
@@ -296,6 +301,19 @@ class TestObjects(CommandTest):
         char.set_unconscious(False)
         self.assertTrue(char.ready())
         self.assertEqual(char.db.pose, 'is laying here.')
+
+        # test healing
+        self.assertFalse(char.condition.dead)
+        char.hp = 50
+        # make certain the Character heals by some ammount
+        self.assertEqual(char.hp, 50)
+        char.heal()
+        self.assertTrue(char.hp > 50)
+        # heal now by a set ammount
+        char.hp = 50
+        self.assertEqual(char.hp, 50)
+        char.heal(ammount=5)
+        self.assertEqual(char.hp, 55)
 
 
 # Testing of emoting / sdesc / recog system

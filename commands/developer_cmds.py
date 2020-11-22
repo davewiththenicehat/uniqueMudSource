@@ -289,6 +289,8 @@ class CmdViewObj(Command):
             self.caller.msg(f'{char_message+mod_name}: {getattr(target, mod_name)}')
             mod_name = stat_type + '_dmg_mod'
             self.caller.msg(f'{char_message+mod_name}: {getattr(target, mod_name)}')
+            mod_name = stat_type + '_restoration_mod'
+            self.caller.msg(f'{char_message+mod_name}: {getattr(target, mod_name)}')
         self.caller.msg(f"{char_message}hp_max_mod: {getattr(target, 'hp_max_mod')}")
         self.caller.msg(f"{char_message}endurance_max_mod: {getattr(target, 'endurance_max_mod')}")
         self.caller.msg(f"{char_message}sanity_max_mod: {getattr(target, 'sanity_max_mod')}")

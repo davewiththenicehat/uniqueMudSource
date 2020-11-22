@@ -237,6 +237,34 @@ def dmg_mod(caller, stat_type, log=False):
     return damage_modifier
 
 
+def restoration_mod(caller, stat_type, log=False):
+    """
+    Returns an automated restoration modifier
+    2 is max and -2 is min
+
+    Arguments:
+        caller, is the Character whose max sanity mod is getting retreived.
+        stat_type, is the stat being used to check.
+        log=False, if True log the variables used.
+
+    Equation:
+        For every 25 ranks in a stat the restoration modifier is adjusted by 1
+        For Example:
+            1 rank provides a 0 modifier
+            50 ranks provides a 1 modifer
+            75 ranks provides a 1 modifer
+            -2 ranks provides a 0 modifer
+            -50 ranks provides a -1 modifier
+            100 ranks (stat max) provides a 2 modifider
+    """
+    stat_value = get_stat(caller, stat_type, 'world.stats.restoration_mod')
+    restoration_modifier = stat_value * .02
+    restoration_modifier = stat_round(restoration_modifier)
+    if log:
+        log_info(f'world.stats.strength_max_mod | Character id: {caller.id} | stat_value: {stat_value} | restoration_modifier: {restoration_modifier}')
+    return restoration_modifier
+
+
 def hp_max_mod(caller, log=False):
     """
     Returns the Constitution modifier for a Character's max hp.
