@@ -15,24 +15,16 @@ class StandardCmdsCmdSet(default_cmds.CharacterCmdSet):
     Unit tests for these commands are in commands.tests.TestCommands
     """
 
-    key = "DefaultCharacter"
-
     def at_cmdset_creation(self):
         """
         Populates the cmdset
         """
-        super().at_cmdset_creation()
         self.add(CmdDrop)
         self.add(CmdInventory)
         self.add(CmdSit)
         self.add(CmdStand)
         self.add(CmdLay)
         self.add(CmdGet)
-
-    def at_pre_cmd(self):
-        caller = self.caller
-        if not caller.ready():  # Character must be in ready status to move.
-            return
 
 
 class CmdDrop(Command):
