@@ -320,6 +320,19 @@ class TestObjects(CommandTest):
         nat_heal_script = char.scripts.get('Natural_Healing')
         nat_heal_script[0].at_repeat()
         self.assertTrue(char.hp > 50)
+        # verify healing will wake an unconcious Character
+        self.assertFalse(char.condition.unconscious)
+        char.condition.unconscious = True
+        self.assertTrue(char.condition.unconscious)
+        char.heal()
+        self.assertFalse(char.condition.unconscious)
+
+        # test hp breakpoints
+        self.assertFalse(char.condition.unconscious)
+        char.hp = -1
+        self.assertTrue(char.condition.unconscious)
+        char.hp = 100
+        self.assertFalse(char.condition.unconscious)
 
 
 # Testing of emoting / sdesc / recog system

@@ -781,6 +781,10 @@ class Character(AllObjectsMixin, CharExAndObjMixin, ClothedCharacter, GenderChar
         # heal according to Character's natural healing
         restoration_modifier = self.CON_restoration_mod + modifier
         self.hp += damage.restoration_roll(restoration_modifier)
+        # if Character is unconcious with posotive hp wake them
+        if self.condition.unconscious:
+            if self.hp > 0:
+                self.set_unconscious(False)
 
 
 class NaturalHealing(DefaultScript):
