@@ -173,14 +173,14 @@ class CharExAndObjMixin:
         This is automatically called when an object's hp rises above it's breakpoint (likely 0), when it was previous below it's breakpoint.
         Here to be overridden.
         """
-        self.msg('Ascending breakpoint.')
+        pass
 
     def descending_breakpoint(self):
         """
         This is automatically called when an object's hp falls below it's breakpoint (likely 0), when it was previous above it's breakpoint.
         Here to be overridden.
         """
-        self.msg('Descending breakpoint.')
+        pass
 
     def destroy(self):
         """

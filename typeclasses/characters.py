@@ -146,6 +146,9 @@ class Character(AllObjectsMixin, CharExAndObjMixin, ClothedCharacter, GenderChar
                 char.msg('This is a message', force_on_unconscious=True)
                 room.msg_contents('this is a message', force_on_unconscious=True)
 
+    Scripts
+        Character.NaturalHealing, heals Character automatically over time.
+
     Final Notes:
         unit testing for Character status is done in the commands.tests.TestCommands unit test
         unit testing for hp is done in utils.tests.TestUtils.test_elements
