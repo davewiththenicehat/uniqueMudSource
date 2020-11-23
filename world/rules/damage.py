@@ -57,6 +57,9 @@ TYPES = (
     'SLS'
 )
 
+# number of seconds Characters automatically heal
+HEALING_INTERVAL = 120
+
 
 def roll(command, use_mod=True, log=False):
     """

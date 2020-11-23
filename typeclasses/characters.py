@@ -16,6 +16,7 @@ from world.rules import stats, body, damage
 from evennia.contrib.rpsystem import ContribRPCharacter
 from typeclasses.equipment.clothing import ClothedCharacter
 from evennia.contrib.rpsystem import RPSystemCmdSet
+from evennia import DefaultScript
 
 # Used to adjust Element settings for stats, and the unit test for Character also
 # min_func ascending_breakpoint_func and descending_breakpoint_func are set in self.at_init
@@ -166,8 +167,11 @@ class Character(AllObjectsMixin, CharExAndObjMixin, ClothedCharacter, GenderChar
 
     def at_object_creation(self):
         """Runs when Character is created."""
-        self.targetable = True
-        self.position = 'standing'
+        self.targetable = True  # Characters can be targeted with commands
+        self.position = 'standing'  # Default position is standing
+        # if it does not already exist, create a healing script
+        if "Natural_Healing" not in str(self.scripts):
+            self.scripts.add(NaturalHealing)
         super_return = super().at_object_creation()  # itentionally before RPSystemCmdSet removal
         self.cmdset.remove(RPSystemCmdSet)  # overridden and added back in at commands.standard_cmds.UMRPSystemCmdSet
         return super_return
@@ -774,3 +778,18 @@ class Character(AllObjectsMixin, CharExAndObjMixin, ClothedCharacter, GenderChar
         # heal according to Character's natural healing
         restoration_modifier = self.CON_restoration_mod + modifier
         self.hp += damage.restoration_roll(restoration_modifier)
+
+
+class NaturalHealing(DefaultScript):
+    """
+    Script to control when Character's natural healing
+    """
+
+    def at_script_creation(self):
+        self.key = "Natural_Healing"
+        self.interval = damage.HEALING_INTERVAL  # reapeat time
+        self.persistent = True  # survies a reboot
+
+    def at_repeat(self):
+        # Heal when the script interval time passes
+        self.obj.heal()

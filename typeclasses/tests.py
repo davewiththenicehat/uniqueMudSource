@@ -314,6 +314,12 @@ class TestObjects(CommandTest):
         self.assertEqual(char.hp, 50)
         char.heal(ammount=5)
         self.assertEqual(char.hp, 55)
+        # verify the natural healing script works
+        char.hp = 50
+        self.assertEqual(char.hp, 50)
+        nat_heal_script = char.scripts.get('Natural_Healing')
+        nat_heal_script[0].at_repeat()
+        self.assertTrue(char.hp > 50)
 
 
 # Testing of emoting / sdesc / recog system
