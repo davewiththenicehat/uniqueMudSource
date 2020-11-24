@@ -93,6 +93,7 @@ class CmdDrop(Command):
     key = "drop"
     locks = "cmd:all()"
     arg_regex = r"\s|$"
+    requires_ready = False  # if true this command requires the ready status before it can do anything.
 
     def func(self):
         """Implement command"""

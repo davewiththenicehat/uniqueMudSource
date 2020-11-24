@@ -106,8 +106,9 @@ class Command(default_cmds.MuxCommand):
             Will be automatically filled in Command.func when a Character weapon system is developed.
         desc = None  # a present tense description for the action of this command. IE: "kicks"
             If None when self.func is called, it will give assigned self.key
-        requires_ready = True  # if true this command requires the ready status before it can do anything.
+        requires_ready = True  # if true this command requires the ready status before it can be used.
             deferal commands still require ready to defer, even is requires_ready is false.
+        requires_conscious = True  # if true this command requires the caller to be conscious before it can be used
 
     Methods:
         All methods are fully documented in their docstrings.
@@ -123,6 +124,8 @@ class Command(default_cmds.MuxCommand):
         act_vs_msg(action_result, evade_result), Returns two strings to display at the start of an actions message.
         get_body_part(target, no_understore), returns the name of a body part on target
         dmg_after_dr(dmg_dealt=None, body_part_name=None), Returns damage dealt after damage reduction.
+        combat_action(action_mod=None, caller_msg=None, target_msg=None, room_msg=None, log=None),
+            A command method intended to be a used to easily facilitate basic combat actions.
     """
     status_type = 'busy'  # Character status type used to track the command
     defer_time = 3  # time is seconds for the command to wait before running action of command
@@ -143,6 +146,7 @@ class Command(default_cmds.MuxCommand):
     caller_weapon = None  # weapon name that will show up in Command.combat_action's automated messages
     desc = None  # a present tense description for the action of this command. IE: "kicks"
     requires_ready = True  # if true this command requires the ready status before it can do anything. deferal commands still require ready to defer
+    requires_conscious = True  # if true this command requires the caller to be conscious
 
 
     def func(self):
@@ -219,9 +223,17 @@ class Command(default_cmds.MuxCommand):
         Evennia note: at_pre_cmd(): If this returns anything truthy, execution is aborted.
         Behavior note: returning anything stops the exection of the command.
         """
+        caller = self.caller
         if self.requires_ready:
-            caller_ready = self.caller.ready()
+            caller_ready = caller.ready()
             if not caller_ready:
+                return True
+        elif self.requires_conscious:
+            if caller.condition.unconscious:
+                caller.msg("You can not do that while unconscious.", force_on_unconscious=True)
+                return True
+            elif caller.condition.dead:
+                caller.msg("You can not do that while dead.", force=True)
                 return True
         return super().at_pre_cmd()
 
@@ -528,7 +540,7 @@ class Command(default_cmds.MuxCommand):
             log, if this method and methods and functions used within should log messages
 
         Usage:
-            Below is an example taken from unarmed.CmdPunch
+            Below is an example taken from commands.combat.unarmed.CmdPunch
                 def deferred_action(self):
                     action_mod = self.unarmed_str_mod  # add half of the caller's str modifier to the attack
                     return self.combat_action(action_mod)
@@ -596,8 +608,7 @@ class Command(default_cmds.MuxCommand):
             room_msg = f"{caller.usdesc} {cmd_desc} at {target.usdesc}"
             if caller_weapon:  # if the Command instance has a caller_weapon saved
                 room_msg += f" with {caller.get_pronoun('|p')} {caller_weapon}"
-        #if result > 0:  # the action hit
-        if True:
+        if result > 0:  # the action hit
             # get the body part that was hit
             part_hit = self.get_body_part()
             dmg_dealt = self.dmg_after_dr(body_part_name=part_hit)

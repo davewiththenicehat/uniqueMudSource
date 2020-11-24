@@ -292,7 +292,7 @@ class TestObjects(CommandTest):
         command = developer_cmds.CmdMultiCmd
         unconscious_commands = ('punch 2-a normal person', 'punch not here',
                                 'out', 'inv', 'sit', 'stand', 'lay', 'get',
-                                'wear', 'remove')
+                                'wear', 'remove', 'say', 'drop')
         for uncon_cmd in unconscious_commands:
             arg = f"= {uncon_cmd}"
             wanted_message = r"You can not do that while unconscious."

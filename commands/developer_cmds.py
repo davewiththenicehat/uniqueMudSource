@@ -46,6 +46,7 @@ class CmdDeferCmd(Command):
     defer_time = 5
     locks = "cmd:perm(Developer)"
     requires_ready = False
+    requires_conscious = False  # if true this command requires the caller to be conscious
 
     def func(self):
         defer_successful = self.defer()
@@ -75,6 +76,7 @@ class CmdInterruptCmd(Command):
     help_category = "developer"
     locks = "cmd:perm(Developer)"
     requires_ready = False
+    requires_conscious = False  # if true this command requires the caller to be conscious
 
     def func(self):
         target = None
@@ -111,6 +113,7 @@ class CmdStopCmd(Command):
     help_category = "developer"
     locks = "cmd:perm(Developer)"
     requires_ready = False
+    requires_conscious = False  # if true this command requires the caller to be conscious
 
     def func(self):
         target = None
@@ -139,6 +142,7 @@ class CmdCompleteCmdEarly(Command):
     help_category = "developer"
     locks = "cmd:perm(Developer)"
     requires_ready = False
+    requires_conscious = False  # if true this command requires the caller to be conscious
 
     def func(self):
         target = None
@@ -164,6 +168,7 @@ class CmdTestCmd(Command):
     help_category = "developer"
     locks = "cmd:perm(Developer)"
     requires_ready = False
+    requires_conscious = False  # if true this command requires the caller to be conscious
 
     def func(self):
         self.caller.msg("Test command ran successfully.")
@@ -187,6 +192,7 @@ class CmdStunSelf(Command):
     help_category = "developer"
     locks = "cmd:perm(Developer)"
     requires_ready = False
+    requires_conscious = False  # if true this command requires the caller to be conscious
 
     def func(self):
         self.caller.stun(3)
@@ -209,6 +215,7 @@ class CmdStopStun(Command):
     help_category = "developer"
     locks = "cmd:perm(Developer)"
     requires_ready = False
+    requires_conscious = False  # if true this command requires the caller to be conscious
 
     def func(self):
         stop_success = self.caller.status_stop('stunned', "Stunned stopped message successful.", 'test_cmd')
@@ -242,6 +249,7 @@ class CmdMultiCmd(Command):
     help_category = "developer"
     locks = "cmd:perm(Developer)"
     requires_ready = False
+    requires_conscious = False  # if true this command requires the caller to be conscious
 
     def func(self):
         commands = self.rhslist
@@ -274,6 +282,7 @@ class CmdViewObj(Command):
     help_category = "developer"
     locks = "cmd:perm(Developer)"
     requires_ready = False
+    requires_conscious = False  # if true this command requires the caller to be conscious
 
     def view_cache_stat_modifiers(self, target=None):
         if not target:
@@ -335,6 +344,7 @@ class CmdContrlOther(Command):
     help_category = "developer"
     locks = "cmd:perm(Developer)"
     requires_ready = False
+    requires_conscious = False  # if true this command requires the caller to be conscious
 
     def func(self):
         caller = self.caller
@@ -374,6 +384,7 @@ class CmdCmdFuncTest(Command):
     help_category = "developer"
     locks = "cmd:perm(Developer)"
     requires_ready = False
+    requires_conscious = False  # if true this command requires the caller to be conscious
 
     def func(self):
         caller = self.caller
