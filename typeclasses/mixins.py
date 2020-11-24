@@ -207,6 +207,11 @@ class CharExAndObjMixin:
         self.hp.min_func = self.destroy
         return super().at_init()  # Here only to support future change to evennia's Character.at_init
 
+    def at_object_creation(self):
+        """Runs when Object is created."""
+        self.at_init()  # initialize self.
+        return super().at_object_creation()
+
 
 class AllObjectsMixin:
     """
