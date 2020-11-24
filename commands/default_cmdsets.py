@@ -123,8 +123,8 @@ class CharacterCmdSet(default_cmds.CharacterCmdSet):
         self.add(UnarmedCmdSet)
         self.add(EvasionCmdSet)
         self.add(ClothedCharacterCmdSet)
-        self.add(StandardCmdsCmdSet)
         self.add(UMRPSystemCmdSet)
+        self.add(StandardCmdsCmdSet)  # has to be after rpsystem
 
 
 class AccountCmdSet(default_cmds.AccountCmdSet):

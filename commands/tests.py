@@ -6,6 +6,7 @@ from typeclasses.rooms import Room
 from typeclasses.objects import Object
 from evennia import create_object
 from typeclasses.equipment import clothing
+from commands import standard_cmds
 
 
 class TestCommands(CommandTest):
@@ -469,13 +470,19 @@ class TestCommands(CommandTest):
         # say
         command = developer_cmds.CmdMultiCmd
         arg = "= say test message"
-        wanted_message = r"Char2 says, \"test message\""
+        wanted_message = r"You say, \"test message\""
         cmd_result = self.call(command(), arg, caller=self.char2)
         self.assertRegex(cmd_result, wanted_message)
         # verify say echos to room properly
         command = developer_cmds.CmdMultiCmd
         arg = "= control_other Char2=say test message"
-        wanted_message = r"Char2 says, \"test message\""
+        wanted_message = r'Char2\(#7\) says, "test message"'
+        cmd_result = self.call(command(), arg, caller=self.char1)
+        self.assertRegex(cmd_result, wanted_message)
+        # test saying to another Character
+        command = standard_cmds.CmdSay
+        arg = "to char2, test message"
+        wanted_message = r'You say to Char2, "test message"'
         cmd_result = self.call(command(), arg, caller=self.char1)
         self.assertRegex(cmd_result, wanted_message)
         # test recog

@@ -786,6 +786,14 @@ class Character(AllObjectsMixin, CharExAndObjMixin, ClothedCharacter, GenderChar
             if self.hp > 0:
                 self.set_unconscious(False)
 
+    def at_before_say(self, message, **kwargs):
+        """
+        Called before the object says or whispers anything, return modified message.
+
+        Here to overload rpsystem's at_before_say
+        """
+        return message
+
 
 class NaturalHealing(DefaultScript):
     """

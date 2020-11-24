@@ -492,7 +492,8 @@ class TestRPSystemCommands(CommandTest):
             "Char2's sdesc was set to 'BarFoo Character'.",
             caller=self.char2,
         )
-        self.call(rpsystem.CmdSay(), "Hello!", 'Char says, "Hello!"')
+        # rpsystem say command support removed.
+        # self.call(rpsystem.CmdSay(), "Hello!", 'Char says, "Hello!"')
         self.call(rpsystem.CmdEmote(), "/me smiles to /barfoo.", "Char smiles to BarFoo Character")
         self.call(
             rpsystem.CmdPose(),

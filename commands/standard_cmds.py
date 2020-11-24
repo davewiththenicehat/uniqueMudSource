@@ -15,6 +15,8 @@ class StandardCmdsCmdSet(default_cmds.CharacterCmdSet):
     Unit tests for these commands are in commands.tests.TestCommands
     """
 
+    priority = 100
+
     def at_cmdset_creation(self):
         """
         Populates the cmdset
@@ -25,6 +27,56 @@ class StandardCmdsCmdSet(default_cmds.CharacterCmdSet):
         self.add(CmdStand)
         self.add(CmdLay)
         self.add(CmdGet)
+        self.add(CmdSay)
+
+
+class CmdSay(Command):
+    """
+    speak as your character
+
+    Usage:
+      say <message>
+      say to <target>, <message>
+          the , is required.
+
+    Talk to those in your current location.
+    """
+
+    key = "say"
+    aliases = ['"', "'"]
+    locks = "cmd:all()"
+
+    def func(self):
+        """Run the say command"""
+
+        caller = self.caller
+        if not self.args:  # if no speech stop command
+            caller.msg("Say what?")
+            return
+
+        # Add support for saying to a target
+        if self.args.startswith('to '):
+            if len(self.lhslist) > 1: # there is a command in the command
+                target_name = self.lhslist[0][2:]  # get a target name after "to "
+                target_name = target_name.strip()
+                target = caller.search(target_name, quiet=True)  # find the target
+                if target:  # if the target exists
+                    target = target[0]
+                    room_message = f"{caller.usdesc.capitalize()} says to {target.usdesc}, "
+                    room_message += f'"{self.lhslist[1]}"'
+                    caller.location.msg_contents(room_message, exclude=(caller,))
+                    caller_message = f"You say to {target.usdesc}, "
+                    caller_message += f'"{self.lhslist[1]}"'
+                    caller.msg(caller_message)
+                    return
+
+        speech = self.args
+        # Calling the at_before_say hook on the character
+        speech = caller.at_before_say(speech)
+        if not speech:  # If speech is empty, stop here
+            return
+        # Call the at_after_say hook on the character
+        caller.at_say(speech, msg_self=True)
 
 
 class CmdDrop(Command):
