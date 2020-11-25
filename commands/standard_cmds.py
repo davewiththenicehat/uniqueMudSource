@@ -1,8 +1,9 @@
-from evennia.utils import evtable
+from evennia.utils import evtable, evmore
 from evennia import default_cmds
 from evennia.contrib import rpsystem
 from evennia import CmdSet
 from commands.command import Command
+from evennia.commands.default.help import CmdHelp as EvCmdHelp
 
 
 class StandardCmdsCmdSet(default_cmds.CharacterCmdSet):
@@ -28,6 +29,55 @@ class StandardCmdsCmdSet(default_cmds.CharacterCmdSet):
         self.add(CmdLay)
         self.add(CmdGet)
         self.add(CmdSay)
+        self.add(CmdHelp)
+
+
+class CmdHelp(EvCmdHelp):
+    """
+    View help or a list of topics
+
+    Usage:
+      help <topic or command>
+      help list
+      help all
+
+    This will search for help on commands and other
+    topics related to the game.
+    """
+
+    key = "help"
+    aliases = ["?"]
+    locks = "cmd:all()"
+    arg_regex = r"\s|$"
+
+    # suggestion cutoff, between 0 and 1 (1 => perfect match)
+    suggestion_cutoff = 0.6
+
+    # number of suggestions (set to 0 to remove suggestions from help)
+    suggestion_maxnum = 5
+
+    def msg_help(self, text):
+        """
+        messages text to the caller, adding an extra oob argument to indicate
+        that this is a help command result and could be rendered in a separate
+        help window
+        """
+        if type(self).help_more:
+            usemore = True
+
+            if self.session and self.session.protocol_key in ("websocket", "ajax/comet"):
+                try:
+                    options = self.account.db._saved_webclient_options
+                    if options and options["helppopup"]:
+                        usemore = False
+                except KeyError:
+                    pass
+
+            if usemore:
+                evmore.msg(self.caller, text, session=self.session, force=True)
+                return
+
+        self.msg(text=(text, {"type": "help"}), force=True)
 
 
 class CmdSay(Command):
