@@ -237,7 +237,6 @@ class Command(default_cmds.MuxCommand):
                 return True
         return super().at_pre_cmd()
 
-
     def start_message(self):
         """
         Display a message after a command has been successfully deffered.

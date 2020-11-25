@@ -87,7 +87,7 @@ class CmdHelp(EvCmdHelp):
                 evmore.msg(self.caller, text, session=self.session, force=True)
                 return
 
-        self.msg(text=(text, {"type": "help"}), force=True)
+        self.msg(text=(text, {"type": "help"}))
 
     @staticmethod
     def format_help_entry(title, help_text, aliases=None, suggested=None):
@@ -148,6 +148,13 @@ class CmdHelp(EvCmdHelp):
                     + "|n"
                 )
         return string
+
+    def msg(self, text=None, to_obj=None, from_obj=None, session=None, **kwargs):
+        """
+        Overriding to allow option to show messages to dead and unconscious Characters
+        """
+        kwargs.update({"force": True})
+        super().msg(text, to_obj, from_obj, session, **kwargs)
 
 
 class CmdSay(Command):
