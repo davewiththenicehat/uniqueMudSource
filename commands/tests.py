@@ -528,7 +528,6 @@ class TestCommands(CommandTest):
         wanted_message = r"Pose will read 'Obj is here.'."
         self.call(command(), arg, wanted_message, caller=self.char1)
 
-
         # test actions against an unconscious characer
         self.char1.set_unconscious()
         self.assertFalse(self.char1.ready())
@@ -547,10 +546,27 @@ class TestCommands(CommandTest):
         wanted_message = r"Char is unconscious here"
         cmd_result = self.call(command(), arg, caller=self.char2)
         self.assertRegex(cmd_result, wanted_message)
-        self.char1.set_unconscious(False)  # wake the character up
+        # wake the character up
+        self.char1.set_unconscious(False)
         # make certain Character is in laying position after waking up.
         command = developer_cmds.CmdMultiCmd
         arg = "= l"
         wanted_message = r"Char is laying here"
         cmd_result = self.call(command(), arg, caller=self.char2)
         self.assertRegex(cmd_result, wanted_message)
+
+        # commands that should work when the user is busy
+        # defer a command and complete it
+        command = developer_cmds.CmdMultiCmd
+        arg = "= defer_cmd"
+        #|Defered command ran successfully.|You are no longer busy.|Char allowed you to complete your defer_cmd command early with their complete_cmd_early command.
+        wanted_message = "You will be busy for 5 seconds.|Char is testing deferring a command."
+        self.call(command(), arg, wanted_message)
+        # commands that should work when the Character is busy
+        command = developer_cmds.CmdMultiCmd
+        not_req_ready_commands = ('look', 'drop')
+        for non_ready_cmd in not_req_ready_commands:
+            arg = f"= {non_ready_cmd}"
+            wanted_message = r"You can not do that while unconscious."
+            cmd_result = self.call(command(), arg, caller=self.char1)
+            self.assertFalse(cmd_result.startswith('You will be busy for'))

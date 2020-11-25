@@ -5,6 +5,7 @@ from evennia.contrib import rpsystem
 from evennia import CmdSet
 from commands.command import Command
 from evennia.commands.default.help import CmdHelp as EvCmdHelp
+from evennia.commands.default.general import CmdLook as EvCmdLook
 
 
 class StandardCmdsCmdSet(default_cmds.CharacterCmdSet):
@@ -31,6 +32,15 @@ class StandardCmdsCmdSet(default_cmds.CharacterCmdSet):
         self.add(CmdGet)
         self.add(CmdSay)
         self.add(CmdHelp)
+        self.add(CmdLook)
+
+
+class CmdLook(EvCmdLook, Command):
+    """
+    Override look to use UM Command strucure.
+    Adds support for not working when the Character is unconscious.
+    """
+    requires_ready = False  # if true this command requires the ready status before it can do anything.
 
 
 # separator used to format help cmd
