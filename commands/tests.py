@@ -577,3 +577,8 @@ class TestCommands(CommandTest):
             arg = f"= {ready_cmd}"
             cmd_result = self.call(command(), arg, caller=self.char1)
             self.assertTrue(cmd_result.startswith('You will be busy for'))
+        # comlete your defer command
+        command = developer_cmds.CmdMultiCmd
+        arg = "= complete_cmd_early"
+        wanted_message = "Defered command ran successfully.|You are no longer busy.|Char allowed you to complete your defer_cmd command early with their complete_cmd_early command."
+        self.call(command(), arg, wanted_message)
