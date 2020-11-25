@@ -58,18 +58,16 @@ class CmdPunch(UnarmedCommand):
     A basic fast unarmed attack.
 
     Modifier:
-        observation and half of the Characters strength action modifier.
-        unarmed ranks
-        punch ranks
+      observation and half of the Characters strength action modifier.
+      unarmed ranks
+      punch ranks
     Damage:
-        punch does 1 or 2 damage.
-        punch's damage is modifider by strength damage modifier.
+      punch does 1 or 2 damage.
+      punch's damage is modifider by strength damage modifier.
     Dodge:
-        punch is evaded by agility.
+      punch is evaded by agility.
     time:
-        punch's default completion time is 3 seconds.
-    Returns:
-        True, if the command completed successfully
+      punch's default completion time is 3 seconds.
     """
 
     key = "punch"
@@ -100,14 +98,14 @@ class CmdKick(UnarmedCommand):
     A basic slow unarmed attack.
 
     Modifier:
-        kick is modified with observation and half of the Characters strength action modifier.
+      kick is modified with observation and half of the Characters strength action modifier.
     Damage:
-        kick does 1 to 4 damage.
-        kick's damage is modifider by strength damage modifier.
+      kick does 1 to 4 damage.
+      kick's damage is modifider by strength damage modifier.
     Dodge:
-        kick is evaded by agility.
+      kick is evaded by agility.
     time:
-        kick's default completion time is 5 seconds.
+      kick's default completion time is 5 seconds.
     """
 
     key = "kick"

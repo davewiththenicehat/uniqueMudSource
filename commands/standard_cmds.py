@@ -5,7 +5,7 @@ from evennia.contrib import rpsystem
 from evennia import CmdSet
 from commands.command import Command
 from evennia.commands.default.help import CmdHelp as EvCmdHelp
-from evennia.commands.default.general import CmdLook as EvCmdLook
+from evennia.commands.default.general import CmdLook as EvCmdLook, CmdWhisper as EvCmdWhisper
 
 
 class StandardCmdsCmdSet(default_cmds.CharacterCmdSet):
@@ -33,12 +33,47 @@ class StandardCmdsCmdSet(default_cmds.CharacterCmdSet):
         self.add(CmdSay)
         self.add(CmdHelp)
         self.add(CmdLook)
+        self.add(CmdWhisper)
+
+
+class CmdWhisper(EvCmdWhisper, Command):
+    """
+    Speak privately as your character to another
+
+    Usage:
+      whisper <character> = <message>
+      whisper <char1>, <char2> = <message>
+
+    Status:
+      whisper requires a Character to be in the ready status.
+      whispering entails being near someone, focusing on communicating with them.
+
+    Time:
+      whisper does not take any time to complete
+
+    Talk privately to one or more characters in your current location, without
+    others in the room being informed.
+    """
 
 
 class CmdLook(EvCmdLook, Command):
+    # Override look to use UM Command strucure.
+    # Adds support for not working when the Character is unconscious.
     """
-    Override look to use UM Command strucure.
-    Adds support for not working when the Character is unconscious.
+    look at location or object
+
+    Usage:
+      look
+      look <obj>
+      look *<account>
+
+    Status:
+      look requires a Character be conscious
+
+    Time:
+      look takes no time to complete
+
+    Observes your location or objects in your vicinity.
     """
     requires_ready = False  # if true this command requires the ready status before it can do anything.
 
@@ -60,9 +95,6 @@ class CmdHelp(EvCmdHelp):
 
     This will search for help on commands and other
     topics related to the game.
-
-    todo:
-        make format_help_list format to a table.
     """
 
     key = "help"
@@ -176,6 +208,12 @@ class CmdSay(Command):
       say to <target>, <message>
           the , is required.
 
+    Status
+      say requires a Character to be conscious.
+
+    Time
+      say requires no time to complete
+
     Talk to those in your current location.
     """
 
@@ -222,6 +260,12 @@ class CmdDrop(Command):
 
     Usage:
       drop <obj>
+
+    Status:
+      drop requires a Character to be conscious to use.
+
+    Time:
+      drop does not take any time to complete.
 
     Lets you drop an object from your inventory into the
     location you are currently in.
@@ -273,6 +317,12 @@ class CmdGet(Command):
 
     Usage:
       get <obj>
+
+    status:
+      get requires a Character to be in the ready status to use.
+
+    Time:
+      get, by default, requires 1 second to complete.
 
     Picks up an object from your location and puts it in
     your inventory.
@@ -347,6 +397,14 @@ class CmdInventory(Command):
       inventory
       inv
 
+    Status:
+      inventory requires a Character to be in the ready status to use.
+
+    Time:
+      inventory, by default, takes 1 second to complete.
+
+    Status and time requirements represent your Character searching through their belongings.
+
     Shows your inventory.
     """
 
@@ -409,6 +467,15 @@ class CmdSit(Command):
 
     Usage:
       sit
+
+    Status:
+      sit requires a Character to be in the ready status to use.
+
+    Time:
+      sit, by default, takes 1 second to complete.
+
+    Future support:
+      add ability to sit on objects; chairs, tables, boxes so on.
     """
 
     key = "sit"
@@ -446,6 +513,12 @@ class CmdStand(Command):
 
     Usage:
       stand
+
+    Status:
+      stand requires a Character to be in the ready status to use.
+
+    Time:
+      stand, by default, takes 3 seconds to complete.
     """
 
     key = "stand"
@@ -482,6 +555,12 @@ class CmdLay(Command):
 
     Usage:
       lay
+
+    Status:
+      lay requires a Character to be in the ready status to use.
+
+    Time:
+      lay, by default, takes 1 second to complete.
     """
 
     key = "lay"

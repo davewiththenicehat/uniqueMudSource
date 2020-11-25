@@ -564,9 +564,16 @@ class TestCommands(CommandTest):
         self.call(command(), arg, wanted_message)
         # commands that should work when the Character is busy
         command = developer_cmds.CmdMultiCmd
-        not_req_ready_commands = ('look', 'drop')
+        not_req_ready_commands = ('look', 'drop', 'help')
         for non_ready_cmd in not_req_ready_commands:
             arg = f"= {non_ready_cmd}"
-            wanted_message = r"You can not do that while unconscious."
             cmd_result = self.call(command(), arg, caller=self.char1)
             self.assertFalse(cmd_result.startswith('You will be busy for'))
+        # commands that should not work when the Character is busy
+        command = developer_cmds.CmdMultiCmd
+        req_ready_commands = ('punch', 'inv', 'out', 'sit', 'stand', 'lay', 'get', 'wear', 'remove',
+                              'whisper', 'kick', 'dodge')
+        for ready_cmd in req_ready_commands:
+            arg = f"= {ready_cmd}"
+            cmd_result = self.call(command(), arg, caller=self.char1)
+            self.assertTrue(cmd_result.startswith('You will be busy for'))
