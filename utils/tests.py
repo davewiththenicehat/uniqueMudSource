@@ -3,6 +3,7 @@ from evennia import create_object
 from typeclasses.characters import Character
 from evennia.contrib import gendersub
 from utils.element import Element
+from utils import um_utils
 
 
 class TestUtils(CommandTest):
@@ -148,3 +149,20 @@ class TestUtils(CommandTest):
         # test element deletion
         del char.hp
         self.assertFalse(char.attributes.has('hp_value'))
+
+        # test um_utils.highlighter
+        # test highlighting
+        test_message = um_utils.highlighter('test', 'r')
+        self.assertEqual(test_message, "|[rtest|n")
+        # test a text color change
+        test_message = um_utils.highlighter('test', color='r')
+        self.assertEqual(test_message, "|rtest|n")
+        # test click kwarg
+        test_message = um_utils.highlighter('test', click=True)
+        self.assertEqual(test_message, "|lctest|lttest|le|n")
+        # test a custom click command
+        test_message = um_utils.highlighter('test', click_cmd="click me")
+        self.assertEqual(test_message, "|lcclick me|lttest|le|n")
+        # test the up kwarg
+        test_message = um_utils.highlighter('test', up=True)
+        self.assertEqual(test_message, "Test|n")

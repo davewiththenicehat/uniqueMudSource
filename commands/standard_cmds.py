@@ -5,7 +5,11 @@ from evennia.contrib import rpsystem
 from evennia import CmdSet
 from commands.command import Command
 from evennia.commands.default.help import CmdHelp as EvCmdHelp
+from evennia.commands.default.system import CmdObjects
 from evennia.commands.default.general import CmdLook as EvCmdLook, CmdWhisper as EvCmdWhisper
+from world.rules import stats
+from utils.um_utils import highlighter
+
 
 
 class StandardCmdsCmdSet(default_cmds.CharacterCmdSet):
@@ -34,6 +38,65 @@ class StandardCmdsCmdSet(default_cmds.CharacterCmdSet):
         self.add(CmdHelp)
         self.add(CmdLook)
         self.add(CmdWhisper)
+        self.add(CmdStatus)
+        self.add(UMCmdObjects)
+
+
+class UMCmdObjects(CmdObjects):
+    # overidding to remove 'stats' as an alias
+    aliases = ["listobjects", "listobjs", "db"]
+
+
+class CmdStatus(Command):
+    """
+    Display information about your Character's statistics.
+
+    Usage:
+      stats, stat or statistics
+    """
+    key = "stat"
+    aliases = ["statistics", "stats"]
+
+    def func(self):
+        caller = self.caller
+        caller.msg("|/", force=True)
+        caller.msg(f"Statistics for: |w{caller.name.capitalize()}|n", force=True)
+        caller.msg(f"Others who do not know this Character see |o as: |w{caller.usdesc}|n", force=True)
+        caller.msg("|/", force=True)
+        # show health statistics
+        caller.msg("Health:", force=True)
+        row1 = list()
+        row2 = list()
+        for stat in ('hp', ):
+            row1.append(stat)
+            health_value = getattr(caller, stat, 'Missing')
+            row2.append('|w'+str(health_value)+'|n')
+        health_list = [row1, row2]
+        health_table = evtable.EvTable(table=health_list, border=None, pad_left=4)
+        caller.msg(health_table, force=True)
+        caller.msg("|/", force=True)
+        # show attributes statistics
+        caller.msg("Attributes:", force=True)
+        row1 = list()
+        row2 = list()
+        row3 = list()
+        row4 = list()
+        for short_name, long_name in stats.STAT_MAP_DICT.items():
+            # show two stats to a row
+            if len(row1) < len(row3):
+                first_row = row1
+                second_row = row2
+            else:
+                first_row = row3
+                second_row = row4
+            long_name = highlighter(long_name, click_cmd=f"help {long_name}", up=True)
+            first_row.append(long_name)
+            stat_value = getattr(caller, stat, 'Missing')
+            second_row.append("|w"+str(stat_value)+'|n')
+        stats_list = [row1, row2, row3, row4]
+        stats_table = evtable.EvTable(table=stats_list, border=None, pad_left=4)
+        caller.msg(stats_table, force=True)
+        caller.msg("|/", force=True)
 
 
 class CmdWhisper(EvCmdWhisper, Command):

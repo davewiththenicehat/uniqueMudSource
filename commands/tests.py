@@ -582,3 +582,10 @@ class TestCommands(CommandTest):
         arg = "= complete_cmd_early"
         wanted_message = "Defered command ran successfully.|You are no longer busy.|Char allowed you to complete your defer_cmd command early with their complete_cmd_early command."
         self.call(command(), arg, wanted_message)
+
+        # test the statistics command
+        command = developer_cmds.CmdMultiCmd
+        arg = "= stat"
+        wanted_message = "Statistics for: Char"
+        cmd_result = self.call(command(), arg)
+        self.assertRegex(cmd_result, wanted_message)
