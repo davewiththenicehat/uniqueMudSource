@@ -23,6 +23,22 @@ def highlighter(message, highlight_color=None, **kwargs):
         up=False, if the first letter should be capitalized
 
     Usage:
+        Examples taken from this functions unit test.
+        # test color change
+        test_message = um_utils.highlighter('test', 'r')
+        test_message == "|[rtest|n"
+        # test a text color change
+        test_message = um_utils.highlighter('test', color='r')
+        test_message == "|rtest|n"
+        # test click kwarg
+        test_message = um_utils.highlighter('test', click=True)
+        test_message == "|lctest|lttest|le|n"
+        # test a custom click command
+        test_message = um_utils.highlighter('test', click_cmd="click me")
+        test_message == "|lcclick me|lttest|le|n"
+        # test the up kwarg
+        test_message = um_utils.highlighter('test', up=True)
+        test_message == "Test|n"
     """
     if highlight_color:
         message = f"|{highlight_color}{message}"
