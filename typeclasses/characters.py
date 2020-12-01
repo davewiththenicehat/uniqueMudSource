@@ -249,6 +249,25 @@ class Character(AllObjectsMixin, CharExAndObjMixin, ClothedCharacter, GenderChar
         """Setter property for usdesc"""
         self.sdesc.add(value)
 
+    # define characters's endurance
+    @property
+    def END(self):
+        try:
+            if self._endurance:
+                pass
+        except AttributeError:
+            self._endurance = Element(self, 100, **CHARACTER_STAT_SETTINGS)
+        return self._endurance
+
+    @END.setter
+    def END(self, value):
+        self._endurance.set(value)
+
+    @END.deleter
+    def END(self):
+        self._endurance.delete()
+        del self._endurance
+
     # define characters's strength
     @property
     def STR(self):

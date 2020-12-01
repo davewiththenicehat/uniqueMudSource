@@ -196,6 +196,25 @@ class TestObjects(CommandTest):
         self.assertEqual(char.attributes.get('charisma_min'), 101)
         char.CHR.min = 100
         self.assertEqual(char.attributes.get('charisma_min'), 100)
+        # test endurance
+        self.assertEqual(char.END, 100)
+        self.assertEqual(char.END.max, CHARACTER_STAT_SETTINGS.get('max'))
+        self.assertEqual(char.END.min, CHARACTER_STAT_SETTINGS.get('min'))
+        self.assertEqual(char.END.breakpoint, CHARACTER_STAT_SETTINGS.get('breakpoint'))
+        char.END = 99
+        self.assertEqual(char.attributes.get('endurance_value'), 99)
+        char.END = 100
+        self.assertEqual(char.attributes.get('endurance_value'), 100)
+        self.assertFalse(char.attributes.has('endurance_max'))
+        char.END.max = 101
+        self.assertEqual(char.attributes.get('endurance_max'), 101)
+        char.END.max = 100
+        self.assertEqual(char.attributes.get('endurance_max'), 100)
+        self.assertFalse(char.attributes.has('endurance_min'))
+        char.END.min = 101
+        self.assertEqual(char.attributes.get('endurance_min'), 101)
+        char.END.min = 100
+        self.assertEqual(char.attributes.get('endurance_min'), 100)
 
         # test usdesc
         self.assertEqual(char.usdesc, 'A normal person')
