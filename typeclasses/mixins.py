@@ -67,6 +67,7 @@ class CharExAndObjMixin:
                 pass
         except AttributeError:
             self._hp = Element(self)
+            self._hp.verify()
         return self._hp
 
     @hp.setter

@@ -257,6 +257,7 @@ class Character(AllObjectsMixin, CharExAndObjMixin, ClothedCharacter, GenderChar
                 pass
         except AttributeError:
             self._endurance = Element(self, 100, **CHARACTER_STAT_SETTINGS)
+            self._endurance.verify()
         return self._endurance
 
     @END.setter
@@ -276,6 +277,7 @@ class Character(AllObjectsMixin, CharExAndObjMixin, ClothedCharacter, GenderChar
                 pass
         except AttributeError:
             self._strength = Element(self, 100, **CHARACTER_STAT_SETTINGS)
+            self._strength.verify()
         return self._strength
 
     @STR.setter
@@ -295,6 +297,7 @@ class Character(AllObjectsMixin, CharExAndObjMixin, ClothedCharacter, GenderChar
                 pass
         except AttributeError:
             self._constitution = Element(self, 100, **CHARACTER_STAT_SETTINGS)
+            self._constitution.verify()
         return self._constitution
 
     @CON.setter
@@ -314,6 +317,7 @@ class Character(AllObjectsMixin, CharExAndObjMixin, ClothedCharacter, GenderChar
                 pass
         except AttributeError:
             self._observation = Element(self, 100, **CHARACTER_STAT_SETTINGS)
+            self._observation.verify()
         return self._observation
 
     @OBS.setter
@@ -333,6 +337,7 @@ class Character(AllObjectsMixin, CharExAndObjMixin, ClothedCharacter, GenderChar
                 pass
         except AttributeError:
             self._agility = Element(self, 100, **CHARACTER_STAT_SETTINGS)
+            self._agility.verify()
         return self._agility
 
     @AGI.setter
@@ -352,6 +357,7 @@ class Character(AllObjectsMixin, CharExAndObjMixin, ClothedCharacter, GenderChar
                 pass
         except AttributeError:
             self._speed = Element(self, 100, **CHARACTER_STAT_SETTINGS)
+            self._speed.verify()
         return self._speed
 
     @SPD.setter
@@ -371,6 +377,7 @@ class Character(AllObjectsMixin, CharExAndObjMixin, ClothedCharacter, GenderChar
                 pass
         except AttributeError:
             self._intelligence = Element(self, 100, **CHARACTER_STAT_SETTINGS)
+            self._intelligence.verify()
         return self._intelligence
 
     @INT.setter
@@ -390,6 +397,7 @@ class Character(AllObjectsMixin, CharExAndObjMixin, ClothedCharacter, GenderChar
                 pass
         except AttributeError:
             self._wisdom = Element(self, 100, **CHARACTER_STAT_SETTINGS)
+            self._wisdom.verify()
         return self._wisdom
 
     @WIS.setter
@@ -409,6 +417,7 @@ class Character(AllObjectsMixin, CharExAndObjMixin, ClothedCharacter, GenderChar
                 pass
         except AttributeError:
             self._charisma = Element(self, 100, **CHARACTER_STAT_SETTINGS)
+            self._charisma.verify()
         return self._charisma
 
     @CHR.setter

@@ -59,6 +59,7 @@ class CmdStatus(Command):
 
     def func(self):
         caller = self.caller
+        # display name and appearance
         caller.msg("|/", force=True)
         caller.msg(f"Statistics for: |w{caller.name.capitalize()}|n", force=True)
         caller.msg(f"Others who do not know this Character see |o as: |w{caller.usdesc}|n", force=True)
@@ -67,9 +68,14 @@ class CmdStatus(Command):
         caller.msg("Health:", force=True)
         row1 = list()
         row2 = list()
-        for stat in ('hp', ):
-            row1.append(stat)
-            health_value = getattr(caller, stat, 'Missing')
+        for health_stat in ('hp', 'END'):
+            if hasattr(caller, health_stat):
+                health_value = getattr(caller, health_stat, 'Missing post check')
+                health_name = getattr(health_value, 'name', 'Missing name check Element verification')
+                row1.append(health_name)
+            else:
+                row1.append(health_stat)
+                health_value = 'Missing'
             row2.append('|w'+str(health_value)+'|n')
         health_list = [row1, row2]
         health_table = evtable.EvTable(table=health_list, border=None, pad_left=4)
@@ -81,6 +87,7 @@ class CmdStatus(Command):
         row2 = list()
         row3 = list()
         row4 = list()
+        # loop through statistics attributes
         for short_name, long_name in stats.STAT_MAP_DICT.items():
             # show two stats to a row
             if len(row1) < len(row3):
@@ -89,9 +96,10 @@ class CmdStatus(Command):
             else:
                 first_row = row3
                 second_row = row4
+            # make the attribute clickable
             long_name = highlighter(long_name, click_cmd=f"help {long_name}", up=True)
             first_row.append(long_name)
-            stat_value = getattr(caller, stat, 'Missing')
+            stat_value = getattr(caller, short_name, 'Missing')
             second_row.append("|w"+str(stat_value)+'|n')
         stats_list = [row1, row2, row3, row4]
         stats_table = evtable.EvTable(table=stats_list, border=None, pad_left=4)
