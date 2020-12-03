@@ -166,6 +166,7 @@ class Character(AllObjectsMixin, CharExAndObjMixin, ClothedCharacter, GenderChar
             Used to cache stat modifiers.
         """
         self.cache_stat_modifiers()  # load stats cache when Character is initialized.
+        self.END  # init endurance
         return super().at_init()  # call at_init below this one, ie typeclasses.mixins.CharExAndObjMixin
 
     def at_object_creation(self):

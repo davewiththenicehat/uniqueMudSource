@@ -68,13 +68,11 @@ class CmdStatus(Command):
         caller.msg("Health:", force=True)
         row1 = list()
         row2 = list()
-        for health_stat in ('hp', 'END'):
+        for health_stat in ('hp', 'endurance'):
+            row1.append(health_stat)
             if hasattr(caller, health_stat):
                 health_value = getattr(caller, health_stat, 'Missing post check')
-                health_name = getattr(health_value, 'name', 'Missing name check Element verification')
-                row1.append(health_name)
             else:
-                row1.append(health_stat)
                 health_value = 'Missing'
             row2.append('|w'+str(health_value)+'|n')
         health_list = [row1, row2]
