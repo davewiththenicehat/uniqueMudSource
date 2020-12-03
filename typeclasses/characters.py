@@ -253,181 +253,181 @@ class Character(AllObjectsMixin, CharExAndObjMixin, ClothedCharacter, GenderChar
     @property
     def END(self):
         try:
-            if self._endurance:
+            if self.endurance:
                 pass
         except AttributeError:
-            self._endurance = Element(self, 100, **CHARACTER_STAT_SETTINGS)
-            self._endurance.verify()
-        return self._endurance
+            self.endurance = Element(self, 100, **CHARACTER_STAT_SETTINGS)
+            self.endurance.verify()
+        return self.endurance
 
     @END.setter
     def END(self, value):
-        self._endurance.set(value)
+        self.endurance.set(value)
 
     @END.deleter
     def END(self):
-        self._endurance.delete()
-        del self._endurance
+        self.endurance.delete()
+        del self.endurance
 
     # define characters's strength
     @property
     def STR(self):
         try:
-            if self._strength:
+            if self.strength:
                 pass
         except AttributeError:
-            self._strength = Element(self, 100, **CHARACTER_STAT_SETTINGS)
-            self._strength.verify()
-        return self._strength
+            self.strength = Element(self, 100, **CHARACTER_STAT_SETTINGS)
+            self.strength.verify()
+        return self.strength
 
     @STR.setter
     def STR(self, value):
-        self._strength.set(value)
+        self.strength.set(value)
 
     @STR.deleter
     def STR(self):
-        self._strength.delete()
-        del self._strength
+        self.strength.delete()
+        del self.strength
 
     # define characters's constitution
     @property
     def CON(self):
         try:
-            if self._constitution:
+            if self.constitution:
                 pass
         except AttributeError:
-            self._constitution = Element(self, 100, **CHARACTER_STAT_SETTINGS)
-            self._constitution.verify()
-        return self._constitution
+            self.constitution = Element(self, 100, **CHARACTER_STAT_SETTINGS)
+            self.constitution.verify()
+        return self.constitution
 
     @CON.setter
     def CON(self, value):
-        self._constitution.set(value)
+        self.constitution.set(value)
 
     @CON.deleter
     def CON(self):
-        self._constitution.delete()
-        del self._constitution
+        self.constitution.delete()
+        del self.constitution
 
     # define characters's observation
     @property
     def OBS(self):
         try:
-            if self._observation:
+            if self.observation:
                 pass
         except AttributeError:
-            self._observation = Element(self, 100, **CHARACTER_STAT_SETTINGS)
-            self._observation.verify()
-        return self._observation
+            self.observation = Element(self, 100, **CHARACTER_STAT_SETTINGS)
+            self.observation.verify()
+        return self.observation
 
     @OBS.setter
     def OBS(self, value):
-        self._observation.set(value)
+        self.observation.set(value)
 
     @OBS.deleter
     def OBS(self):
-        self._observation.delete()
-        del self._observation
+        self.observation.delete()
+        del self.observation
 
     # define characters's agility
     @property
     def AGI(self):
         try:
-            if self._agility:
+            if self.agility:
                 pass
         except AttributeError:
-            self._agility = Element(self, 100, **CHARACTER_STAT_SETTINGS)
-            self._agility.verify()
-        return self._agility
+            self.agility = Element(self, 100, **CHARACTER_STAT_SETTINGS)
+            self.agility.verify()
+        return self.agility
 
     @AGI.setter
     def AGI(self, value):
-        self._agility.set(value)
+        self.agility.set(value)
 
     @AGI.deleter
     def AGI(self):
-        self._agility.delete()
-        del self._agility
+        self.agility.delete()
+        del self.agility
 
     # define characters's speed
     @property
     def SPD(self):
         try:
-            if self._speed:
+            if self.speed:
                 pass
         except AttributeError:
-            self._speed = Element(self, 100, **CHARACTER_STAT_SETTINGS)
-            self._speed.verify()
-        return self._speed
+            self.speed = Element(self, 100, **CHARACTER_STAT_SETTINGS)
+            self.speed.verify()
+        return self.speed
 
     @SPD.setter
     def SPD(self, value):
-        self._speed.set(value)
+        self.speed.set(value)
 
     @SPD.deleter
     def SPD(self):
-        self._speed.delete()
-        del self._speed
+        self.speed.delete()
+        del self.speed
 
     # define characters's intelligence
     @property
     def INT(self):
         try:
-            if self._intelligence:
+            if self.intelligence:
                 pass
         except AttributeError:
-            self._intelligence = Element(self, 100, **CHARACTER_STAT_SETTINGS)
-            self._intelligence.verify()
-        return self._intelligence
+            self.intelligence = Element(self, 100, **CHARACTER_STAT_SETTINGS)
+            self.intelligence.verify()
+        return self.intelligence
 
     @INT.setter
     def INT(self, value):
-        self._intelligence.set(value)
+        self.intelligence.set(value)
 
     @INT.deleter
     def INT(self):
-        self._intelligence.delete()
-        del self._intelligence
+        self.intelligence.delete()
+        del self.intelligence
 
     # define characters's wisdom
     @property
     def WIS(self):
         try:
-            if self._wisdom:
+            if self.wisdom:
                 pass
         except AttributeError:
-            self._wisdom = Element(self, 100, **CHARACTER_STAT_SETTINGS)
-            self._wisdom.verify()
-        return self._wisdom
+            self.wisdom = Element(self, 100, **CHARACTER_STAT_SETTINGS)
+            self.wisdom.verify()
+        return self.wisdom
 
     @WIS.setter
     def WIS(self, value):
-        self._wisdom.set(value)
+        self.wisdom.set(value)
 
     @WIS.deleter
     def WIS(self):
-        self._wisdom.delete()
-        del self._wisdom
+        self.wisdom.delete()
+        del self.wisdom
 
     # define characters's charisma
     @property
     def CHR(self):
         try:
-            if self._charisma:
+            if self.charisma:
                 pass
         except AttributeError:
-            self._charisma = Element(self, 100, **CHARACTER_STAT_SETTINGS)
-            self._charisma.verify()
-        return self._charisma
+            self.charisma = Element(self, 100, **CHARACTER_STAT_SETTINGS)
+            self.charisma.verify()
+        return self.charisma
 
     @CHR.setter
     def CHR(self, value):
-        self._charisma.set(value)
+        self.charisma.set(value)
 
     @CHR.deleter
     def CHR(self):
-        self._charisma.delete()
-        del self._charisma
+        self.charisma.delete()
+        del self.charisma
 
     def ready(self):
         """
