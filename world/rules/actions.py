@@ -5,6 +5,7 @@ Contains functions intended for use with combat commands
 from random import randint
 from evennia.utils.logger import log_info, log_warn, log_err
 from evennia.utils import inherits_from
+from utils import um_utils
 
 
 def targeted_action(caller, target, log=False):
@@ -174,10 +175,9 @@ def action_cost(char, cost_level='low', cost_stat='END', subt_cost=True, log=Fal
     """
     action_cmd = char.nattributes.get('deffered_command')  # get the command
     if not action_cmd:  # if there is no active command stop the cost
-        char.msg('There was an error with this action. It has been logged. Reporting it is recommended.')
         error_message = f"rules.action.cost, character: {char.id}. Failed to find an active command."
-        log_err(error_message)
-        raise ValueError(error_message)
+        um_utils.error_report(error_message, char)
+        return False
     # if the command has a cost_stat, use it
     stat = getattr(action_cmd, 'cost_stat', None)
     if stat:
@@ -195,10 +195,9 @@ def action_cost(char, cost_level='low', cost_stat='END', subt_cost=True, log=Fal
         # each cost attribute (END, will) has a action_cost_mod_type. types are stats WIS, END so on
         cost_mod_type = getattr(cost_stat_instance, 'action_cost_mod_type', None)
     else: # an instance of the stat is required, cost has to be taken from something
-        char.msg('There was an error with this action. It has been logged. Reporting it is recommended.')
         error_message = f"rules.action.cost, character: {char.id}, action: {action_cmd.key}. Failed to find an instance of {cost_stat} on character."
-        log_err(error_message)
-        raise ValueError(error_message)
+        um_utils.error_report(error_message, char)
+        return False
     stat_action_cost_mod = getattr(char, f"{cost_mod_type}_action_cost_mod", 0)
     # set the base cost for the cost
     if isinstance(cost_level, str):
@@ -208,10 +207,17 @@ def action_cost(char, cost_level='low', cost_stat='END', subt_cost=True, log=Fal
             base_cost = .5
         elif cost_level == 'high':
             base_cost = 1
-    elif isinstance(cost_level, (int, float)):  # if the
-        pass  # nothing is needed cost_level is what is needs to be
+        else:
+            error_message = f"rules.action.cost, character: {char.id} | action: {action_cmd.key} | cost_level argument must equal 'low' 'mid' 'high' or a number."
+            um_utils.error_report(error_message, char)
+            return False
+    elif isinstance(cost_level, (int, float)):  # if the cost level is a number, use it as base cost
+        char.msg("cost_level is a number")
+        base_cost = cost_level
     else:
-        raise ValueError(f"rules.action.cost, character: {char.id} | action: {action_cmd.key} | cost_level argument must equal 'low' 'mid' 'high' or a number.")
+        error_message = f"rules.action.cost, character: {char.id} | action: {action_cmd.key} | cost_level argument must equal 'low' 'mid' 'high' or a number."
+        um_utils.error_report(error_message, char)
+        return False
     # adjust the action cost by the stat action cost modifier
     cost = base_cost - (base_cost * stat_action_cost_mod)
     if log:

@@ -8,9 +8,12 @@ from utils import um_utils
 
 class TestUtils(CommandTest):
     """
-    Used to test the character object
+    Used to test the utilities
+
+    Objects in EvenniaTest
+        self.obj1 self.obj2 self.char1 self.char2 self.exit
     """
-    def test_elements(self):
+    def test_utils(self):
 
         # test setting Element
         char = create_object(Character, key="Gendered", location=self.room1)
@@ -166,3 +169,11 @@ class TestUtils(CommandTest):
         # test the up kwarg
         test_message = um_utils.highlighter('test', up=True)
         self.assertEqual(test_message, "Test|n")
+
+        # test error reporting utility
+        report_msg = um_utils.error_report("test error")
+        self.assertEqual(report_msg, "test error")
+        report_msg = um_utils.error_report("test error", char)
+        self.assertRegex(report_msg, r"^An error was found and has been logged")
+        report_msg = um_utils.error_report("test error", self.char1)
+        self.assertRegex(report_msg, r"System detects you are a developer\.$")

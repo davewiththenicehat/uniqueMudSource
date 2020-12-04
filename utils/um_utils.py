@@ -2,6 +2,8 @@
 This module contains misc small functions
 """
 
+from evennia.utils.logger import log_info, log_warn, log_err
+
 def highlighter(message, highlight_color=None, **kwargs):
     """
     Assists with complex text highlighting.
@@ -41,7 +43,7 @@ def highlighter(message, highlight_color=None, **kwargs):
         test_message == "Test|n"
     """
     if highlight_color:
-        message = f"|{highlight_color}{message}"
+        message = f"|[{highlight_color}{message}"
     if 'color' in kwargs:
         color = kwargs.get('color')
         message = f"|{color}{message}"
@@ -54,3 +56,42 @@ def highlighter(message, highlight_color=None, **kwargs):
     elif 'click' in kwargs:
         message = f"|lc{message}|lt{message}|le"
     return message + "|n"
+
+
+def error_report(error_message, char=None):
+    """
+    Handle messaging errors to system.
+
+    Arguments:
+        error_message, string, message to present to the log, and user.
+        char=None, the Character instance. Only used for messaging the player
+
+    Returns:
+        The message showed to the user, or the message recieved if the Character has no account attached.
+        These returns are intended for easy unit testing. Not for actual usage.
+    """
+
+    if char:
+        perm_str = ""  # default permision string, incase the account is missions the permissions class
+        if hasattr(char, 'account'):  # if there is an account attached to the Character
+            if hasattr(char.account, 'permissions'):
+                perm_str = str(char.account.permissions)  # get premissions in string form
+            if 'developer' in perm_str:  # if the user is a developer
+                dev_msg = f"|RError message:|n {error_message}|/This has |RNOT|n been logged. System detects you are a developer."
+                char.msg(dev_msg)
+                return_msg = dev_msg
+            else:
+                log_err(error_message)
+                char_msg = "An error was found and has been logged. It is recommended you report this error. To do so please press "
+                click_cmd = f"report error = {error_message}"
+                report_cmd = highlighter("Report Error", highlight_color='R', click_cmd=click_cmd)
+                char_msg = f"{char_msg}{report_cmd}."
+                char.msg(char_msg)
+                return_msg = char_msg
+        else:  # Character has no account attached, just log message
+            log_err(error_message)
+            return_msg = error_message
+    else:  # if no Character instance provided
+        log_err(error_message)
+        return_msg = error_message
+    return return_msg
