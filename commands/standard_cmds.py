@@ -56,6 +56,8 @@ class CmdStatus(Command):
     """
     key = "stat"
     aliases = ["statistics", "stats"]
+    requires_ready = False  # if true this command requires the ready status before it can do anything. deferal commands still require ready to defer
+    requires_conscious = False  # if true this command requires the caller to be conscious
 
     def func(self):
         caller = self.caller

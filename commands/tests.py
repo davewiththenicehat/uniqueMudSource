@@ -564,7 +564,7 @@ class TestCommands(CommandTest):
         self.call(command(), arg, wanted_message)
         # commands that should work when the Character is busy
         command = developer_cmds.CmdMultiCmd
-        not_req_ready_commands = ('look', 'drop', 'help')
+        not_req_ready_commands = ('look', 'drop', 'help', 'stat')
         for non_ready_cmd in not_req_ready_commands:
             arg = f"= {non_ready_cmd}"
             cmd_result = self.call(command(), arg, caller=self.char1)
