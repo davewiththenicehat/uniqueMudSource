@@ -259,6 +259,7 @@ class Character(AllObjectsMixin, CharExAndObjMixin, ClothedCharacter, GenderChar
         except AttributeError:
             self.endurance = Element(self, 100, **CHARACTER_STAT_SETTINGS)
             self.endurance.verify()
+            setattr(self.endurance, 'action_cost_mod_type', 'CON')
         return self.endurance
 
     @END.setter

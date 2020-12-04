@@ -109,6 +109,12 @@ class Command(default_cmds.MuxCommand):
         requires_ready = True  # if true this command requires the ready status before it can be used.
             deferal commands still require ready to defer, even is requires_ready is false.
         requires_conscious = True  # if true this command requires the caller to be conscious before it can be used
+        cost_stat='END'  # stat this command will use for the action's cost
+        cost_level='low' #  level this action should cost. Acceptable levels: 'low', 'mid', 'high' or an integer
+            low, nearly free actions like walking
+            mid, is for easy but exerting actions like punch.
+            high, is for actions that require a lot of energy.
+            If a number is used for cost_level that number is used as the base cost for the command.
 
     Methods:
         All methods are fully documented in their docstrings.
@@ -147,6 +153,8 @@ class Command(default_cmds.MuxCommand):
     desc = None  # a present tense description for the action of this command. IE: "kicks"
     requires_ready = True  # if true this command requires the ready status before it can do anything. deferal commands still require ready to defer
     requires_conscious = True  # if true this command requires the caller to be conscious
+    cost_stat = 'END'  # stat this command will use for the action's cost
+    cost_level = None  # level this action should cost. Acceptable levels: 'low', 'mid', 'high'
 
 
     def func(self):
@@ -636,9 +644,31 @@ class Command(default_cmds.MuxCommand):
         if utils.inherits_from(target, 'typeclasses.characters.Character'):
             target.msg(target_msg, force_on_unconscious=True)
         caller.location.msg_contents(room_msg, exclude=(target, caller))
+        # make the action cost something
+        self.cost(self.cost_level, self.cost_stat)
         if log:
             log_info(f'Command.combat_action, Character ID: {caller.id} | result {result}')
             log_info("caller message: "+caller_msg)
             log_info("target message: "+target_msg)
             log_info("room message: "+room_msg)
         return True
+
+    def cost(self, cost_level='low', cost_stat='END', log=False):
+        """
+        action cost
+
+        Arguments:
+            cost_level='low', level this action should cost.
+                Accepts: 'low', 'mid', 'high' or an integer
+                if a number, the cost is that number.
+                This variable will be overriden with the action commands cost_level attribute
+            cost_stat='END', The stat this function will use for this action.
+                This variable will be overriden with the action commands cost_stat attribute
+
+            log=False, if True log the variables used
+
+        Returns:
+            the numrical value that the stat will be drained.
+        """
+        caller = self.caller
+        actions.action_cost(caller, cost_level, cost_stat)

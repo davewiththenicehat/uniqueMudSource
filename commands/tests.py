@@ -589,3 +589,6 @@ class TestCommands(CommandTest):
         wanted_message = "Statistics for: Char"
         cmd_result = self.call(command(), arg)
         self.assertRegex(cmd_result, wanted_message)
+
+        # make certain commands have been taking a cost.
+        self.assertTrue(self.char1.END < 100)

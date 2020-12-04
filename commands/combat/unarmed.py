@@ -39,6 +39,7 @@ class UnarmedCommand(Command):
     unarmed_str_mod = 0  # half of the unarmed command caller's strength modifier
     can_not_target_self = True  # if True this command will end with a message if the Character targets themself
     dmg_types = ('BLG',)  # tuple of list of damage types this command can manupulate
+    cost_level = 'mid' #  level this action should cost. Acceptable levels: 'low', 'mid', 'high'
 
     def at_pre_cmd(self):
         """
@@ -113,6 +114,7 @@ class CmdKick(UnarmedCommand):
     dmg_max = 4  # the maximum damage this command can cause
     caller_weapon = "foot"  # weapon name that will show up in Command.combat_action's automated messages
     desc = "kicks"  # a present tense description for the action of this command. IE: "kicks"
+    cost_level = 'high' #  level this action should cost. Acceptable levels: 'low', 'mid', 'high'
 
     def start_message(self):
         """

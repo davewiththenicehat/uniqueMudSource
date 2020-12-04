@@ -35,6 +35,7 @@ class EvasionCommand(Command):
 
     help_category = 'evasion'
     cmd_type = 'evasion'  # Should be a string of the cmd type. IE: 'evasion' for an evasion cmd
+    cost_level = 'low' #  level this action should cost. Acceptable levels: 'low', 'mid', 'high'
 
     def at_pre_cmd(self):
         """

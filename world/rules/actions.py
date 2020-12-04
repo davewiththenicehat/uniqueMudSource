@@ -3,7 +3,7 @@ Contains functions intended for use with combat commands
 """
 
 from random import randint
-from evennia.utils.logger import log_info, log_warn
+from evennia.utils.logger import log_info, log_warn, log_err
 from evennia.utils import inherits_from
 
 
@@ -142,3 +142,82 @@ def action_roll(char, log=False):
     if log:
         log_info(f'actions.action_roll, Character ID: {char.id}: result {result} | roll_max: {roll_max} | action_mod: {action_mod}| action_mod_stat: {action_mod_stat} | evade_mod_name: {action_mod_name}')
     return result
+
+
+def action_cost(char, cost_level='low', cost_stat='END', subt_cost=True, log=False):
+    """
+    action cost will calculate the cost of an action.
+    remove that cost from the Character and return a numerical value of the cost.
+
+    Arguments:
+        char, is the character commiting the action
+        cost_stat='END', The stat this function will use for this action.
+            This variable will be overriden with the action commands cost_stat attribute
+        cost_level='low', level this action should cost.
+            Accepts: 'low', 'mid', 'high' or an integer
+            if a number, the cost is that number.
+            This variable will be overriden with the action commands cost_level attribute
+        subt_cost=True, if True, the cost will be subtracted from the cost_stat.
+        log=False, if True log the variables used
+
+    Returns:
+        the numrical value that the stat will be drained.
+
+    todo:
+        make a cache for the equation: https://docs.python.org/3/library/functools.html
+
+    notes:
+        Unit test for this function is in commands.tests
+
+    Equation:
+        cost - (cost * stat_action_cost_mod)
+    """
+    action_cmd = char.nattributes.get('deffered_command')  # get the command
+    if not action_cmd:  # if there is no active command stop the cost
+        char.msg('There was an error with this action. It has been logged. Reporting it is recommended.')
+        error_message = f"rules.action.cost, character: {char.id}. Failed to find an active command."
+        log_err(error_message)
+        raise ValueError(error_message)
+    # if the command has a cost_stat, use it
+    stat = getattr(action_cmd, 'cost_stat', None)
+    if stat:
+        cost_stat = stat
+    # if the command has a cost_level, use it
+    level = getattr(action_cmd, 'cost_level', None)
+    if level:
+        cost_level = level
+    else:  # this command does not have a cost
+        return 0
+    # get the stat modifier for this action, IE char.CON_action_cost_mod
+    cost_stat_instance = getattr(char, cost_stat, False)  # get an instance of that stat used for the cost of this action
+    cost_mod_type = cost_stat # if this stat has no action_cost_mod_type, default to itself
+    if cost_stat_instance:
+        # each cost attribute (END, will) has a action_cost_mod_type. types are stats WIS, END so on
+        cost_mod_type = getattr(cost_stat_instance, 'action_cost_mod_type', None)
+    else: # an instance of the stat is required, cost has to be taken from something
+        char.msg('There was an error with this action. It has been logged. Reporting it is recommended.')
+        error_message = f"rules.action.cost, character: {char.id}, action: {action_cmd.key}. Failed to find an instance of {cost_stat} on character."
+        log_err(error_message)
+        raise ValueError(error_message)
+    stat_action_cost_mod = getattr(char, f"{cost_mod_type}_action_cost_mod", 0)
+    # set the base cost for the cost
+    if isinstance(cost_level, str):
+        if cost_level == 'low':
+            base_cost = .01
+        elif cost_level == 'mid':
+            base_cost = .5
+        elif cost_level == 'high':
+            base_cost = 1
+    elif isinstance(cost_level, (int, float)):  # if the
+        pass  # nothing is needed cost_level is what is needs to be
+    else:
+        raise ValueError(f"rules.action.cost, character: {char.id} | action: {action_cmd.key} | cost_level argument must equal 'low' 'mid' 'high' or a number.")
+    # adjust the action cost by the stat action cost modifier
+    cost = base_cost - (base_cost * stat_action_cost_mod)
+    if log:
+        log_info(f"rules.action_cost, character: {char.id} | action: {action_cmd.key} | cost: {cost} | cost_stat: {cost_stat} | " \
+                 f"base_cost: {base_cost} | {cost_mod_type}_action_cost_mod: {stat_action_cost_mod} | cost_stat_instance.name: {cost_stat_instance.name} | " \
+                 f"cost_mod_type: {cost_mod_type}")
+    if subt_cost:
+        cost_stat_instance.set(cost_stat_instance - cost)  # subtract the cost
+    return cost
