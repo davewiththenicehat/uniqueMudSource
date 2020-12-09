@@ -148,6 +148,8 @@ class TestUtils(CommandTest):
         char.hp.max = 100
         self.assertEqual(char.attributes.get('hp_max'), 100)
 
+        # self.assertEqual(char.hp, 100)
+
         # test element functions
         def br_func():
             char.descending_breakpoint_reached = True

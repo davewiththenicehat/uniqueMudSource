@@ -68,6 +68,7 @@ class CharExAndObjMixin:
         except AttributeError:
             self._hp = Element(self)
             self._hp.verify()
+            setattr(self._hp, 'action_cost_mod_type', 'CON')
         return self._hp
 
     @hp.setter

@@ -63,6 +63,7 @@ class TestObjects(CommandTest):
         self.assertEqual(char.attributes.get('strength_min'), 101)
         char.STR.min = 100
         self.assertEqual(char.attributes.get('strength_min'), 100)
+        self.assertEqual(char.STR, 100)
         # test constitution
         self.assertEqual(char.CON, 100)
         self.assertEqual(char.CON.max, CHARACTER_STAT_SETTINGS.get('max'))
@@ -82,6 +83,7 @@ class TestObjects(CommandTest):
         self.assertEqual(char.attributes.get('constitution_min'), 101)
         char.CON.min = 100
         self.assertEqual(char.attributes.get('constitution_min'), 100)
+        self.assertEqual(char.CON, 100)
         # test observation
         self.assertEqual(char.OBS, 100)
         self.assertEqual(char.OBS.max, CHARACTER_STAT_SETTINGS.get('max'))
@@ -101,6 +103,7 @@ class TestObjects(CommandTest):
         self.assertEqual(char.attributes.get('observation_min'), 101)
         char.OBS.min = 100
         self.assertEqual(char.attributes.get('observation_min'), 100)
+        self.assertEqual(char.OBS, 100)
         # test agility
         self.assertEqual(char.AGI, 100)
         self.assertEqual(char.AGI.max, CHARACTER_STAT_SETTINGS.get('max'))
@@ -120,6 +123,7 @@ class TestObjects(CommandTest):
         self.assertEqual(char.attributes.get('agility_min'), 101)
         char.AGI.min = 100
         self.assertEqual(char.attributes.get('agility_min'), 100)
+        self.assertEqual(char.AGI, 100)
         # test speed
         self.assertEqual(char.SPD, 100)
         self.assertEqual(char.SPD.max, CHARACTER_STAT_SETTINGS.get('max'))
@@ -139,6 +143,7 @@ class TestObjects(CommandTest):
         self.assertEqual(char.attributes.get('speed_min'), 101)
         char.SPD.min = 100
         self.assertEqual(char.attributes.get('speed_min'), 100)
+        self.assertEqual(char.SPD, 100)
         # test intelligence
         self.assertEqual(char.INT, 100)
         self.assertEqual(char.INT.max, CHARACTER_STAT_SETTINGS.get('max'))
@@ -158,6 +163,7 @@ class TestObjects(CommandTest):
         self.assertEqual(char.attributes.get('intelligence_min'), 101)
         char.INT.min = 100
         self.assertEqual(char.attributes.get('intelligence_min'), 100)
+        self.assertEqual(char.INT, 100)
         # test wisdom
         self.assertEqual(char.WIS, 100)
         self.assertEqual(char.WIS.max, CHARACTER_STAT_SETTINGS.get('max'))
@@ -177,6 +183,7 @@ class TestObjects(CommandTest):
         self.assertEqual(char.attributes.get('wisdom_min'), 101)
         char.WIS.min = 100
         self.assertEqual(char.attributes.get('wisdom_min'), 100)
+        self.assertEqual(char.WIS, 100)
         # test charisma
         self.assertEqual(char.CHR, 100)
         self.assertEqual(char.CHR.max, CHARACTER_STAT_SETTINGS.get('max'))
@@ -196,6 +203,7 @@ class TestObjects(CommandTest):
         self.assertEqual(char.attributes.get('charisma_min'), 101)
         char.CHR.min = 100
         self.assertEqual(char.attributes.get('charisma_min'), 100)
+        self.assertEqual(char.CHR, 100)
         # test endurance
         self.assertEqual(char.END, 100)
         self.assertEqual(char.END.max, CHARACTER_STAT_SETTINGS.get('max'))
@@ -321,12 +329,12 @@ class TestObjects(CommandTest):
         self.assertTrue(char.ready())
         self.assertEqual(char.db.pose, 'is laying here.')
 
-        # test healing
+        # test stat restoration
         self.assertFalse(char.condition.dead)
         char.hp = 50
         # make certain the Character heals by some ammount
         self.assertEqual(char.hp, 50)
-        char.heal()
+        char.restore_stat(char.hp)
         self.assertTrue(char.hp > 50)
         # heal now by a set ammount
         char.hp = 50
@@ -345,6 +353,23 @@ class TestObjects(CommandTest):
         self.assertTrue(char.condition.unconscious)
         char.heal()
         self.assertFalse(char.condition.unconscious)
+        #test endurance
+        #char.END = 50
+        # make certain the Character restores END by some ammount
+        #self.assertEqual(char.END, 50)
+        #char.restore_stat(char.END)
+        #self.assertTrue(char.END > 50)
+        # Restore END now by a set ammount
+        #char.END = 50
+        #self.assertEqual(char.END, 50)
+        #char.restore_stat(char.END, ammount=5)
+        #self.assertEqual(char.END, 55)
+        # verify the natural healing script works
+        #char.END = 50
+        #self.assertEqual(char.END, 50)
+        #nat_heal_script = char.scripts.get('Natural_Healing')
+        #nat_heal_script[0].at_repeat()
+        #self.assertTrue(char.END > 50)
 
         # test hp breakpoints
         self.assertFalse(char.condition.unconscious)

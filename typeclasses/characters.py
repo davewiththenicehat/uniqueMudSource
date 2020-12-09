@@ -10,6 +10,7 @@ creation commands.
 from typeclasses.mixins import CharExAndObjMixin, AllObjectsMixin
 from evennia.contrib.gendersub import GenderCharacter, _RE_GENDER_PRONOUN
 from utils.element import Element, ListElement
+from utils import um_utils
 from world import status_functions
 from evennia import utils
 from world.rules import stats, body, damage
@@ -781,41 +782,72 @@ class Character(AllObjectsMixin, CharExAndObjMixin, ClothedCharacter, GenderChar
 
     def heal(self, modifier=0, ammount=None):
         """
-        Heal Character.
+        Heal the Character.
 
         Arguments:
             modifier=0, number to add to the max restoration to heal by.
             ammount=None, a set ammount to heal by.
                 If passed heal will ignore the standard heal check
 
-        Register on a tickerhandler
-            https://www.evennia.com/docs/latest/TickerHandler.html
-        at_object_creation, add ticker handler
-        at_object_delete, remove ticker handler
-
-
-        rules
-            make there be a chance the heal echos to room
-            make option to force the heal echo
-            make healing pause if character moves while bearing a load
-                Make this pause longer for greater loads.
-                make this pause in a framework.
-                    It will be used for endurance also
-            dead Characters can not heal on a tickerhandler
+        Notes:
+            This function passes directly to Character.restore_stat
         """
-        # dead Characters can not heal
+        self.restore_stat(self.hp, modifier, ammount)
+
+    def restore_stat(self, stat, modifier=0, ammount=None):
+        """
+        Restore a stat on a Character
+
+        Arguments:
+            stat, a reference of the stat to be restored
+            modifier=0, number to add to the max restoration to restore by.
+            ammount=None, a set ammount to restore by.
+                If passed restore_stat will ignore the standard restore check
+
+        Notes
+            This is registered on a script, NaturalHealing.
+            This script is created in at_object_creation
+        """
+        # dead Characters can not restore
         if self.condition.dead:
             return
-        if ammount:  # if ammount pass heal by that ammount
-            self.hp += ammount
+        if ammount:  # if ammount pass restore by that ammount
+            stat.set(stat + ammount)
             return
-        # heal according to Character's natural healing
-        restoration_modifier = self.CON_restoration_mod + modifier
-        self.hp += damage.restoration_roll(restoration_modifier)
-        # if Character is unconcious with posotive hp wake them
-        if self.condition.unconscious:
-            if self.hp > 0:
-                self.set_unconscious(False)
+        # restore according to Character's natural healing
+        cost_mod_type = stat.name # if this stat has no action_cost_mod_type, default to itself
+        if stat:
+            # each cost attribute (hp, END, will) has a action_cost_mod_type. types are stats WIS, END so on
+            cost_mod_type = getattr(stat, 'action_cost_mod_type', cost_mod_type)
+        else: # an instance of the stat is required, cost has to be taken from something
+            error_message = f"Character.restore_stat, character: {self.id}, Failed to receive an instance of {stat.name} on character."
+            um_utils.error_report(error_message, self)
+            return False
+        # adjust restoration by the stat's restoration modifider.
+        restoration_modifier = getattr(stat, f"{cost_mod_type}_restoration_mod", 0)
+        restoration_modifier += modifier
+        stat.set(stat + damage.restoration_roll(restoration_modifier))
+        # If this restoration was hp, and the character is concious, wake them.
+        if stat.name == 'hp':
+            if self.condition.unconscious:
+                if self.hp > self.hp.breakpoint:
+                    self.wake_check()
+
+    def wake_check(self):
+        """
+        Will hold future code to test if a character wakes from unconciousness.
+        Currently just wakes the Character if hp is above the hp breakpoint (normally 0)
+        """
+        self.set_unconscious(False)
+
+    def ascending_breakpoint(self):
+        """
+        This is automatically called when an object's hp rises above it's breakpoint (likely 0), when it was previous below it's breakpoint.
+        Here to be overridden.
+
+        Overriding for Characters
+        """
+        self.wake_check()
 
     def at_before_say(self, message, **kwargs):
         """
@@ -829,6 +861,10 @@ class Character(AllObjectsMixin, CharExAndObjMixin, ClothedCharacter, GenderChar
 class NaturalHealing(DefaultScript):
     """
     Script to control when Character's natural healing
+
+    rules
+        make restoration pause if character moves while bearing a load
+            Make this pause longer for greater loads.
     """
 
     def at_script_creation(self):
@@ -838,4 +874,6 @@ class NaturalHealing(DefaultScript):
 
     def at_repeat(self):
         # Heal when the script interval time passes
-        self.obj.heal()
+        char = self.obj
+        char.restore_stat(char.hp)
+        char.restore_stat(char.END)
