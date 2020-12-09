@@ -388,7 +388,7 @@ class Element:
             It is easier to read and understand.
         hpref = char.hp  # returns a reference of the Element
         hp = char.hp.get()  # returns a int or float value of the instance
-        
+
         IMPORTANT:
         char.hp += 10000  # object's hp is now 100. Because Elements' default max is 100.
             ^ If the element was passed a reference of a function with kwarg max_func it will be called now
@@ -499,6 +499,10 @@ class Element:
         if self.log:
             log_info(f"Element value after checks {value}")
         self.value = value
+
+    def __set__(self, instance, value):
+        "descriptor wrapper for Element's self.set"
+        self.set(value)
 
     def _state_check(self, value):
         """
