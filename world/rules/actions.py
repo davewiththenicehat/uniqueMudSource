@@ -190,15 +190,16 @@ def action_cost(char, cost_level='low', cost_stat='END', subt_cost=True, log=Fal
         return 0
     # get the stat modifier for this action, IE char.CON_action_cost_mod
     cost_stat_instance = getattr(char, cost_stat, False)  # get an instance of that stat used for the cost of this action
-    cost_mod_type = cost_stat # if this stat has no action_cost_mod_type, default to itself
+    cost_mod_stat = cost_stat # if this stat has no , default to itself
     if cost_stat_instance:
-        # each cost attribute (END, will) has a action_cost_mod_type. types are stats WIS, END so on
-        cost_mod_type = getattr(cost_stat_instance, 'action_cost_mod_type', None)
+        # each cost attribute (END, will) has a modifier_stat. types are stats WIS, CON so on
+        # base stats CON, WIS so on will use themselves as the cost modifider
+        cost_mod_stat = getattr(cost_stat_instance, 'modifier_stat', None)
     else: # an instance of the stat is required, cost has to be taken from something
         error_message = f"rules.action.cost, character: {char.id}, action: {action_cmd.key}. Failed to find an instance of {cost_stat} on character."
         um_utils.error_report(error_message, char)
         return False
-    stat_action_cost_mod = getattr(char, f"{cost_mod_type}_action_cost_mod", 0)
+    stat_action_cost_mod = getattr(char, f"{cost_mod_stat}_action_cost_mod", 0)
     # set the base cost for the cost
     if isinstance(cost_level, str):
         if cost_level == 'low':
@@ -222,8 +223,8 @@ def action_cost(char, cost_level='low', cost_stat='END', subt_cost=True, log=Fal
     cost = base_cost - (base_cost * stat_action_cost_mod)
     if log:
         log_info(f"rules.action_cost, character: {char.id} | action: {action_cmd.key} | cost: {cost} | cost_stat: {cost_stat} | " \
-                 f"base_cost: {base_cost} | {cost_mod_type}_action_cost_mod: {stat_action_cost_mod} | cost_stat_instance.name: {cost_stat_instance.name} | " \
-                 f"cost_mod_type: {cost_mod_type}")
+                 f"base_cost: {base_cost} | {cost_mod_stat}_action_cost_mod: {stat_action_cost_mod} | cost_stat_instance.name: {cost_stat_instance.name} | " \
+                 f"cost_mod_stat: {cost_mod_stat}")
     if subt_cost:
         cost_stat_instance.set(cost_stat_instance - cost)  # subtract the cost
     return cost

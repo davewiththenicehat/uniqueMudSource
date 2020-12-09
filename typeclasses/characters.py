@@ -260,7 +260,7 @@ class Character(AllObjectsMixin, CharExAndObjMixin, ClothedCharacter, GenderChar
         except AttributeError:
             self.endurance = Element(self, 100, **CHARACTER_STAT_SETTINGS)
             self.endurance.verify()
-            setattr(self.endurance, 'action_cost_mod_type', 'CON')
+            setattr(self.endurance, 'modifier_stat', 'CON')
         return self.endurance
 
     @END.setter
@@ -815,10 +815,10 @@ class Character(AllObjectsMixin, CharExAndObjMixin, ClothedCharacter, GenderChar
             stat.set(stat + ammount)
             return
         # restore according to Character's natural healing
-        cost_mod_type = stat.name # if this stat has no action_cost_mod_type, default to itself
+        cost_mod_type = stat.name # if this stat has no modifier_stat, default to itself
         if stat:
-            # each cost attribute (hp, END, will) has a action_cost_mod_type. types are stats WIS, END so on
-            cost_mod_type = getattr(stat, 'action_cost_mod_type', cost_mod_type)
+            # each cost attribute (hp, END, will) has a modifier_stat. types are stats WIS, END so on
+            cost_mod_type = getattr(stat, 'modifier_stat', cost_mod_type)
         else: # an instance of the stat is required, cost has to be taken from something
             error_message = f"Character.restore_stat, character: {self.id}, Failed to receive an instance of {stat.name} on character."
             um_utils.error_report(error_message, self)
