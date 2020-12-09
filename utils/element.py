@@ -376,7 +376,7 @@ class Element:
         }
 
     Usage:
-    Using the example property `hp` in the Creation: section.
+        Using the example property `hp` in the Creation: section.
         If char is an instance of FakeCharacter
         char.hp = 10  # sets objects hp to 10
         char.hp = 5 + 5  # sets objects hp to 10
@@ -388,10 +388,18 @@ class Element:
             It is easier to read and understand.
         hpref = char.hp  # returns a reference of the Element
         hp = char.hp.get()  # returns a int or float value of the instance
+        
         IMPORTANT:
         char.hp += 10000  # object's hp is now 100. Because Elements' default max is 100.
             ^ If the element was passed a reference of a function with kwarg max_func it will be called now
-    Do not access the Elements value attribute directly.
+
+        IMPORTANT:
+        Using a reference requires you use .set for any equals operations
+        Example:
+            for stat in (char.END, char.CHR):
+                stat.set(22)
+                # stat = 22 # Will turn your reference into an int
+
     Element operators supported:
         +,  -,  *,  /,  //,  %,  **, pow()
         +=, -=, *=, /=, //=, %=, **=
