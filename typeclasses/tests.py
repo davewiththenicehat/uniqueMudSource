@@ -42,7 +42,7 @@ class TestObjects(CommandTest):
         self.assertEqual(gendersub._RE_GENDER_PRONOUN.sub(char._get_pronoun, txt), "Test its gender")
 
         # test Character stats
-        for stat in (char.END, char.CHR, char.WIS, char.INT, char.SPD, char.AGI, char.OBS, char.CON, char.STR):
+        for stat in (char.END, char.WILL, char.CHR, char.WIS, char.INT, char.SPD, char.AGI, char.OBS, char.CON, char.STR):
             self.assertEqual(stat, 100)
             self.assertEqual(stat.max, CHARACTER_STAT_SETTINGS.get('max'))
             self.assertEqual(stat.min, CHARACTER_STAT_SETTINGS.get('min'))

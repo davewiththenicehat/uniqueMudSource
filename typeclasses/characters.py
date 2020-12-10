@@ -251,6 +251,27 @@ class Character(AllObjectsMixin, CharExAndObjMixin, ClothedCharacter, GenderChar
         """Setter property for usdesc"""
         self.sdesc.add(value)
 
+    # define a character's willpower
+    @property
+    def WILL(self):
+        try:
+            if self.willpower:
+             pass
+        except AttributeError:
+            self.willpower = Element(self, 100, **CHARACTER_STAT_SETTINGS)
+            self.willpower.verify()
+            self.willpower.modifier_stat = 'WIS'
+        return self.willpower
+
+    @WILL.setter
+    def WILL(self, value):
+        self.willpower.set(value)
+
+    @WILL.deleter
+    def WILL(self):
+        self.willpower.delete()
+        del self.willpower
+
     # define characters's endurance
     @property
     def END(self):
@@ -260,7 +281,7 @@ class Character(AllObjectsMixin, CharExAndObjMixin, ClothedCharacter, GenderChar
         except AttributeError:
             self.endurance = Element(self, 100, **CHARACTER_STAT_SETTINGS)
             self.endurance.verify()
-            setattr(self.endurance, 'modifier_stat', 'CON')
+            self.endurance.modifier_stat = 'CON'
         return self.endurance
 
     @END.setter
