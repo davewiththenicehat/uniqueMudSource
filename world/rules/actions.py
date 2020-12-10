@@ -7,6 +7,9 @@ from evennia.utils.logger import log_info, log_warn, log_err
 from evennia.utils import inherits_from
 from utils import um_utils
 
+SITTING_EVADE_PENALTY = 20
+LAYING_EVADE_PENALTY = 50
+EVADE_MIN = 5
 
 def targeted_action(caller, target, log=False):
     """
@@ -35,10 +38,9 @@ def targeted_action(caller, target, log=False):
         return
     action_result = action_roll(caller, log)
     # only roll an evade if the target is a Character
-    evade_result = 5  # default evade for non Character Objects
+    evade_result = EVADE_MIN  # default evade for non Character Objects
     if inherits_from(target, 'typeclasses.characters.Character'):
-        if not target.condition.unconscious:  # only conscious Characters can dodge
-            evade_result = evade_roll(target, action_cmd.evade_mod_stat, log)
+        evade_result = evade_roll(target, action_cmd.evade_mod_stat, log)
     if log:
         log_info(f'actions.targeted_action, caller id {caller.id}: action_result: {action_result} | evade_result {evade_result}')
     return action_result - evade_result, action_result, evade_result
@@ -60,18 +62,30 @@ def evade_roll(char, evade_mod_stat, log=False):
 
     Returns:
         random int between 1 and roll max plus character's stat evade modifier
+        No lower than 5
 
     Equation:
         Each evade action can have its own max action roll.
             Default max is 50.
         Each action can have its own stat used to modify the action roll.
         evade roll is a random number from 1 to the evade roll's max plus the stat's evade modifier.
-        If no evade command is active the default is used.
+        If no evade command is active the default max of 50 is used.
         An active evasion command must have the same evade_mod_stat as the
             action for the evasion commands's roll_max to be used.
+        If a character is sitting or laying they will suffer a penalty.
+            Sitting provides a 20 penalty
+            Laying provides a 50 penalty
+        An evade roll result can not be less than 5.
     """
     roll_max = 50  # default max roll for evade rolls
     evade_mod = 0
+    # if the Character is unconscious they can not dodge.
+    if char.condition.unconscious:
+        return EVADE_MIN
+    if char.position == 'sitting':
+        evade_mod -= SITTING_EVADE_PENALTY
+    if char.position == 'laying':
+        evade_mod -= LAYING_EVADE_PENALTY
     # get reference of the command creating the action
     evade_cmd = char.nattributes.get('deffered_command')
     if evade_cmd:  # if there is an active evade command
@@ -94,13 +108,17 @@ def evade_roll(char, evade_mod_stat, log=False):
             evade_mod_stat = getattr(evade_cmd, 'evade_mod_stat')
     evade_mod_name = evade_mod_stat+'_evade_mod'  # assemble name of evade modifier
     if hasattr(char, evade_mod_name):  # if the character has a evade modifier for this stat.
-        evade_mod = getattr(char, evade_mod_name)
+        stat_mod = getattr(char, evade_mod_name)
+        evade_mod += stat_mod
     else:
         log_warn(f'Character ID: {char.id} missing stat modifier cache: {evade_mod_name}')
     result = randint(1, roll_max) + evade_mod
+    # An evade result can not be lower than evades lowest possible minimum
+    if result < EVADE_MIN:
+        result = EVADE_MIN
     if log:
         log_info(f'actions.evade_roll, Character ID: {char.id} | result {result} | roll_max: {roll_max} | evade_mod: {evade_mod} | evade_mod_stat: {evade_mod_stat } | evade_mod_name: {evade_mod_name}')
-    return randint(1, roll_max) + evade_mod
+    return result
 
 
 def action_roll(char, log=False):
