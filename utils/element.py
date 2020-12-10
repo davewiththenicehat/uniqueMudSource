@@ -275,7 +275,9 @@ class ListElement:
         __delattr__ descriptor
         Called when a ListElement's attribute is deleted.
         Will remove a ListElement's entry in the database.
-            There is no actual attribute to delete
+            There is no actual attribute to delete.
+            The attribute will only be set to its default state.
+        Attributes that are not part of the list passed on creation are deleted.
         """
         if name in self.el_list:
             el_db_key = self.name+'_'+name
@@ -957,19 +959,23 @@ class Element:
         """
         __delattr__ descriptor
         Called when an Element's attribute is deleted.
-        If it is a database attribute and a value is saved to the database that database field will be removed.
+        If the attribute is a database attribute;
+            its entry will be remmoved from the database,
+            the attribute is managed
+                it can not be deleted
+                it is now its default value
+        If it is not a database attribute it will be deleted
         """
-        if hasattr(self, name):
-            # if this is a database attribute there is no reference in the Element instance
-            # only in the database if it exists there.
-            # if it does not exist in the database Element.get returns the global default.
-            # This results in the Element always seeing database attributes as existing when they never actually do
-            if name in ELEMENT_DB_KEYS:
-                el_db_key = self.name+'_' + name
-                el_db_key, _ = self.db_fields_dict.get(name, el_db_key)
-                # if the attribute exists in the database, remove it
-                if self.db.has(el_db_key):
-                    self.db.remove(el_db_key)
-            else:
-                # delete the nondatabase attribute, calling the origional version of __delattr__ to avoid recursion
-                object.__delattr__(self, name)
+        # if this is a database attribute there is no reference in the Element instance
+        # only in the database if it exists there.
+        # if it does not exist in the database Element.get returns the global default.
+        # This results in the Element always seeing database attributes as existing when they never actually do
+        if name in ELEMENT_DB_KEYS:
+            el_db_key = self.name+'_' + name
+            el_db_key, _ = self.db_fields_dict.get(name, el_db_key)
+            # if the attribute exists in the database, remove it
+            if self.db.has(el_db_key):
+                self.db.remove(el_db_key)
+        else:
+            # delete the nondatabase attribute, calling the origional version of __delattr__ to avoid recursion
+            object.__delattr__(self, name)
