@@ -182,15 +182,16 @@ class Command(default_cmds.MuxCommand):
         # find the name and if provided number of the target
         lhs = self.lhs.strip()
         args_start_with_num = re.match(r"^(\d+)\s+(.+)", lhs)
-        if args_start_with_num:
-            target_number, target_name = args_start_with_num.groups()
+        if args_start_with_num:  # the arguments of the command starts with a number
+            target_number, target_name = args_start_with_num.groups()  # there are two + capture patterns above
             target_number = int(target_number)
             # make the number provided array friendly
             if target_number > 1:
                 target_number -= 1
             if self.log:
                 log_info(f"Command.parse, Caller ID: {self.caller.id}, Command key: {self.key} | " \
-                         f"args_start_with_num: {args_start_with_num} | target_number: {target_number}")
+                         f"args_start_with_num: {args_start_with_num} | target_number: {target_number} | " \
+                         f"target_name: {target_name}")
         else:  # command target does not start with a number
             target_number = 0
             target_name = lhs
