@@ -592,3 +592,16 @@ class TestCommands(CommandTest):
 
         # make certain commands have been taking a cost.
         self.assertTrue(self.char1.END < 100)
+
+        # make certain commands can have a numbered target
+        test_object1 = create_object(Object, key="object one")
+        test_object1.location = self.char1.location
+        test_object2 = create_object(Object, key="object two")
+        test_object2.location = self.char1.location
+        command = developer_cmds.CmdMultiCmd
+        arg = "= punch object"
+        wanted_message = "You can not punch object one"
+        self.call(command(), arg, wanted_message)
+        arg = "= punch 2 object"
+        wanted_message = "You can not punch object two"
+        self.call(command(), arg, wanted_message)

@@ -5,6 +5,7 @@ Commands describe the input the account can do to the game.
 
 """
 
+import re
 from evennia import default_cmds
 from world import status_functions
 from evennia import utils
@@ -115,6 +116,8 @@ class Command(default_cmds.MuxCommand):
             mid, is for easy but exerting actions like punch.
             high, is for actions that require a lot of energy.
             If a number is used for cost_level that number is used as the base cost for the command.
+        self.log = False  # set to true to info logging should be enabled.
+            Error and warning messages are always enabled.
 
     Methods:
         All methods are fully documented in their docstrings.
@@ -155,7 +158,7 @@ class Command(default_cmds.MuxCommand):
     requires_conscious = True  # if true this command requires the caller to be conscious
     cost_stat = 'END'  # stat this command will use for the action's cost
     cost_level = None  # level this action should cost. Acceptable levels: 'low', 'mid', 'high'
-
+    log = False  # set to true to info logging should be enabled. Error and warning messages are always enabled.
 
     def func(self):
         """
@@ -176,8 +179,21 @@ class Command(default_cmds.MuxCommand):
                 super().self.func()
         """
         caller = self.caller
-        # find the commands target
-        target_name = self.lhs.strip()
+        # find the name and if provided number of the target
+        lhs = self.lhs.strip()
+        args_start_with_num = re.match(r"^(\d+)\s+(.+)", lhs)
+        if args_start_with_num:
+            target_number, target_name = args_start_with_num.groups()
+            target_number = int(target_number)
+            # make the number provided array friendly
+            if target_number > 1:
+                target_number -= 1
+            if self.log:
+                log_info(f"Command.parse, Caller ID: {self.caller.id}, Command key: {self.key} | " \
+                         f"args_start_with_num: {args_start_with_num} | target_number: {target_number}")
+        else:  # command target does not start with a number
+            target_number = 0
+            target_name = lhs
         target = None
         # if set search the caller only, if not search the room
         if self.search_caller_only:
@@ -185,7 +201,7 @@ class Command(default_cmds.MuxCommand):
         else:
             target = caller.search(target_name, quiet=True)
         if target:
-            self.target = target[0]
+            self.target = target[target_number]
             target = self.target
             if target == caller and self.can_not_target_self:
                 caller.msg(f'You can not {self.key} yourself.')
