@@ -170,12 +170,15 @@ class Command(default_cmds.MuxCommand):
         UniqueMud:
             UniqueMud's func will:
                 find and store a reference of the Object the command is targetting as self.target
-                will stop the command if targeting self an self.can_not_target_self is True
-                will stop the commnad if the targets self.targetable is False
+                    Also adds support for easy targeting of simular objects.
+                    "punch 2 droid", rather than "punch 2-droid full name"
+                stop the command if targeting self an self.can_not_target_self is True
+                stop the commnad if the targets self.targetable is False
+                set the commands self.desc to self.key if desc was not set manually
                 defer the action of the command.
                 call Command.start_message if the command deffered successfully.
             If your command does not defer an action, override Command.func
-            It is possible to still use this method within your overidden one with:
+            It is possible to use this method within your overidden one with:
                 super().self.func()
         """
         caller = self.caller
@@ -201,12 +204,14 @@ class Command(default_cmds.MuxCommand):
             target = caller.search(target_name, quiet=True, candidates=caller.contents)
         else:
             target = caller.search(target_name, quiet=True)
-        if target:
-            self.target = target[target_number]
+        if target:  # a target(s) was found
+            self.target = target[target_number]  # get the correct target number
             target = self.target
+            # check for targeting self support
             if target == caller and self.can_not_target_self:
                 caller.msg(f'You can not {self.key} yourself.')
                 return
+            # check if the target can be targeted
             if not target.targetable:
                 caller.msg(f'You can not {self.key} {target.usdesc}.')
                 return
@@ -216,7 +221,7 @@ class Command(default_cmds.MuxCommand):
                 if not utils.inherits_from(target, target_inherits_from):
                     caller.msg(f"You can only {self.key} {inherit_mismatch_msg}.")
                     return
-        else:
+        else:  # no target was found
             if self.target_required:
                 if len(target_name) == 0:
                     caller.msg(f"What would you like to {self.key}?")
