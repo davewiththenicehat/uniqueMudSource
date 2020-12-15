@@ -147,6 +147,27 @@ class CmdLook(EvCmdLook, Command):
     Observes your location or objects in your vicinity.
     """
     requires_ready = False  # if true this command requires the ready status before it can do anything.
+    key = "look"
+    aliases = ["l", "ls"]
+    locks = "cmd:all()"
+    arg_regex = r"\s|$"
+
+    def func(self):
+        """
+        Handle the looking.
+        """
+        caller = self.caller
+        if not self.args:
+            target = caller.location
+            if not target:
+                caller.msg("You have no location to look at!")
+                return
+        else:
+            # target = caller.search(self.args)  # evennia's default search method
+            target = self.target  # use the target collected in UM Command.parse
+            if not target:
+                return
+        self.msg((caller.at_look(target), {"type": "look"}), options=None)
 
 
 # separator used to format help cmd
