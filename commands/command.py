@@ -83,6 +83,8 @@ class Command(default_cmds.MuxCommand):
     UniqueMud:
         To more seamlessly support UniqueMud's deffered command system, evennia's Command.func has been overridden.
             If your command does not defer an action, override Command.func
+        To provide UM targeting system to Command.func, parse has been overridden and cleared.
+        parse is called manually in Command.at_pre_cmd via super().parse()
 
     Command attributes
         status_type = 'busy'  # Character status type used to track the command
@@ -92,7 +94,7 @@ class Command(default_cmds.MuxCommand):
         roll_max = 50  # max number this command can roll to succeed
         dmg_max = 4  # the maximum damage this command can cause
         cmd_type = False  # Should be a string of the cmd type. IE: 'evasion' for an evasion cmd
-        target = None  # collected in Command.func if the command has a target
+        target = None  # collected in Command.at_pre_cmd if the command has a target
         can_not_target_self = False  # if True this command will end with a message if the Character targets themself
         target_inherits_from = False  # a tuple, position 0 string of a class type, position 1 is a string to show on mismatch
             example: target_inherits_from = ("typeclasses.equipment.clothing.Clothing", 'clothing and armor')
@@ -116,7 +118,7 @@ class Command(default_cmds.MuxCommand):
             mid, is for easy but exerting actions like punch.
             high, is for actions that require a lot of energy.
             If a number is used for cost_level that number is used as the base cost for the command.
-        self.log = False  # set to true to info logging should be enabled.
+        log = False  # set to true to info logging should be enabled.
             Error and warning messages are always enabled.
 
     Methods:
@@ -160,29 +162,72 @@ class Command(default_cmds.MuxCommand):
     cost_level = None  # level this action should cost. Acceptable levels: 'low', 'mid', 'high'
     log = False  # set to true to info logging should be enabled. Error and warning messages are always enabled.
 
+    def parse(self):
+        """
+        parse has been overridden. It is manually called in self.at_pre_cmd
+        To allow
+            easy support of stopping the command when conditions are not met
+            make commands that do not defer work off the UM target system
+        """
+
     def func(self):
         """
         To more seamlessly support UniqueMud's deffered command system, evennia's Command.func has been overridden.
 
-        Attributes:
-            self.target, is added if the command supplied a target.
-
         UniqueMud:
             UniqueMud's func will:
-                find and store a reference of the Object the command is targetting as self.target
-                    Also adds support for easy targeting of simular objects.
-                    "punch 2 droid", rather than "punch 2-droid full name"
-                stop the command if targeting self an self.can_not_target_self is True
-                stop the commnad if the targets self.targetable is False
-                set the commands self.desc to self.key if desc was not set manually
                 defer the action of the command.
                 call Command.start_message if the command deffered successfully.
             If your command does not defer an action, override Command.func
             It is possible to use this method within your overidden one with:
                 super().self.func()
         """
+        # defer the command
+        defer_successful = self.defer()
+        # show a message to player that their command is waiting
+        if defer_successful:
+            self.start_message()
+
+    def at_pre_cmd(self):
+        """
+        Important
+            This command calls super().parse, because self.parse has been overritten to be blank.
+            This is done to provice UM targeting system to self.func
+                Allowing for it to be easily overriten
+
+        Attributes:
+            self.target, is added if the command supplied a target.
+
+        stops execution of a Command if a Character does not meet the commands status requirements.
+            self.requires_ready and self.requires_conscious
+        finds and store a reference of the Object the command is targetting as self.target
+            Also adds support for easy targeting of simular objects.
+            "punch 2 droid", rather than "punch 2-droid full name"
+        stops the command if targeting self an self.can_not_target_self is True
+        stops the commnad if the targets self.targetable is False
+        sets the commands self.desc to self.key if desc was not set manually
+
+        Evennia note: at_pre_cmd(): If this returns anything truthy, execution is aborted.
+        Behavior note: returning anything stops the exection of the command.
+        """
+        # stop the command if a status requirement is not met.
         caller = self.caller
+        if self.requires_ready:
+            caller_ready = caller.ready()
+            if not caller_ready:
+                return True
+        elif self.requires_conscious:
+            if caller.condition.unconscious:
+                caller.msg("You can not do that while unconscious.", force_on_unconscious=True)
+                return True
+            elif caller.condition.dead:
+                caller.msg("You can not do that while dead.", force=True)
+                return True
+        # self.parse was overriden to provide UM targeting system to commands that use only self.func
+        # it has to be manually called now
+        super().parse()
         # find the name and if provided number of the target
+        caller = self.caller
         lhs = self.lhs.strip()
         args_start_with_num = re.match(r"^(\d+)\s+(.+)", lhs)
         if args_start_with_num:  # the arguments of the command starts with a number
@@ -210,24 +255,24 @@ class Command(default_cmds.MuxCommand):
             # check for targeting self support
             if target == caller and self.can_not_target_self:
                 caller.msg(f'You can not {self.key} yourself.')
-                return
+                return True
             # check if the target can be targeted
             if not target.targetable:
                 caller.msg(f'You can not {self.key} {target.usdesc}.')
-                return
+                return True
             # if enabled verify inheritens and show message on mismatch
             if self.target_inherits_from:
                 target_inherits_from, inherit_mismatch_msg = self.target_inherits_from
                 if not utils.inherits_from(target, target_inherits_from):
                     caller.msg(f"You can only {self.key} {inherit_mismatch_msg}.")
-                    return
+                    return True
         else:  # no target was found
             if self.target_required:
                 if len(target_name) == 0:
                     caller.msg(f"What would you like to {self.key}?")
                     cmd_suggestion = f"help {self.key}"
                     caller.msg(f"If you need help try |lc{cmd_suggestion}|lt{cmd_suggestion}|le.")
-                    return
+                    return True
                 else:
                     if self.search_caller_only:
                         not_found_msg = f'{target_name} is not here.'
@@ -235,36 +280,13 @@ class Command(default_cmds.MuxCommand):
                         if target:
                             cmd_suggestion = f"get {target_name}"
                             caller.msg(f"Try picking it up first with |lc{cmd_suggestion}|lt{cmd_suggestion}|le.")
-                            return
+                            return True
                     else:
                         caller.msg(f'{target_name} is not here.')
-                        return
+                        return True
         # give an action description if none was provided
         if not self.desc:
             self.desc = self.key
-        # defer the command
-        defer_successful = self.defer()
-        if defer_successful:
-            self.start_message()
-
-    def at_pre_cmd(self):
-        """
-        stops execution if character requires ready status, and is not ready.
-        Evennia note: at_pre_cmd(): If this returns anything truthy, execution is aborted.
-        Behavior note: returning anything stops the exection of the command.
-        """
-        caller = self.caller
-        if self.requires_ready:
-            caller_ready = caller.ready()
-            if not caller_ready:
-                return True
-        elif self.requires_conscious:
-            if caller.condition.unconscious:
-                caller.msg("You can not do that while unconscious.", force_on_unconscious=True)
-                return True
-            elif caller.condition.dead:
-                caller.msg("You can not do that while dead.", force=True)
-                return True
         return super().at_pre_cmd()
 
     def start_message(self):

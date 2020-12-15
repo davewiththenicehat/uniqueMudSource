@@ -209,8 +209,8 @@ class TestCommands(CommandTest):
         self.assertEqual(test_helmet.attributes.get('dr_PRC'), 2)
         self.assertEqual(test_helmet.dr.PRC, 2)
         # Test wear with no arguments.
-        command = clothing.CmdWear
-        arg = ""
+        command = developer_cmds.CmdMultiCmd
+        arg = "= wear"
         wanted_message = "What would you like to wear?|If you need help try help wear."
         cmd_result = self.call(command(), arg, caller=self.char1)
         self.assertRegex(cmd_result, wanted_message)
