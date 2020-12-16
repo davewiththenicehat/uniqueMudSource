@@ -322,17 +322,15 @@ class CmdSay(Command):
             return
 
         # Add support for saying to a target
-        if self.args.startswith('to '):
-            if len(self.lhslist) > 1: # there is a command in the command
-                target_name = self.lhslist[0][2:]  # get a target name after "to "
-                target_name = target_name.strip()
-                target = caller.search(target_name, quiet=True)  # find the target
+        if self.begins_to_or_at:  # if the command starts with string "to" or "at"
+            if len(self.lhslist) > 1: # there is a comma in the command
+                target = self.target
                 if target:  # if the target exists
-                    target = target[0]
-                    room_message = f"{caller.usdesc.capitalize()} says to {target.usdesc}, "
+                    say_to_type = self.begins_to_or_at  # add support for saying "at" a target
+                    room_message = f"{caller.usdesc.capitalize()} says {say_to_type} {target.usdesc}, "
                     room_message += f'"{self.lhslist[1]}"'
                     caller.location.msg_contents(room_message, exclude=(caller,))
-                    caller_message = f"You say to {target.usdesc}, "
+                    caller_message = f"You say {say_to_type} {target.usdesc}, "
                     caller_message += f'"{self.lhslist[1]}"'
                     caller.msg(caller_message)
                     return

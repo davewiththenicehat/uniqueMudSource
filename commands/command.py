@@ -95,6 +95,7 @@ class Command(default_cmds.MuxCommand):
         dmg_max = 4  # the maximum damage this command can cause
         cmd_type = False  # Should be a string of the cmd type. IE: 'evasion' for an evasion cmd
         target = None  # collected in Command.at_pre_cmd if the command has a target
+            Over ride after Command.at_pre_cmd, or you self.target will be replaced
         can_not_target_self = False  # if True this command will end with a message if the Character targets themself
         target_inherits_from = False  # a tuple, position 0 string of a class type, position 1 is a string to show on mismatch
             example: target_inherits_from = ("typeclasses.equipment.clothing.Clothing", 'clothing and armor')
@@ -118,6 +119,8 @@ class Command(default_cmds.MuxCommand):
             mid, is for easy but exerting actions like punch.
             high, is for actions that require a lot of energy.
             If a number is used for cost_level that number is used as the base cost for the command.
+        begins_to_or_at = False  # becomes string "to" or "at" if the commands arguments starts with "to " or "at "
+            collected in Command.parse
         log = False  # set to true to info logging should be enabled.
             Error and warning messages are always enabled.
 
@@ -161,6 +164,9 @@ class Command(default_cmds.MuxCommand):
     cost_stat = 'END'  # stat this command will use for the action's cost
     cost_level = None  # level this action should cost. Acceptable levels: 'low', 'mid', 'high'
     log = False  # set to true to info logging should be enabled. Error and warning messages are always enabled.
+    # do not decare these attributes globally. Global attributes will be kept between each command run for a player
+    # begins_to_or_at = False  # becomes string "to" or "at" if the commands arguments starts with "to " or "at "
+    # target  # the object target of this Command
 
     def parse(self):
         """
@@ -207,8 +213,11 @@ class Command(default_cmds.MuxCommand):
         stops the commnad if the targets self.targetable is False
         sets the commands self.desc to self.key if desc was not set manually
 
-        Evennia note: at_pre_cmd(): If this returns anything truthy, execution is aborted.
-        Behavior note: returning anything stops the exection of the command.
+        Notes:
+            if a command starts with "to " or "at ".
+                The name of the target to search for will be collected after those starting strings.
+            Evennia note: at_pre_cmd(): If this returns anything truthy, execution is aborted.
+            Behavior note: returning anything stops the exection of the command.
         """
         # stop the command if a status requirement is not met.
         caller = self.caller
@@ -229,20 +238,27 @@ class Command(default_cmds.MuxCommand):
         # find the name and if provided number of the target
         caller = self.caller
         lhs = self.lhs.strip()
-        args_start_with_num = re.match(r"^(\d+)\s+(.+)", lhs)
-        if args_start_with_num:  # the arguments of the command starts with a number
-            target_number, target_name = args_start_with_num.groups()  # there are two + capture patterns above
+        args_lower = self.args.lower()
+        self.begins_to_or_at = False  # set a default value for begins_to_or_at
+        if args_lower.startswith('to ') or args_lower.startswith('at '):
+            # collect the name after to or at, if the command starts with those strings
+            target_name = self.lhslist[0][3:]
+            self.begins_to_or_at = args_lower[:2]  # collect if this string starts with "to" or "at"
+        else:
+            target_name = lhs
+        target_name_starts_with_num = re.match(r"^(\d+)\s+(.+)", target_name)
+        if target_name_starts_with_num:  # the arguments of the command starts with a number
+            target_number, target_name = target_name_starts_with_num.groups()  # there are two + capture patterns above
             target_number = int(target_number)
             # make the number provided array friendly
             if target_number > 1:
                 target_number -= 1
             if self.log:
                 log_info(f"Command.parse, Caller ID: {self.caller.id}, Command key: {self.key} | " \
-                         f"args_start_with_num: {args_start_with_num} | target_number: {target_number} | " \
+                         f"target_name_starts_with_num: {target_name_starts_with_num} | target_number: {target_number} | " \
                          f"target_name: {target_name}")
         else:  # command target does not start with a number
             target_number = 0
-            target_name = lhs
         target = None
         # if set search the caller only, if not search the room
         if self.search_caller_only:

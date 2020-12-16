@@ -485,6 +485,12 @@ class TestCommands(CommandTest):
         wanted_message = r'You say to Char2, "test message"'
         cmd_result = self.call(command(), arg, caller=self.char1)
         self.assertRegex(cmd_result, wanted_message)
+        # test saying at another Character
+        command = standard_cmds.CmdSay
+        arg = "at char2, test message"
+        wanted_message = r'You say at Char2, "test message"'
+        cmd_result = self.call(command(), arg, caller=self.char1)
+        self.assertRegex(cmd_result, wanted_message)
         # test recog
         command = developer_cmds.CmdMultiCmd
         arg = "= recog Char2 as a test change"
@@ -605,3 +611,18 @@ class TestCommands(CommandTest):
         arg = "= punch 2 object"
         wanted_message = "You can not punch object two"
         self.call(command(), arg, wanted_message)
+        # test numbered targets and say to commad
+        test_object1.targetable = True
+        test_object2.targetable = True
+        command = standard_cmds.CmdSay
+        arg = "to char2, test message"
+        arg = "to 2 object, test message"
+        wanted_message = r'You say to object two, "test message"'
+        cmd_result = self.call(command(), arg, caller=self.char1)
+        self.assertRegex(cmd_result, wanted_message)
+        # make certain saying to the first object works after saying to the second
+        # this makes certain the Command.target is not a global variable
+        arg = "to object, test message"
+        wanted_message = r'You say to object one, "test message"'
+        cmd_result = self.call(command(), arg, caller=self.char1)
+        self.assertRegex(cmd_result, wanted_message)
