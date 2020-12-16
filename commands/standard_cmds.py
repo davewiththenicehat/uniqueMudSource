@@ -8,7 +8,7 @@ from evennia.commands.default.help import CmdHelp as EvCmdHelp
 from evennia.commands.default.system import CmdObjects
 from evennia.commands.default.general import CmdLook as EvCmdLook, CmdWhisper as EvCmdWhisper
 from world.rules import stats
-from utils.um_utils import highlighter
+from utils.um_utils import highlighter, error_report
 
 
 
@@ -365,39 +365,29 @@ class CmdDrop(Command):
     locks = "cmd:all()"
     arg_regex = r"\s|$"
     requires_ready = False  # if true this command requires the ready status before it can do anything.
+    target_required = True  # if True and the command has no target, Command.func will stop execution and message the player
+    search_caller_only = True  # if True the command will only search the caller for targets
 
     def func(self):
         """Implement command"""
-
         caller = self.caller
-        if not self.args:
-            caller.msg("Drop what?")
-            return
-
-        # Because the DROP command by definition looks for items
-        # in inventory, call the search function using location = caller
-        obj = caller.search(
-            self.args,
-            location=caller,
-            nofound_string="You aren't carrying %s." % self.args,
-            multimatch_string="You carry more than one %s:" % self.args,
-        )
+        obj = self.target
+        # shoot an error message if there is no target
         if not obj:
+            error_report(f"Command drop, caller: {caller.id} | target not found, but func was still called.", caller)
             return
-
-        # This part is new!
-        # You can't drop clothing items that are covered.
+        # prevent dropping worn items that are covered by another worn item.
         if obj.db.covered_by:
-            caller.msg("You can't drop that because it's covered by %s." % obj.db.covered_by)
+            caller.msg(f"You can't drop that because it's covered by {obj.db.covered_by}.")
             return
-        # Remove clothes if they're dropped.
+        # Inform player worn items must be removed to drop.
         if obj.db.worn:
-            obj.remove(caller, quiet=True)
-
-        obj.move_to(caller.location, quiet=True)
-        caller.msg("You drop %s." % (obj.name,))
-        caller.location.msg_contents("%s drops %s." % (caller.name, obj.name), exclude=caller)
-        # Call the object script's at_drop() method.
+            remove_help = highlighter(f"remove {obj.usdesc}", click_cmd=f"remove {obj.usdesc}")
+            caller.msg(f"You must remove {obj.usdesc} to drop it.|/Try command {remove_help} to remove it.")
+            return
+        obj.move_to(caller.location, quiet=True)  # move the object from the Character to the room
+        caller.msg(f"You drop {obj.usdesc}.")  # message the caller
+        caller.location.msg_contents(f"{caller.usdesc} drops {obj.usdesc}.", exclude=caller)  # message the room
         obj.at_drop(caller)
 
 

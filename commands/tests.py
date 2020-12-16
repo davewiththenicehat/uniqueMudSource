@@ -306,6 +306,11 @@ class TestCommands(CommandTest):
         self.assertEqual(self.char1.body.head.dr.PRC, 2)
         self.assertEqual(self.char1.body.head.dr.ACD, 3)
         self.assertEqual(self.char1.body.head.dr.BLG, 0)
+        # test dropping a worn item
+        arg = "= drop shirt"
+        wanted_message = 'You must remove test shirt to drop it.\r\nTry command remove test shirt to remove it.'
+        self.call(command(), arg, wanted_message, caller=self.char1)
+        #self.assertRegex(cmd_result, wanted_message)
 
         # test function get_body_part
         command = developer_cmds.CmdCmdFuncTest
@@ -626,3 +631,4 @@ class TestCommands(CommandTest):
         wanted_message = r'You say to object one, "test message"'
         cmd_result = self.call(command(), arg, caller=self.char1)
         self.assertRegex(cmd_result, wanted_message)
+        # add unit test for drop after get has been updated to use UM targetting system.
