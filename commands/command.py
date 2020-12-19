@@ -742,8 +742,9 @@ class Command(default_cmds.MuxCommand):
 
         Arguments:
             target_name str, a string representation of a target's name or description.
-                Used to search with caller.search
-            target_number=0, the index of the caller.search the target is in.
+                Uses caller.search() to search
+                Start string with target number if you would like to choose a
+                specific index from the returned tuple from caller.search()
 
         Returns:
             None, if the target was not found.
