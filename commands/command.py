@@ -250,21 +250,8 @@ class Command(default_cmds.MuxCommand):
             self.begins_to_or_at = args_lower[:2]  # collect if this string starts with "to" or "at"
         else:
             target_name = lhs
-        target_name_starts_with_num = re.match(r"^(\d+)\s+(.+)", target_name)
-        if target_name_starts_with_num:  # the arguments of the command starts with a number
-            target_number, target_name = target_name_starts_with_num.groups()  # there are two + capture patterns above
-            target_number = int(target_number)
-            # make the number provided array friendly
-            if target_number > 1:
-                target_number -= 1
-            if self.log:
-                log_info(f"Command.parse, Caller ID: {self.caller.id}, Command key: {self.key} | " \
-                         f"target_name_starts_with_num: {target_name_starts_with_num} | target_number: {target_number} | " \
-                         f"target_name: {target_name}")
-        else:  # command target does not start with a number
-            target_number = 0
         # if present, find target instnace
-        target = self.target_search(target_name, target_number)
+        target = self.target_search(target_name)
         if target:  # a target(s) was found
             # if that target does not meet command requirements, stop the command
             if self.target_bad(target):
@@ -749,7 +736,7 @@ class Command(default_cmds.MuxCommand):
                 caller.msg(f"You can only {self.key} {inherit_mismatch_msg}.")
                 return True
 
-    def target_search(self, target_name, target_number=0):
+    def target_search(self, target_name):
         """
         Search for an instance of a target.
 
@@ -764,6 +751,19 @@ class Command(default_cmds.MuxCommand):
         """
         caller = self.caller
         target = None
+        target_name_starts_with_num = re.match(r"^(\d+)\s+(.+)", target_name)
+        if target_name_starts_with_num:  # the arguments of the command starts with a number
+            target_number, target_name = target_name_starts_with_num.groups()  # there are two + capture patterns above
+            target_number = int(target_number)
+            # make the number provided array friendly
+            if target_number > 1:
+                target_number -= 1
+            if self.log:
+                log_info(f"Command.parse, Caller ID: {self.caller.id}, Command key: {self.key} | " \
+                         f"target_name_starts_with_num: {target_name_starts_with_num} | target_number: {target_number} | " \
+                         f"target_name: {target_name}")
+        else:  # command target does not start with a number
+            target_number = 0
         # if set search the caller only, if not search the room
         if self.search_caller_only:
             target = caller.search(target_name, quiet=True, candidates=caller.contents)
