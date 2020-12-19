@@ -11,6 +11,7 @@ from world import status_functions
 from evennia import utils
 from evennia.utils.logger import log_info
 from world.rules import damage, actions, body
+from utils.um_utils import error_report
 
 
 class Command(default_cmds.MuxCommand):
@@ -268,20 +269,9 @@ class Command(default_cmds.MuxCommand):
         if target:  # a target(s) was found
             self.target = target[target_number]  # get the correct target number
             target = self.target
-            # check for targeting self support
-            if target == caller and self.can_not_target_self:
-                caller.msg(f'You can not {self.key} yourself.')
+            # if that target does not meet command requirements, stop the command
+            if self.target_bad(target):
                 return True
-            # check if the target can be targeted
-            if not target.targetable:
-                caller.msg(f'You can not {self.key} {target.usdesc}.')
-                return True
-            # if enabled verify inheritens and show message on mismatch
-            if self.target_inherits_from:
-                target_inherits_from, inherit_mismatch_msg = self.target_inherits_from
-                if not utils.inherits_from(target, target_inherits_from):
-                    caller.msg(f"You can only {self.key} {inherit_mismatch_msg}.")
-                    return True
         else:  # no target was found
             if self.target_required:
                 if len(target_name) == 0:
@@ -732,3 +722,34 @@ class Command(default_cmds.MuxCommand):
         """
         caller = self.caller
         actions.action_cost(caller, cost_level, cost_stat)
+
+    def target_bad(self, target):
+        """
+        Received an instance of an object and verifies it is useable by this command.
+        Tests:
+            self.can_not_target_self, if True this command will end with a message if the Character targets themself
+            target.targetable, if the target can be targeted by commands
+            self.target_inherits_from, a tuple, position 0 string of a class type, position 1 is a string to show on mismatch
+
+
+        Arguments
+            target, an instance of an object for this command to target
+
+        Returns:
+            True, if that target is not useable by this command.
+        """
+        caller = self.caller
+        # check for targeting self support
+        if target == caller and self.can_not_target_self:
+            caller.msg(f'You can not {self.key} yourself.')
+            return True
+        # check if the target can be targeted
+        if not target.targetable:
+            caller.msg(f'You can not {self.key} {target.usdesc}.')
+            return True
+        # if enabled verify inheritens and show message on mismatch
+        if self.target_inherits_from:
+            target_inherits_from, inherit_mismatch_msg = self.target_inherits_from
+            if not utils.inherits_from(target, target_inherits_from):
+                caller.msg(f"You can only {self.key} {inherit_mismatch_msg}.")
+                return True
