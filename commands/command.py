@@ -233,6 +233,9 @@ class Command(default_cmds.MuxCommand):
             elif caller.condition.dead:
                 caller.msg("You can not do that while dead.", force=True)
                 return True
+        # give an action description if none was provided
+        if not self.desc:
+            self.desc = self.key
         # self.parse was overriden to provide UM targeting system to commands that use only self.func
         # it has to be manually called now
         super().parse()
@@ -260,18 +263,13 @@ class Command(default_cmds.MuxCommand):
                          f"target_name: {target_name}")
         else:  # command target does not start with a number
             target_number = 0
-        target = None
-        # if set search the caller only, if not search the room
-        if self.search_caller_only:
-            target = caller.search(target_name, quiet=True, candidates=caller.contents)
-        else:
-            target = caller.search(target_name, quiet=True)
+        # if present, find target instnace
+        target = self.target_search(target_name, target_number)
         if target:  # a target(s) was found
-            self.target = target[target_number]  # get the correct target number
-            target = self.target
             # if that target does not meet command requirements, stop the command
             if self.target_bad(target):
                 return True
+            self.target = target  # target is good, collect an instance of it in Command
         else:  # no target was found
             if self.target_required:
                 if len(target_name) == 0:
@@ -290,9 +288,6 @@ class Command(default_cmds.MuxCommand):
                     else:
                         caller.msg(f'{target_name} is not here.')
                         return True
-        # give an action description if none was provided
-        if not self.desc:
-            self.desc = self.key
         return super().at_pre_cmd()
 
     def start_message(self):
@@ -753,3 +748,27 @@ class Command(default_cmds.MuxCommand):
             if not utils.inherits_from(target, target_inherits_from):
                 caller.msg(f"You can only {self.key} {inherit_mismatch_msg}.")
                 return True
+
+    def target_search(self, target_name, target_number=0):
+        """
+        Search for an instance of a target.
+
+        Arguments:
+            target_name str, a string representation of a target's name or description.
+                Used to search with caller.search
+            target_number=0, the index of the caller.search the target is in.
+
+        Returns:
+            None, if the target was not found.
+            object instance of the target if it was found.
+        """
+        caller = self.caller
+        target = None
+        # if set search the caller only, if not search the room
+        if self.search_caller_only:
+            target = caller.search(target_name, quiet=True, candidates=caller.contents)
+        else:
+            target = caller.search(target_name, quiet=True)
+        if target:  # a target(s) was found
+            target = target[target_number]  # get the correct target number
+            return target
