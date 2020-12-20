@@ -297,8 +297,12 @@ class CmdSay(Command):
 
     Usage:
       say <message>
-      say to <target>, <message>
-          the , is required.
+      say to <target>, <target> "<message>"
+          the first " is required when a target(s) is supplied.
+          each target must have a , between the names.
+
+    Example:
+      say to blue droid, gray droid "Hello."
 
     Status
       say requires a Character to be conscious.
@@ -312,26 +316,45 @@ class CmdSay(Command):
     key = "say"
     aliases = ['"', "'"]
     locks = "cmd:all()"
+    rhs_split = ('=', '"')
 
     def func(self):
         """Run the say command"""
 
         caller = self.caller
         if not self.args:  # if no speech stop command
-            caller.msg("Say what?")
+            say_help = highlighter("help say", click_cmd="help say")
+            help_msg = f"What would you like to say.|/Use {say_help}, for help."
+            caller.msg(help_msg)
             return
 
-        # Add support for saying to a target
-        if self.begins_to_or_at:  # if the command starts with string "to" or "at"
-            if len(self.lhslist) > 1: # there is a comma in the command
-                target = self.target
-                if target:  # if the target exists
+        # if the command starts with string "to" or "at"
+        if self.begins_to_or_at:
+            if self.rhs:  # if message as a proper break in it
+                targets = self.targets
+                if targets:  # if multiple targets were found
+                    speech = self.rhs.strip('"')  # speech without quotes
+                    names_list = []
+                    for target in targets[:-1]:
+                        names_list.append(target.usdesc)
+                    target_names = ', '.join(names_list)
+                    target_names += f" and {targets[-1].usdesc}"
+                    say_to_type = self.begins_to_or_at  # add support for saying "at" a target
+                    room_message = f"{caller.usdesc.capitalize()} says {say_to_type} "
+                    room_message += f'{target_names}, "{speech}"'
+                    caller.location.msg_contents(room_message, exclude=(caller,))
+                    caller_message = f"You say {say_to_type} "
+                    caller_message += f'{target_names}, "{speech}"'
+                    caller.msg(caller_message)
+                    return
+                elif self.target:  # if only one target found
+                    target = self.target
                     say_to_type = self.begins_to_or_at  # add support for saying "at" a target
                     room_message = f"{caller.usdesc.capitalize()} says {say_to_type} {target.usdesc}, "
-                    room_message += f'"{self.lhslist[1]}"'
+                    room_message += f'"{self.rhs}"'
                     caller.location.msg_contents(room_message, exclude=(caller,))
                     caller_message = f"You say {say_to_type} {target.usdesc}, "
-                    caller_message += f'"{self.lhslist[1]}"'
+                    caller_message += f'"{self.rhs}"'
                     caller.msg(caller_message)
                     return
 

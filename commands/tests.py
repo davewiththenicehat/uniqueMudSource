@@ -486,13 +486,13 @@ class TestCommands(CommandTest):
         self.assertRegex(cmd_result, wanted_message)
         # test saying to another Character
         command = standard_cmds.CmdSay
-        arg = "to char2, test message"
+        arg = 'to char2 "test message'
         wanted_message = r'You say to Char2, "test message"'
         cmd_result = self.call(command(), arg, caller=self.char1)
         self.assertRegex(cmd_result, wanted_message)
         # test saying at another Character
         command = standard_cmds.CmdSay
-        arg = "at char2, test message"
+        arg = 'at char2 "test message'
         wanted_message = r'You say at Char2, "test message"'
         cmd_result = self.call(command(), arg, caller=self.char1)
         self.assertRegex(cmd_result, wanted_message)
@@ -620,15 +620,21 @@ class TestCommands(CommandTest):
         test_object1.targetable = True
         test_object2.targetable = True
         command = standard_cmds.CmdSay
-        arg = "to char2, test message"
-        arg = "to 2 object, test message"
+        arg = 'to 2 object "test message'
         wanted_message = r'You say to object two, "test message"'
         cmd_result = self.call(command(), arg, caller=self.char1)
         self.assertRegex(cmd_result, wanted_message)
         # make certain saying to the first object works after saying to the second
         # this makes certain the Command.target is not a global variable
-        arg = "to object, test message"
+        arg = 'to object "test message'
         wanted_message = r'You say to object one, "test message"'
         cmd_result = self.call(command(), arg, caller=self.char1)
         self.assertRegex(cmd_result, wanted_message)
         # add unit test for drop after get has been updated to use UM targetting system.
+
+        # test for multiple targets
+        command = standard_cmds.CmdSay
+        arg = 'to object, 2 object "test message'
+        wanted_message = r'You say to object one and object two, "test message"'
+        cmd_result = self.call(command(), arg, caller=self.char1)
+        self.assertRegex(cmd_result, wanted_message)

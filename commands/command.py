@@ -96,7 +96,14 @@ class Command(default_cmds.MuxCommand):
         dmg_max = 4  # the maximum damage this command can cause
         cmd_type = False  # Should be a string of the cmd type. IE: 'evasion' for an evasion cmd
         target = None  # collected in Command.at_pre_cmd if the command has a target
-            Over ride after Command.at_pre_cmd, or you self.target will be replaced
+            Over ride after Command.at_pre_cmd, or your self.target will be replaced
+        targets = ()  # multiple instances of targets, when multiple are supplied
+            collected in Command.at_pre_cmd if the command starts with "to " or "at "
+            If any targets are found, Command.target is always the first
+                instance found in commands.targets
+            If only one good target is found self.targets is an empty tuple
+            Over ride after Command.at_pre_cmd, or your self.targets will be
+                replaced after Commnad.at_pre_cmd
         can_not_target_self = False  # if True this command will end with a message if the Character targets themself
         target_inherits_from = False  # a tuple, position 0 string of a class type, position 1 is a string to show on mismatch
             example: target_inherits_from = ("typeclasses.equipment.clothing.Clothing", 'clothing and armor')
@@ -168,6 +175,7 @@ class Command(default_cmds.MuxCommand):
     # do not decare these attributes globally. Global attributes will be kept between each command run for a player
     # begins_to_or_at = False  # becomes string "to" or "at" if the commands arguments starts with "to " or "at "
     # target  # the object target of this Command
+    # targets = ()  # collected in Command.at_pre_cmd if the command starts with "to " or "at "
 
     def parse(self):
         """
@@ -204,6 +212,7 @@ class Command(default_cmds.MuxCommand):
 
         Attributes:
             self.target, is added if the command supplied a target.
+            self.targets, is added if the command is supplied multipe targets.
 
         stops execution of a Command if a Character does not meet the commands status requirements.
             self.requires_ready and self.requires_conscious
@@ -243,19 +252,41 @@ class Command(default_cmds.MuxCommand):
         caller = self.caller
         lhs = self.lhs.strip()
         args_lower = self.args.lower()
+        targets = list()
+        self.targets = targets  # Set a default self.targets as blank
         self.begins_to_or_at = False  # set a default value for begins_to_or_at
         if args_lower.startswith('to ') or args_lower.startswith('at '):
-            # collect the name after to or at, if the command starts with those strings
-            target_name = self.lhslist[0][3:]
-            self.begins_to_or_at = args_lower[:2]  # collect if this string starts with "to" or "at"
+            # collect the name(s) after to or at
+            target_string = self.lhs[3:]
+            # collect if this string starts with "to" or "at"
+            self.begins_to_or_at = args_lower[:2]
+            # get a list of names to search for
+            target_names = re.split(', |& | and ', target_string)
+            targets = list()
+            for target_name in target_names:
+                # if present, find target instnace
+                possible_target = self.target_search(target_name)
+                if possible_target:  # if a possible target was found
+                    if not self.target_bad(possible_target):
+                        targets.append(possible_target)
+            if len(targets) == 0:
+                target = None
+            else:
+                target = targets[0]
+                # if only one target was found, targets should be an empty iterator
+                if len(targets) < 2:
+                    targets = tuple()
+            # if multiple targets were found collect their instances
+            self.targets = targets
         else:
             target_name = lhs
-        # if present, find target instnace
-        target = self.target_search(target_name)
-        if target:  # a target(s) was found
-            # if that target does not meet command requirements, stop the command
-            if self.target_bad(target):
-                return True
+            target = self.target_search(target_name)  # if present, find target instnace
+            if self.target_required:  # if a target is required and
+                if target:  # if a target was found
+                    # if that target does not meet command requirements, stop the command
+                    if self.target_bad(target):
+                        return True  # stop the command
+        if target:  # a target(s) were found
             self.target = target  # target is good, collect an instance of it in Command
         else:  # no target was found
             if self.target_required:
@@ -708,11 +739,11 @@ class Command(default_cmds.MuxCommand):
     def target_bad(self, target):
         """
         Received an instance of an object and verifies it is useable by this command.
+
         Tests:
             self.can_not_target_self, if True this command will end with a message if the Character targets themself
             target.targetable, if the target can be targeted by commands
             self.target_inherits_from, a tuple, position 0 string of a class type, position 1 is a string to show on mismatch
-
 
         Arguments
             target, an instance of an object for this command to target
@@ -753,8 +784,10 @@ class Command(default_cmds.MuxCommand):
         caller = self.caller
         target = None
         target_name_starts_with_num = re.match(r"^(\d+)\s+(.+)", target_name)
-        if target_name_starts_with_num:  # the arguments of the command starts with a number
-            target_number, target_name = target_name_starts_with_num.groups()  # there are two + capture patterns above
+        # the arguments of the command starts with a number
+        if target_name_starts_with_num:
+            # there are two or more capture patterns above
+            target_number, target_name = target_name_starts_with_num.groups()
             target_number = int(target_number)
             # make the number provided array friendly
             if target_number > 1:
