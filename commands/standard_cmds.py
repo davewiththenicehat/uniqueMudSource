@@ -320,14 +320,13 @@ class CmdSay(Command):
 
     def func(self):
         """Run the say command"""
-
         caller = self.caller
-        if not self.args:  # if no speech stop command
+        # if no speech stop command
+        if not self.args:
             say_help = highlighter("help say", click_cmd="help say")
             help_msg = f"What would you like to say.|/Use {say_help}, for help."
             caller.msg(help_msg)
             return
-
         # if the command starts with string "to" or "at"
         if self.begins_to_or_at:
             if self.rhs:  # if message as a proper break in it
@@ -357,7 +356,7 @@ class CmdSay(Command):
                     caller_message += f'"{self.rhs}"'
                     caller.msg(caller_message)
                     return
-
+        # No special targets, normal say
         speech = self.args
         # Calling the at_before_say hook on the character
         speech = caller.at_before_say(speech)
