@@ -107,26 +107,6 @@ class CmdStatus(Command):
         caller.msg("|/", force=True)
 
 
-class CmdWhisper(EvCmdWhisper, Command):
-    """
-    Speak privately as your character to another
-
-    Usage:
-      whisper <character> = <message>
-      whisper <char1>, <char2> = <message>
-
-    Status:
-      whisper requires a Character to be in the ready status.
-      whispering entails being near someone, focusing on communicating with them.
-
-    Time:
-      whisper does not take any time to complete
-
-    Talk privately to one or more characters in your current location, without
-    others in the room being informed.
-    """
-
-
 class CmdLook(EvCmdLook, Command):
     # Override look to use UM Command strucure.
     # Adds support for not working when the Character is unconscious.
@@ -317,21 +297,23 @@ class CmdSay(Command):
     aliases = ['"', "'"]
     locks = "cmd:all()"
     rhs_split = ('=', '"')
+    requires_ready = False  # if true this command requires the ready status before it can do anything. deferal commands still require ready to defer
 
     def func(self):
         """Run the say command"""
         caller = self.caller
+        say_type = self.key
         # if no speech stop command
         if not self.args:
-            say_help = highlighter("help say", click_cmd="help say")
+            say_help = highlighter(f"help {say_type}", click_cmd=f"help {say_type}")
             help_msg = f"What would you like to say.|/Use {say_help}, for help."
             caller.msg(help_msg)
             return
         # if the command starts with string "to" or "at"
         if self.begins_to_or_at:
             if self.rhs:  # if message as a proper break in it
-                targets = self.targets
-                if targets:  # if multiple targets were found
+                if self.targets:  # if multiple targets were found
+                    targets = self.targets
                     speech = self.rhs.strip('"')  # speech without quotes
                     names_list = []
                     for target in targets[:-1]:
@@ -339,21 +321,22 @@ class CmdSay(Command):
                     target_names = ', '.join(names_list)
                     target_names += f" and {targets[-1].usdesc}"
                     say_to_type = self.begins_to_or_at  # add support for saying "at" a target
-                    room_message = f"{caller.usdesc.capitalize()} says {say_to_type} "
+                    room_message = f"{caller.usdesc.capitalize()} {say_type}s {say_to_type} "
                     room_message += f'{target_names}, "{speech}"'
                     caller.location.msg_contents(room_message, exclude=(caller,))
-                    caller_message = f"You say {say_to_type} "
+                    caller_message = f"You {say_type} {say_to_type} "
                     caller_message += f'{target_names}, "{speech}"'
                     caller.msg(caller_message)
                     return
                 elif self.target:  # if only one target found
                     target = self.target
+                    speech = self.rhs.strip('"')  # speech without quotes
                     say_to_type = self.begins_to_or_at  # add support for saying "at" a target
-                    room_message = f"{caller.usdesc.capitalize()} says {say_to_type} {target.usdesc}, "
-                    room_message += f'"{self.rhs}"'
+                    room_message = f"{caller.usdesc.capitalize()} {say_type}s {say_to_type} {target.usdesc}, "
+                    room_message += f'"{speech}"'
                     caller.location.msg_contents(room_message, exclude=(caller,))
-                    caller_message = f"You say {say_to_type} {target.usdesc}, "
-                    caller_message += f'"{self.rhs}"'
+                    caller_message = f"You {say_type} {say_to_type} {target.usdesc}, "
+                    caller_message += f'"{speech}"'
                     caller.msg(caller_message)
                     return
         # No special targets, normal say
@@ -364,6 +347,33 @@ class CmdSay(Command):
             return
         # Call the at_after_say hook on the character
         caller.at_say(speech, msg_self=True)
+
+
+class CmdWhisper(EvCmdWhisper, Command):
+    """
+    Speak privately as your character to another
+
+    Usage:
+      whisper <message>
+      whisper to <target>, <target> "<message>"
+          the first " is required when a target(s) is supplied.
+          each target must have a , between the names.
+
+    Example:
+      whisper to blue droid, gray droid "Hello."
+
+    Status
+      whisper requires a Character to be in the ready status.
+        If you are whispering to someone it means your attention is focused there.
+
+    Time
+      whisper requires no time to complete
+
+    Talk to those in your current location.
+    """
+
+    #key = "whisper"
+    #target_required = True  # if True and the command has no target, Command.func will stop execution and message the player
 
 
 class CmdDrop(Command):
