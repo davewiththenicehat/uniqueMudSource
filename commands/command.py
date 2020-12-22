@@ -254,6 +254,7 @@ class Command(default_cmds.MuxCommand):
         args_lower = self.args.lower()
         targets = list()
         self.targets = targets  # Set a default self.targets as blank
+        self.target = None  # set default target to None
         self.begins_to_or_at = False  # set a default value for begins_to_or_at
         if args_lower.startswith('to ') or args_lower.startswith('at '):
             # collect the name(s) after to or at

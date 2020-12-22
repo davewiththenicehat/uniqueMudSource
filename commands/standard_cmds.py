@@ -1,3 +1,4 @@
+import re
 from evennia.utils import evtable, evmore
 from evennia.utils.utils import fill, dedent
 from evennia import default_cmds
@@ -297,15 +298,13 @@ class CmdSay(Command):
     aliases = ['"', "'"]
     locks = "cmd:all()"
     rhs_split = ('=', '"')
-    requires_ready = False  # if true this command requires the ready status before it can do anything. deferal commands still require ready to defer
 
     def func(self):
         """Run the say command"""
         caller = self.caller
-        say_type = self.key
         # if no speech stop command
         if not self.args:
-            say_help = highlighter(f"help {say_type}", click_cmd=f"help {say_type}")
+            say_help = highlighter("help say", click_cmd="help say")
             help_msg = f"What would you like to say.|/Use {say_help}, for help."
             caller.msg(help_msg)
             return
@@ -315,28 +314,47 @@ class CmdSay(Command):
                 if self.targets:  # if multiple targets were found
                     targets = self.targets
                     speech = self.rhs.strip('"')  # speech without quotes
-                    names_list = []
+                    say_to_or_at = self.begins_to_or_at
+                    names_list = list()
                     for target in targets[:-1]:
                         names_list.append(target.usdesc)
                     target_names = ', '.join(names_list)
                     target_names += f" and {targets[-1].usdesc}"
-                    say_to_type = self.begins_to_or_at  # add support for saying "at" a target
-                    room_message = f"{caller.usdesc.capitalize()} {say_type}s {say_to_type} "
+                    # message room
+                    room_message = f"{caller.usdesc.capitalize()} says {say_to_or_at} "
                     room_message += f'{target_names}, "{speech}"'
-                    caller.location.msg_contents(room_message, exclude=(caller,))
-                    caller_message = f"You {say_type} {say_to_type} "
+                    exclude = list(targets)
+                    exclude.append(caller)
+                    caller.location.msg_contents(room_message, exclude=exclude)
+                    # message the caller
+                    caller_message = f"You say {say_to_or_at} "
                     caller_message += f'{target_names}, "{speech}"'
                     caller.msg(caller_message)
+                    # message targets
+                    for target in targets:
+                        # replace the first instance of the target's name with "you"
+                        names_list = list()
+                        for name_target in targets:
+                            if target != name_target:
+                                names_list.append(name_target.usdesc)
+                        target_names = ', '.join(names_list)
+                        target_names += " and you"
+                        target_message = f"{caller.usdesc.capitalize()} says {say_to_or_at} "
+                        target_message += f'{target_names}, "{speech}"'
+                        target.msg(target_message)
                     return
                 elif self.target:  # if only one target found
                     target = self.target
                     speech = self.rhs.strip('"')  # speech without quotes
-                    say_to_type = self.begins_to_or_at  # add support for saying "at" a target
-                    room_message = f"{caller.usdesc.capitalize()} {say_type}s {say_to_type} {target.usdesc}, "
-                    room_message += f'"{speech}"'
-                    caller.location.msg_contents(room_message, exclude=(caller,))
-                    caller_message = f"You {say_type} {say_to_type} {target.usdesc}, "
-                    caller_message += f'"{speech}"'
+                    say_to_or_at = self.begins_to_or_at
+                    room_message = f"{caller.usdesc.capitalize()} says " \
+                                   f'{say_to_or_at} {target.usdesc}, "{speech}"'
+                    caller.location.msg_contents(room_message, exclude=(caller, target))
+                    target_message = f"{caller.usdesc.capitalize()} says " \
+                                     f'{say_to_or_at} you, "{speech}"'
+                    target.msg(target_message)
+                    caller_message = f"You say {say_to_or_at} {target.usdesc}, " \
+                                     f'"{speech}"'
                     caller.msg(caller_message)
                     return
         # No special targets, normal say

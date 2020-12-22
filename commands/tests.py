@@ -18,7 +18,11 @@ class TestCommands(CommandTest):
             obj=None, inputs=None, raw_string=None,
         ):
     Objects in EvenniaTest
-        self.obj1 self.obj2 self.char1 self.char2 self.exit
+        self.obj1 = obj
+        self.obj2 = "obj2"
+        self.char1 = "char"
+        self.char2 = "char2"
+        self.exit = "out"
     """
     # account_typeclass = DefaultAccount
     object_typeclass = Object
@@ -32,6 +36,9 @@ class TestCommands(CommandTest):
         # make character names something easy to tell apart
         self.char1.usdesc = 'Char'
         self.char2.usdesc = 'Char2'
+        # make objects targetable for testing
+        self.obj1.targetable = True
+        self.obj2.targetable = True
 
     # misc command test
         # provide a target that does not exist with a command requiring a target
@@ -132,7 +139,6 @@ class TestCommands(CommandTest):
         self.assertRegex(cmd_result, wanted_message)
 
         # test attacking an Object
-        self.obj1.targetable = True
         command = developer_cmds.CmdMultiCmd
         arg = "= punch Obj, complete_cmd_early"
         wanted_message = 'You will be busy for \\d+ seconds.\nFacing Obj Char pulls theirs hand back preparing an attack.\npunch \\d+ VS evade \\d+: You punch at Obj'
@@ -496,6 +502,25 @@ class TestCommands(CommandTest):
         wanted_message = r'You say at Char2, "test message"'
         cmd_result = self.call(command(), arg, caller=self.char1)
         self.assertRegex(cmd_result, wanted_message)
+        # Test your name is replace with You when you are spoken to
+        command = developer_cmds.CmdMultiCmd
+        arg = '=control_other char2=say to char "test message'
+        wanted_message = r'Char2 says to you, "test message"'
+        self.call(command(), arg, wanted_message, caller=self.char1)
+        # make certain say to replaces targets message with name
+        # with multiple targets
+        command = developer_cmds.CmdMultiCmd
+        arg = '=control_other char2=say to char and obj "test message'
+        wanted_message = r'Char2 says to Obj and you, "test message"'
+        self.call(command(), arg, wanted_message, caller=self.char1)
+        # test seeing a say that does not target you.
+        command = developer_cmds.CmdMultiCmd
+        arg = '=control_other char2=say to obj2 and obj "test message'
+        wanted_message = r'Char2 says to Obj2 and Obj, "test message"'
+        self.call(command(), arg, wanted_message, caller=self.char1)
+        arg = '=control_other char2=say at obj2 and obj "test message'
+        wanted_message = r'Char2 says at Obj2 and Obj, "test message"'
+        self.call(command(), arg, wanted_message, caller=self.char1)
         # test recog
         command = developer_cmds.CmdMultiCmd
         arg = "= recog Char2 as a test change"
