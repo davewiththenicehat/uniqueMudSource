@@ -316,7 +316,7 @@ class CmdSay(Command):
                     speech = self.rhs.strip('"')  # speech without quotes
                     say_to_or_at = self.begins_to_or_at
                     # message room
-                    target_names = objs_sdesc_str(targets)
+                    target_names = objs_sdesc_str(targets)  # get a string of object names
                     room_message = f"{caller.usdesc.capitalize()} says {say_to_or_at} " \
                                    f'{target_names}, "{speech}"'
                     exclude = list(targets)
@@ -327,17 +327,12 @@ class CmdSay(Command):
                     caller_message += f'{target_names}, "{speech}"'
                     caller.msg(caller_message)
                     # message targets
-                    for target in targets:
-                        # replace the first instance of the target's name with "you"
-                        names_list = list()
-                        for name_target in targets:
-                            if target != name_target:
-                                names_list.append(name_target.usdesc)
-                        target_names = ', '.join(names_list)
-                        target_names += " and you"
-                        target_message = f"{caller.usdesc.capitalize()} says {say_to_or_at} "
-                        target_message += f'{target_names}, "{speech}"'
-                        target.msg(target_message)
+                    for receiver in targets:
+                        # replace the first instance of the receiver's name with "you"
+                        target_names = objs_sdesc_str(targets, receiver)  # get a string of object names
+                        receiver_message = f"{caller.usdesc.capitalize()} says {say_to_or_at} "
+                        receiver_message += f'{target_names}, "{speech}"'
+                        receiver.msg(receiver_message)
                     return
                 elif self.target:  # if only one target found
                     target = self.target

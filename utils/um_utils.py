@@ -97,25 +97,44 @@ def error_report(error_message, char=None):
     return return_msg
 
 
-def objs_sdesc_str(objects):
+def objs_sdesc_str(objects, you_object=None):
     """
-    Turn a list of objects into a description string.
-    name_list(obj1,obj2,obj3) returns "obj1, obj2 and obj3"
+    Turn a list of objects into a description string with commas.
 
     Arguments:
         Objects list(), a list of objects you would like their.
+        you_object=None, an object that "you" will be returned instead of the objects description.
 
     Returns:
         A string containing the usdesc of the objects.
         Example:
             "object 1, object 2 and object 3"
+
+    Usage:
+        If within a command.
+            target_names = objs_sdesc_str(self.targets)
+                returns a string of short descriptions of the commands targets
+                Example: "target 1, target 2 and target 3"
+            target_names = objs_sdesc_str(self.targets, receiver)
+                returns a string of short descriptions of the commands targets
+                Where the receivers description is ommited than " and you", is added to the end.
+                Example: "target 1, target 2 and you"
     """
     if hasattr(objects, '__iter__'):
-        names_list = list()
-        for object in objects[:-1]:
-            names_list.append(object.usdesc)
-        objects_names = ', '.join(names_list)
-        objects_names += f" and {objects[-1].usdesc}"
-        return objects_names
+        if you_object:
+            names_list = list()
+            for object in objects:
+                if object != you_object:
+                    names_list.append(object.usdesc)
+            object_names = ', '.join(names_list)
+            object_names += " and you"
+            return object_names
+        else:
+            names_list = list()
+            for object in objects[:-1]:
+                names_list.append(object.usdesc)
+            objects_names = ', '.join(names_list)
+            objects_names += f" and {objects[-1].usdesc}"
+            return objects_names
     else:
         return ""
