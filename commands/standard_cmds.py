@@ -9,7 +9,7 @@ from evennia.commands.default.help import CmdHelp as EvCmdHelp
 from evennia.commands.default.system import CmdObjects
 from evennia.commands.default.general import CmdLook as EvCmdLook, CmdWhisper as EvCmdWhisper
 from world.rules import stats
-from utils.um_utils import highlighter, error_report
+from utils.um_utils import highlighter, error_report, objs_sdesc_str
 
 
 
@@ -315,14 +315,10 @@ class CmdSay(Command):
                     targets = self.targets
                     speech = self.rhs.strip('"')  # speech without quotes
                     say_to_or_at = self.begins_to_or_at
-                    names_list = list()
-                    for target in targets[:-1]:
-                        names_list.append(target.usdesc)
-                    target_names = ', '.join(names_list)
-                    target_names += f" and {targets[-1].usdesc}"
                     # message room
-                    room_message = f"{caller.usdesc.capitalize()} says {say_to_or_at} "
-                    room_message += f'{target_names}, "{speech}"'
+                    target_names = objs_sdesc_str(targets)
+                    room_message = f"{caller.usdesc.capitalize()} says {say_to_or_at} " \
+                                   f'{target_names}, "{speech}"'
                     exclude = list(targets)
                     exclude.append(caller)
                     caller.location.msg_contents(room_message, exclude=exclude)

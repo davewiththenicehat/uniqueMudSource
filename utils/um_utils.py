@@ -95,3 +95,27 @@ def error_report(error_message, char=None):
         log_err(error_message)
         return_msg = error_message
     return return_msg
+
+
+def objs_sdesc_str(objects):
+    """
+    Turn a list of objects into a description string.
+    name_list(obj1,obj2,obj3) returns "obj1, obj2 and obj3"
+
+    Arguments:
+        Objects list(), a list of objects you would like their.
+
+    Returns:
+        A string containing the usdesc of the objects.
+        Example:
+            "object 1, object 2 and object 3"
+    """
+    if hasattr(objects, '__iter__'):
+        names_list = list()
+        for object in objects[:-1]:
+            names_list.append(object.usdesc)
+        objects_names = ', '.join(names_list)
+        objects_names += f" and {objects[-1].usdesc}"
+        return objects_names
+    else:
+        return ""
