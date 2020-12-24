@@ -7,7 +7,7 @@ from evennia import CmdSet
 from commands.command import Command
 from evennia.commands.default.help import CmdHelp as EvCmdHelp
 from evennia.commands.default.system import CmdObjects
-from evennia.commands.default.general import CmdLook as EvCmdLook, CmdWhisper as EvCmdWhisper
+from evennia.commands.default.general import CmdLook as EvCmdLook
 from world.rules import stats
 from utils.um_utils import highlighter, error_report, objs_sdesc_str
 
@@ -358,7 +358,7 @@ class CmdSay(Command):
         caller.at_say(speech, msg_self=True)
 
 
-class CmdWhisper(EvCmdWhisper, Command):
+class CmdWhisper(Command):
     """
     Speak privately as your character to another
 
@@ -366,6 +366,7 @@ class CmdWhisper(EvCmdWhisper, Command):
       whisper <message>
       whisper to <target>, <target> "<message>"
           the first " is required when a target(s) is supplied.
+          the " could also be =, to retain mux command support.
           each target must have a , between the names.
 
     Example:
@@ -377,12 +378,76 @@ class CmdWhisper(EvCmdWhisper, Command):
 
     Time
       whisper requires no time to complete
-
-    Talk to those in your current location.
     """
 
-    #key = "whisper"
-    #target_required = True  # if True and the command has no target, Command.func will stop execution and message the player
+    key = "whisper"
+    locks = "cmd:all()"
+    rhs_split = ('=', '"')
+    target_required = True  # if True and the command has no target, Command.func will stop execution and message the player
+
+    def func(self):
+        """Run the whisper command"""
+        caller = self.caller
+        # if no speech stop command
+        if not self.args:
+            whisper_help = highlighter("help whisper", click_cmd="help whisper")
+            help_msg = f"What would you like to whisper.|/" \
+                       f"Use {whisper_help}, for help."
+            caller.msg(help_msg)
+            return
+        if not self.rhs:
+            whisper_help = highlighter("help whisper", click_cmd="help whisper")
+            help_msg = f'The first " is required.|/' \
+                       f'For example: whisper to door "Hello door."|/' \
+                       f'Use {whisper_help}, for help.'
+            caller.msg(help_msg)
+            return
+        if not self.begins_to_or_at:
+            begins_to_or_at = 'to'
+        else:
+            begins_to_or_at = self.begins_to_or_at
+        if self.targets:  # if multiple targets were found
+            targets = self.targets
+            speech = self.rhs.strip('"')  # speech without quotes
+            whisper_to_or_at = begins_to_or_at
+            # message room
+            target_names = objs_sdesc_str(targets)  # get a string of object names
+            room_message = f"{caller.usdesc.capitalize()} whispers something {whisper_to_or_at} " \
+                           f'{target_names}.'
+            exclude = list(targets)
+            exclude.append(caller)
+            caller.location.msg_contents(room_message, exclude=exclude)
+            # message the caller
+            caller_message = f"You whisper {whisper_to_or_at} "
+            caller_message += f'{target_names}, "{speech}"'
+            caller.msg(caller_message)
+            # message targets
+            for receiver in targets:
+                # replace the first instance of the receiver's name with "you"
+                target_names = objs_sdesc_str(targets, receiver)  # get a string of object names
+                receiver_message = f"{caller.usdesc.capitalize()} whispers {whisper_to_or_at} "
+                receiver_message += f'{target_names}, "{speech}"'
+                receiver.msg(receiver_message)
+            return
+        elif self.target:  # if only one target found
+            target = self.target
+            speech = self.rhs.strip('"')  # speech without quotes
+            whisper_to_or_at = begins_to_or_at
+            room_message = f"{caller.usdesc.capitalize()} whispers something " \
+                           f'{whisper_to_or_at} {target.usdesc}.'
+            caller.location.msg_contents(room_message, exclude=(caller, target))
+            target_message = f"{caller.usdesc.capitalize()} whispers " \
+                             f'{whisper_to_or_at} you, "{speech}"'
+            target.msg(target_message)
+            caller_message = f"You whisper {whisper_to_or_at} {target.usdesc}, " \
+                             f'"{speech}"'
+            caller.msg(caller_message)
+            return
+        else:
+            # no target should have already been caught
+            err_msg = f"Command whisper, caller: {caller.id} | " \
+                       "target not found, but func was still called."
+            error_report(err_msg, caller)
 
 
 class CmdDrop(Command):

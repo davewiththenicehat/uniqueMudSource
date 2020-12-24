@@ -521,6 +521,44 @@ class TestCommands(CommandTest):
         arg = '=control_other char2=say at obj2 and obj "test message'
         wanted_message = r'Char2 says at Obj2 and Obj, "test message"'
         self.call(command(), arg, wanted_message, caller=self.char1)
+
+        # Test whisper
+        # say
+        # test saying to another Character
+        command = developer_cmds.CmdMultiCmd
+        arg = '=whisper to char2 "test message'
+        wanted_message = 'You whisper to Char2, "test message"'
+        self.call(command(), arg, wanted_message, caller=self.char1)
+        # test saying at another Character
+        command = developer_cmds.CmdMultiCmd
+        arg = '=whisper at char2 "test message'
+        wanted_message = 'You whisper at Char2, "test message"'
+        self.call(command(), arg, wanted_message, caller=self.char1)
+        # verify say echos to room properly
+        command = developer_cmds.CmdMultiCmd
+        arg = '= control_other Char2=whisper to obj "test message'
+        wanted_message = 'Char2 whispers something to Obj.'
+        self.call(command(), arg, wanted_message, caller=self.char1)
+        # Test your name is replace with You when you are whispered to
+        command = developer_cmds.CmdMultiCmd
+        arg = '=control_other char2=whisper to char "test message'
+        wanted_message = r'Char2 whispers to you, "test message"'
+        self.call(command(), arg, wanted_message, caller=self.char1)
+        # make certain whisper to replaces targets message with name
+        # with multiple targets
+        command = developer_cmds.CmdMultiCmd
+        arg = '=control_other char2=whisper to char and obj "test message'
+        wanted_message = r'Char2 whispers to Obj and you, "test message"'
+        self.call(command(), arg, wanted_message, caller=self.char1)
+        # test seeing a multi target whisper that does not target you.
+        command = developer_cmds.CmdMultiCmd
+        arg = '=control_other char2=whisper to obj2 and obj "test message'
+        wanted_message = r'Char2 whispers something to Obj2 and Obj.'
+        self.call(command(), arg, wanted_message, caller=self.char1)
+        arg = '=control_other char2=whisper at obj2 and obj "test message'
+        wanted_message = r'Char2 whispers something at Obj2 and Obj.'
+        self.call(command(), arg, wanted_message, caller=self.char1)
+
         # test recog
         command = developer_cmds.CmdMultiCmd
         arg = "= recog Char2 as a test change"
