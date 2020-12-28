@@ -298,6 +298,7 @@ class CmdSay(Command):
     aliases = ['"', "'"]
     locks = "cmd:all()"
     rhs_split = ('=', '"')
+    requires_ready = False  # if true this command requires the ready status before it can do anything.
 
     def func(self):
         """Run the say command"""

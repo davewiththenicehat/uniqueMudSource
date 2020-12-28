@@ -558,7 +558,6 @@ class TestCommands(CommandTest):
         arg = '=control_other char2=whisper at obj2 and obj "test message'
         wanted_message = r'Char2 whispers something at Obj2 and Obj.'
         self.call(command(), arg, wanted_message, caller=self.char1)
-
         # test recog
         command = developer_cmds.CmdMultiCmd
         arg = "= recog Char2 as a test change"
@@ -638,15 +637,16 @@ class TestCommands(CommandTest):
         self.call(command(), arg, wanted_message)
         # commands that should work when the Character is busy
         command = developer_cmds.CmdMultiCmd
-        not_req_ready_commands = ('look', 'drop', 'help', 'stat')
+        not_req_ready_commands = ('look', 'drop', 'help', 'stat', 'say')
         for non_ready_cmd in not_req_ready_commands:
             arg = f"= {non_ready_cmd}"
             cmd_result = self.call(command(), arg, caller=self.char1)
             self.assertFalse(cmd_result.startswith('You will be busy for'))
         # commands that should not work when the Character is busy
         command = developer_cmds.CmdMultiCmd
-        req_ready_commands = ('punch', 'inv', 'out', 'sit', 'stand', 'lay', 'get', 'wear', 'remove',
-                              'whisper', 'kick', 'dodge')
+        req_ready_commands = ('punch', 'inv', 'out', 'sit', 'stand', 'lay',
+                              'get', 'wear', 'remove', 'whisper', 'kick',
+                              'dodge')
         for ready_cmd in req_ready_commands:
             arg = f"= {ready_cmd}"
             cmd_result = self.call(command(), arg, caller=self.char1)
@@ -695,9 +695,15 @@ class TestCommands(CommandTest):
         self.assertRegex(cmd_result, wanted_message)
         # add unit test for drop after get has been updated to use UM targetting system.
 
-        # test for multiple targets
+        # test for multiple targets using &
         command = standard_cmds.CmdSay
-        arg = 'to object, 2 object "test message'
+        arg = 'to object & 2 object "test message'
+        wanted_message = r'You say to object one and object two, "test message"'
+        cmd_result = self.call(command(), arg, caller=self.char1)
+        self.assertRegex(cmd_result, wanted_message)
+        # test for multiple targets using " and "
+        command = standard_cmds.CmdSay
+        arg = 'to object and 2 object "test message'
         wanted_message = r'You say to object one and object two, "test message"'
         cmd_result = self.call(command(), arg, caller=self.char1)
         self.assertRegex(cmd_result, wanted_message)
