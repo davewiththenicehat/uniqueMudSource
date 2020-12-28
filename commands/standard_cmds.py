@@ -484,11 +484,11 @@ class CmdDrop(Command):
             error_report(f"Command drop, caller: {caller.id} | target not found, but func was still called.", caller)
             return
         # prevent dropping worn items that are covered by another worn item.
-        if obj.db.covered_by:
+        elif obj.db.covered_by:
             caller.msg(f"You can't drop that because it's covered by {obj.db.covered_by}.")
             return
         # Inform player worn items must be removed to drop.
-        if obj.db.worn:
+        elif obj.db.worn:
             remove_help = highlighter(f"remove {obj.usdesc}", click_cmd=f"remove {obj.usdesc}")
             caller.msg(f"You must remove {obj.usdesc} to drop it.|/Try command {remove_help} to remove it.")
             return
