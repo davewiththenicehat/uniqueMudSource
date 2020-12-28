@@ -523,19 +523,6 @@ class CmdGet(Command):
     can_not_target_self = True  # if True this command will end with a message if the Character targets themself
     target_required = True  # if True and the command has no target, Command.func will stop execution and message the player
 
-    def at_pre_cmd(self):
-        """
-        Stop the get command if caller already has the object.
-        Replace when objects in hand is implimented.
-        """
-        caller = self.caller
-        obj = caller.search(self.args.strip(), quiet=True, location=caller)
-        if obj:
-            obj = obj[0]
-            caller.msg(f"You are already carrying {obj.usdesc}.")
-            return True
-        return super().at_pre_cmd()
-
     def start_message(self):
         """
         Display a message after a command has been successfully deffered.
@@ -544,9 +531,13 @@ class CmdGet(Command):
         """
         caller = self.caller
         target = self.target
-        message = f"You reach for {target.usdesc}."
+        # stop the command if the caller is not caring the object.
+        if target.location == caller:
+            self.stop_forced(stop_message=f"You are already carrying {target.usdesc}.")
+            return
+        caller_message = f"You reach for {target.usdesc}."
+        caller.msg(caller_message)
         room_message = f"{caller.usdesc.capitalize()} reaches for {target.usdesc}."
-        caller.msg(message)
         caller.location.msg_contents(room_message, exclude=(caller,))
 
     def deferred_action(self):

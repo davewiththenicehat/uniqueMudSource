@@ -92,9 +92,21 @@ class Command(default_cmds.MuxCommand):
         defer_time = 3  # time is seconds for the command to wait before running action of command
         evade_mod_stat = 'AGI'  # stat used to evade this command
         action_mod_stat = 'OBS'  # stat used to modify this command
+        cost_stat='END'  # stat this command will use for the action's cost
+        cost_level='low' #  level this action should cost. Acceptable levels: 'low', 'mid', 'high' or an integer
+            low, nearly free actions like walking
+            mid, is for easy but exerting actions like punch.
+            high, is for actions that require a lot of energy.
+            If a number is used for cost_level that number is used as the base cost for the command.
+        desc = None  # a present tense description for the action of this command. IE: "kicks"
+            If None when self.func is called, it will give assigned self.key
+        caller_weapon = None  # weapon name that will show up in Command.combat_action's automated messages
+            Will be automatically filled in Command.func when a Character weapon system is developed.
         roll_max = 50  # max number this command can roll to succeed
         dmg_max = 4  # the maximum damage this command can cause
         cmd_type = False  # Should be a string of the cmd type. IE: 'evasion' for an evasion cmd
+        begins_to_or_at = False  # becomes string "to" or "at" if the commands arguments starts with "to " or "at "
+            collected in Command.parse
         target = None  # collected in Command.at_pre_cmd if the command has a target
             Over ride after Command.at_pre_cmd, or your self.target will be replaced
         targets = ()  # multiple instances of targets, when multiple are supplied
@@ -105,30 +117,23 @@ class Command(default_cmds.MuxCommand):
             Over ride after Command.at_pre_cmd, or your self.targets will be
                 replaced after Commnad.at_pre_cmd
         can_not_target_self = False  # if True this command will end with a message if the Character targets themself
+            Failure message is handled automatically.
         target_inherits_from = False  # a tuple, position 0 string of a class type, position 1 is a string to show on mismatch
             example: target_inherits_from = ("typeclasses.equipment.clothing.Clothing", 'clothing and armor')
+            Failure message is handled automatically.
         search_caller_only = False  # if True the command will only search the caller for targets
+            Failure message is handled automatically.
+        requires_ready = True  # if true this command requires the ready status before it can be used.
+            deferal commands still require ready to defer, even is requires_ready is false.
+            Failure message is handled automatically.
+        requires_conscious = True  # if true this command requires the caller to be conscious before it can be used
+            Failure message is handled automatically.
         dmg_types = None  # tuple of list of damage types this command can manupulate
             list of types is in world.rules.damage.TYPES
             dmg_types = ('BLG') is not a tuple it is a string. dmg_types = ('BLG',), will return a tuple
         caller_message = None  # text to message the caller. Will not call automatically, here to pass between Command functions
         target_message = None  # text to message the target. Will not call automatically, here to pass between Command functions
         room_message = None  # text to message the room. Will not call automatically, here to pass between Command functions
-        caller_weapon = None  # weapon name that will show up in Command.combat_action's automated messages
-            Will be automatically filled in Command.func when a Character weapon system is developed.
-        desc = None  # a present tense description for the action of this command. IE: "kicks"
-            If None when self.func is called, it will give assigned self.key
-        requires_ready = True  # if true this command requires the ready status before it can be used.
-            deferal commands still require ready to defer, even is requires_ready is false.
-        requires_conscious = True  # if true this command requires the caller to be conscious before it can be used
-        cost_stat='END'  # stat this command will use for the action's cost
-        cost_level='low' #  level this action should cost. Acceptable levels: 'low', 'mid', 'high' or an integer
-            low, nearly free actions like walking
-            mid, is for easy but exerting actions like punch.
-            high, is for actions that require a lot of energy.
-            If a number is used for cost_level that number is used as the base cost for the command.
-        begins_to_or_at = False  # becomes string "to" or "at" if the commands arguments starts with "to " or "at "
-            collected in Command.parse
         log = False  # set to true to info logging should be enabled.
             Error and warning messages are always enabled.
 
