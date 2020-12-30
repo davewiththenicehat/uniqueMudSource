@@ -39,6 +39,9 @@ class TestCommands(CommandTest):
         # make objects targetable for testing
         self.obj1.targetable = True
         self.obj2.targetable = True
+        self.obj3 = create_object(Object, key="Obj3")
+        self.obj3.targetable = True
+        self.obj3.location = self.char1.location
 
     # misc command test
         # provide a target that does not exist with a command requiring a target
@@ -238,12 +241,34 @@ class TestCommands(CommandTest):
         wanted_message = "You pick up Obj."
         cmd_result = self.call(command(), arg, caller=self.char1)
         self.assertRegex(cmd_result, wanted_message)
+        # make certain hands are occupied with the object picked up
+        hands_state = self.char1.holding()
+        held_items = hands_state.values()
+        self.assertTrue(self.obj1.dbref in held_items)
         # test getting an object already in possession
         command = developer_cmds.CmdMultiCmd
         arg = "= get Obj"
         wanted_message = "You are already carrying Obj."
         cmd_result = self.call(command(), arg, caller=self.char1)
         self.assertRegex(cmd_result, wanted_message)
+        # test getting an object when hands are already full
+        command = developer_cmds.CmdMultiCmd
+        arg = "= get Obj2, complete_cmd_early"
+        wanted_message = "You pick up Obj2"
+        cmd_result = self.call(command(), arg, caller=self.char1)
+        self.assertRegex(cmd_result, wanted_message)
+        arg = "= get Obj3, complete_cmd_early"
+        wanted_message = "Your hands are full."
+        cmd_result = self.call(command(), arg, caller=self.char1)
+        self.assertRegex(cmd_result, wanted_message)
+        arg = "= drop Obj2"
+        wanted_message = "You drop Obj2"
+        cmd_result = self.call(command(), arg, caller=self.char1)
+        self.assertRegex(cmd_result, wanted_message)
+        # make certain hands are NOT occupied with the object dropped
+        hands_state = self.char1.holding()
+        held_items = hands_state.values()
+        self.assertFalse(self.obj2.dbref in held_items)
         # test wearing an object that is not clothing
         arg = "= wear Obj"
         wanted_message = "You can only wear clothing and armor."

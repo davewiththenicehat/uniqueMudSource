@@ -32,13 +32,14 @@ class ListElement:
             ListElement will get the name you gave the attribute
             in created.
                 IE:
-                dr for
-                self._dr = DamageElement(self, DAMAGE_TYPES)
+                self._dr.name == 'dr'
+                self._dr = ListElement(self, DAMAGE_TYPES)
+                The preceeding '_' will be automatically removed.
 
     Creation:
     You will need to make a propery on the class that will contain the
     ListElement.
-    In the example below, self._dr = DamageElement(self, DAMAGE_TYPES)
+    In the example below, self._dr = ListElement(self, DAMAGE_TYPES)
         self, is the container this ListElement will be stored in.
         DAMAGE_TYPES, is a tuple of damage. Could be a list also.
     Here is an example of a ListElement on a class named FakeCharacter:
@@ -51,7 +52,7 @@ class ListElement:
                 if self._dr:
                     pass
             except AttributeError:
-                self._dr = DamageElement(self, DAMAGE_TYPES)
+                self._dr = ListElement(self, DAMAGE_TYPES)
                 self._dr.verify()
             return self._dr
 
@@ -255,7 +256,7 @@ class ListElement:
         Used to access any attribute in the ListElement.
         ListElement attributes do not actuall exist.
         If there is a database entry it is returend.
-        If not in database default damageElement attribute of 0 is returned
+        If not in database default ListElement attribute of 0 is returned
         """
         # if the attribute is a database attribute retreive it from the database
         if name == 'el_list':

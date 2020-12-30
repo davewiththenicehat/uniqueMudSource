@@ -1,5 +1,8 @@
 """
 Function and variable to represent Object and Character bodies.
+
+Some character races many have many hands or hands with odd names.
+Avoid using right_hand left_hand logic.
 """
 
 from evennia.utils.logger import log_info
@@ -10,22 +13,7 @@ PART_STATUS = (
     'broke',
     'bleeding',
     'missing',
-)
-
-# represents a standard humanoid's body.
-HUMANOID_BODY = (
-    'head',
-    'shoulders',
-    'chest',
-    'waist',
-    'right_arm',
-    'left_arm',
-    'right_hand',
-    'left_hand',
-    'right_leg',
-    'left_leg',
-    'right_foot',
-    'left_foot'
+    'occupied',
 )
 
 # represents Character positions
@@ -43,6 +31,30 @@ CHARACTER_CONDITIONS = (
     'dead',
     'poisoned',
     'sick',
+)
+
+# BELOW lists specific to species of Characters
+
+# represents a standard humanoid's body.
+HUMANOID_BODY = (
+    'head',
+    'shoulders',
+    'chest',
+    'waist',
+    'right_arm',
+    'left_arm',
+    'right_hand',
+    'left_hand',
+    'right_leg',
+    'left_leg',
+    'right_foot',
+    'left_foot'
+)
+
+# represents the appendage a humanoid Character uses to hold objects
+HUMANOID_HANDS = (
+    'right_hand',
+    'left_hand'
 )
 
 

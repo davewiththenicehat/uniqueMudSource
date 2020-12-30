@@ -531,7 +531,13 @@ class CmdGet(Command):
         """
         caller = self.caller
         target = self.target
-        # stop the command if the caller is not caring the object.
+        # check if a hand is open
+        open_hands = caller.open_hands()
+        # hands are full, stop the command
+        if not open_hands:
+            self.stop_forced(stop_message=f"Your hands are full.")
+            return
+        # stop the command if the caller is already caring the object.
         if target.location == caller:
             self.stop_forced(stop_message=f"You are already carrying {target.usdesc}.")
             return
@@ -557,10 +563,29 @@ class CmdGet(Command):
         if not obj.at_before_get(caller):
             return
 
+        # check if a hand is open
+        open_hands = caller.open_hands()
+        # hands are full, stop the command
+        # this repeat error checking is here itenetionally do not remove
+        if not open_hands:
+            caller.msg("Your hands are full.")
+            return
+        else:
+            open_hand = open_hands[0]  # hand of the first open hand
+
         success = obj.move_to(caller, quiet=True)
         if not success:
             caller.msg(f"{obj.usdesc.capitalize()} can not be picked up.")
         else:
+            # occupy the hand used to get the object
+            hand_inst = getattr(caller.body, open_hand, False)
+            if hand_inst:
+                # occupy with dbref to make it very easy to search for items in hand
+                hand_inst.occupied = obj.dbref
+            else:
+                err_msg = f"CmdGet, failed for find an instance of the {open_hand} body part."
+                error_report(err_msg, caller)
+            # message player(s)
             caller.msg(f"You pick up {obj.usdesc}.")
             caller.location.msg_contents(f"{caller.usdesc} picks up {obj.usdesc}.", exclude=caller)
             # calling at_get hook method

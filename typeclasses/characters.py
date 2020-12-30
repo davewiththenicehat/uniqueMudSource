@@ -182,6 +182,9 @@ class Character(AllObjectsMixin, CharExAndObjMixin, ClothedCharacter, GenderChar
         self.cmdset.remove(RPSystemCmdSet)  # overridden and added back in at commands.standard_cmds.UMRPSystemCmdSet
         return super_return
 
+    # define an empty hands dictionary
+    HANDS = dict()
+
     # define objects's condition
     @property
     def condition(self):
@@ -877,6 +880,52 @@ class Character(AllObjectsMixin, CharExAndObjMixin, ClothedCharacter, GenderChar
         Here to overload rpsystem's at_before_say
         """
         return message
+
+    def holding(self):
+        """
+        returns a dictionary representing hand state of Character
+
+        Returns:
+            dict of hand state
+                {"right_hand" = num(dbref of object in right_hand),
+                 "left_hand" = num(dbref of object in left_hand)}
+                Dictionary key will have a value of 0 if nothing in that hand
+                Example:
+                hands_state = char.holding()
+                hands['right_hand'] == '#20' # the dbref key of the object held.
+                hands['left_hand'] == 0  # nothing is in this hand.
+
+        note:
+            Some character races many have many hands or hands with odd names.
+            Avoid using right_hand left_hand logic.
+        """
+        hands_state = dict()
+        for hand in self.HANDS:
+            hand_inst = getattr(self.body, hand, False)
+            if hand_inst:
+                hands_state.update({hand: hand_inst.occupied})
+        return hands_state
+
+    def open_hands(self):
+        """
+        Returns:
+            a list of open hands or an empty one if hands are occupied.
+            Example:
+            open_hands = char.open_hands()
+            if 'right_hand' in open_hands:  the right hand is open
+                pass
+            open_hand = open_hands[0]  # open_hand is not a string name of the first open hand
+
+        note:
+            Some character races many have many hands or hands with odd names.
+            Avoid using right_hand left_hand logic.
+        """
+        open_hands = list()
+        hands_state = self.holding()
+        for hand, occupied in hands_state.items():
+            if not occupied:
+                open_hands.append(hand)
+        return open_hands
 
 
 class NaturalHealing(DefaultScript):

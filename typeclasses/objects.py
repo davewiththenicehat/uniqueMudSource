@@ -11,7 +11,9 @@ inheritance.
 
 """
 from evennia.contrib.rpsystem import ContribRPObject
+from evennia.utils import inherits_from
 from typeclasses.mixins import CharExAndObjMixin, AllObjectsMixin, ExObjAndRoomMixin
+from utils.um_utils import error_report
 
 
 class Object(ExObjAndRoomMixin, AllObjectsMixin, CharExAndObjMixin, ContribRPObject):
@@ -182,4 +184,37 @@ class Object(ExObjAndRoomMixin, AllObjectsMixin, CharExAndObjMixin, ContribRPObj
                 There are several methods inherited also.
      """
 
-    pass
+    def at_after_move(self, source_location, **kwargs):
+        """
+        Called after move has completed, regardless of quiet mode or
+        not.  Allows changes to the object due to the location it is
+        now in.
+
+        Args:
+            source_location (Object): Where we came from. This may be `None`.
+            **kwargs (dict): Arbitrary, optional arguments for users
+                overriding the call (unused by default).
+
+        Notes:
+            UM overridden to automatically remove objects from Characters hands
+            when they are no longer holding them.
+        """
+        # here to support possible future upgrades to parent classes.
+        at_after_move_return = super().at_after_move(source_location, **kwargs)
+
+        # if item was removed from a Character, remove it from hand if it was in one.
+        if source_location:
+            # only check hand state on Characters
+            if inherits_from(source_location, "typeclasses.characters.Character"):
+                hand_state = source_location.holding()
+                for hand, occupied in hand_state.items():
+                    if occupied == self.dbref:  # if the moved item was in a Character's hand
+                        hand_inst = getattr(source_location.body, hand, False)
+                        if hand_inst:
+                            hand_inst.occupied = 0
+                        else:
+                            err_msg = f"object dbref: {self.dbref}, failed to find a hand instance in self.at_after_move."
+                            error_report(err_msg, source_location)
+
+        # here to support possible future upgrades to parent classes.
+        return at_after_move_return
