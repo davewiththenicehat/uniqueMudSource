@@ -7,6 +7,7 @@ from typeclasses.objects import Object
 from evennia import create_object
 from typeclasses.equipment import clothing
 from commands import standard_cmds
+from typeclasses.equipment.wieldable import Weapon
 
 
 class TestCommands(CommandTest):
@@ -42,6 +43,9 @@ class TestCommands(CommandTest):
         self.obj3 = create_object(Object, key="Obj3")
         self.obj3.targetable = True
         self.obj3.location = self.char1.location
+        self.sword = create_object(Weapon, key="a sword")
+        self.sword.targetable = True
+        self.sword.location = self.char1.location
 
     # misc command test
         # provide a target that does not exist with a command requiring a target
@@ -242,9 +246,7 @@ class TestCommands(CommandTest):
         cmd_result = self.call(command(), arg, caller=self.char1)
         self.assertRegex(cmd_result, wanted_message)
         # make certain hands are occupied with the object picked up
-        hands_state = self.char1.holding()
-        held_items = hands_state.values()
-        self.assertTrue(self.obj1.dbref in held_items)
+        self.assertTrue(self.char1.is_holding(self.obj1))
         # test getting an object already in possession
         command = developer_cmds.CmdMultiCmd
         arg = "= get Obj"
@@ -266,9 +268,7 @@ class TestCommands(CommandTest):
         cmd_result = self.call(command(), arg, caller=self.char1)
         self.assertRegex(cmd_result, wanted_message)
         # make certain hands are NOT occupied with the object dropped
-        hands_state = self.char1.holding()
-        held_items = hands_state.values()
-        self.assertFalse(self.obj2.dbref in held_items)
+        self.assertFalse(self.char1.is_holding(self.obj2))
         # test wearing an object that is not clothing
         arg = "= wear Obj"
         wanted_message = "You can only wear clothing and armor."
@@ -278,6 +278,7 @@ class TestCommands(CommandTest):
         wanted_message = "You drop Obj."
         cmd_result = self.call(command(), arg, caller=self.char1)
         self.assertRegex(cmd_result, wanted_message)
+        self.assertFalse(self.char1.is_holding(self.obj1))
         # test removing an item
         command = developer_cmds.CmdMultiCmd
         arg = "= remove hat, complete_cmd_early"
@@ -341,7 +342,75 @@ class TestCommands(CommandTest):
         arg = "= drop shirt"
         wanted_message = 'You must remove test shirt to drop it.\r\nTry command remove test shirt to remove it.'
         self.call(command(), arg, wanted_message, caller=self.char1)
-        #self.assertRegex(cmd_result, wanted_message)
+
+        # test wielding
+        command = developer_cmds.CmdMultiCmd
+        arg = "= get sword, complete_cmd_early"
+        wanted_message = "You pick up a sword"
+        cmd_result = self.call(command(), arg, caller=self.char1)
+        self.assertRegex(cmd_result, wanted_message)
+        arg = "= wield sword"
+        wanted_message = "You wield a sword in your"
+        cmd_result = self.call(command(), arg, caller=self.char1)
+        self.assertRegex(cmd_result, wanted_message)
+        # make certain wield worked
+        items_equipped = self.char1.wielding()
+        self.assertTrue(self.sword in items_equipped)
+        # verify dropping the sword stops it from being wielded
+        arg = "= drop sword"
+        wanted_message = "You drop a sword"
+        cmd_result = self.call(command(), arg, caller=self.char1)
+        self.assertRegex(cmd_result, wanted_message)
+        items_equipped = self.char1.wielding()
+        self.assertFalse(self.sword in items_equipped)
+        # test the unwield command
+        command = developer_cmds.CmdMultiCmd
+        arg = "= get sword, complete_cmd_early"
+        wanted_message = "You pick up a sword"
+        cmd_result = self.call(command(), arg, caller=self.char1)
+        self.assertRegex(cmd_result, wanted_message)
+        arg = "= unwield sword"
+        wanted_message = "You are not wielding a sword."
+        cmd_result = self.call(command(), arg, caller=self.char1)
+        self.assertRegex(cmd_result, wanted_message)
+        arg = "= wield sword"
+        wanted_message = "You wield a sword in your"
+        cmd_result = self.call(command(), arg, caller=self.char1)
+        self.assertRegex(cmd_result, wanted_message)
+        items_equipped = self.char1.wielding()
+        self.assertTrue(self.sword in items_equipped)
+        arg = "= unwield sword"
+        wanted_message = "You stop wielding a sword."
+        cmd_result = self.call(command(), arg, caller=self.char1)
+        self.assertRegex(cmd_result, wanted_message)
+        items_equipped = self.char1.wielding()
+        self.assertFalse(self.sword in items_equipped)
+        arg = "= drop sword"
+        wanted_message = "You drop a sword"
+        cmd_result = self.call(command(), arg, caller=self.char1)
+        self.assertRegex(cmd_result, wanted_message)
+        # make certain wield & unwield room messages are correct
+        command = developer_cmds.CmdMultiCmd
+        arg = "= get sword, complete_cmd_early"
+        wanted_message = "Char picks up a sword"
+        cmd_result = self.call(command(), arg, caller=self.char1, receiver=self.char2)
+        self.assertRegex(cmd_result, wanted_message)
+        arg = "= wield sword"
+        wanted_message = "Char wields a sword"
+        cmd_result = self.call(command(), arg, caller=self.char1, receiver=self.char2)
+        self.assertRegex(cmd_result, wanted_message)
+        items_equipped = self.char1.wielding()
+        self.assertTrue(self.sword in items_equipped)
+        arg = "= unwield sword"
+        wanted_message = "Char stops wielding a sword."
+        cmd_result = self.call(command(), arg, caller=self.char1, receiver=self.char2)
+        self.assertRegex(cmd_result, wanted_message)
+        items_equipped = self.char1.wielding()
+        self.assertFalse(self.sword in items_equipped)
+        arg = "= drop sword"
+        wanted_message = "Char drops a sword"
+        cmd_result = self.call(command(), arg, caller=self.char1, receiver=self.char2)
+        self.assertRegex(cmd_result, wanted_message)
 
         # test function get_body_part
         command = developer_cmds.CmdCmdFuncTest

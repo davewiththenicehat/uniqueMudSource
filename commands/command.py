@@ -11,7 +11,7 @@ from world import status_functions
 from evennia import utils
 from evennia.utils.logger import log_info
 from world.rules import damage, actions, body
-from utils.um_utils import error_report
+from utils.um_utils import error_report, highlighter
 
 
 class Command(default_cmds.MuxCommand):
@@ -121,6 +121,7 @@ class Command(default_cmds.MuxCommand):
         target_inherits_from = False  # a tuple, position 0 string of a class type, position 1 is a string to show on mismatch
             example: target_inherits_from = ("typeclasses.equipment.clothing.Clothing", 'clothing and armor')
             Failure message is handled automatically.
+        target_in_hand = False  # if True the target of the command must be in the Characters hand to complete successfully
         search_caller_only = False  # if True the command will only search the caller for targets
             Failure message is handled automatically.
         requires_ready = True  # if true this command requires the ready status before it can be used.
@@ -128,7 +129,7 @@ class Command(default_cmds.MuxCommand):
             Failure message is handled automatically.
         requires_conscious = True  # if true this command requires the caller to be conscious before it can be used
             Failure message is handled automatically.
-        dmg_types = None  # tuple of list of damage types this command can manupulate
+        dmg_types = None  # tuple or list of damage types this command can manupulate
             list of types is in world.rules.damage.TYPES
             dmg_types = ('BLG') is not a tuple it is a string. dmg_types = ('BLG',), will return a tuple
         caller_message = None  # text to message the caller. Will not call automatically, here to pass between Command functions
@@ -165,8 +166,9 @@ class Command(default_cmds.MuxCommand):
     can_not_target_self = False  # if True this command will end with a message if the Character targets themself
     cmd_type = False  # Should be a string of the cmd type. IE: 'evasion' for an evasion cmd
     target_inherits_from = False  # a tuple, position 0 string of a class type, position 1 is a string to show on mismatch
+    target_in_hand = False  # if True the target of the command must be in the Characters hand to complete successfully
     search_caller_only = False  # if True the command will only search the caller for targets
-    dmg_types = None  # tuple of list of damage types this command can manupulate
+    dmg_types = None  # tuple of list or damage types this command can manupulate
     caller_message = None  # text to message the caller. Will not call automatically, here to pass between Command functions
     target_message = None  # text to message the target. Will not call automatically, here to pass between Command functions
     room_message = None  # text to message the room. Will not call automatically, here to pass between Command functions
@@ -771,6 +773,16 @@ class Command(default_cmds.MuxCommand):
             target_inherits_from, inherit_mismatch_msg = self.target_inherits_from
             if not utils.inherits_from(target, target_inherits_from):
                 caller.msg(f"You can only {self.key} {inherit_mismatch_msg}.")
+                return True
+        # check if target needs to be in caller's hand
+        if self.target_in_hand:
+            # if the Character is not holding the object to be wielded, stop the command
+            if not caller.is_holding(target):
+                stop_msg = f"You have to hold an object you want to {self.cmdstring}.|/"
+                get_cmd = f"get {target.usdesc}"
+                get_suggestion = highlighter(get_cmd, click_cmd=get_cmd)
+                stop_msg += f"Try getting it with {get_suggestion}"
+                caller.msg(stop_msg)
                 return True
 
     def target_search(self, target_name):

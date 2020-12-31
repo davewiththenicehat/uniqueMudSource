@@ -206,15 +206,12 @@ class Object(ExObjAndRoomMixin, AllObjectsMixin, CharExAndObjMixin, ContribRPObj
         if source_location:
             # only check hand state on Characters
             if inherits_from(source_location, "typeclasses.characters.Character"):
-                hand_state = source_location.holding()
-                for hand, occupied in hand_state.items():
-                    if occupied == self.dbref:  # if the moved item was in a Character's hand
-                        hand_inst = getattr(source_location.body, hand, False)
-                        if hand_inst:
-                            hand_inst.occupied = 0
-                        else:
-                            err_msg = f"object dbref: {self.dbref}, failed to find a hand instance in self.at_after_move."
-                            error_report(err_msg, source_location)
+                hand_state = source_location.hands()
+                for hand in hand_state:
+                    if hand.occupied == self.dbref:  # if the moved item was in a Character's hand
+                        hand.occupied = 0  # record that the item is no longer held
+                    if hand.wielding == self.dbref:  # if the moved item was being wielded by a Character
+                        hand.wielding = 0  # record that the item is not longer wielded
 
         # here to support possible future upgrades to parent classes.
         return at_after_move_return

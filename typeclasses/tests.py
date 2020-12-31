@@ -144,6 +144,7 @@ class TestObjects(CommandTest):
         self.assertEqual(char.dr.ACD, 0)
 
         # Test body parts
+        # hand occuipied state is in commands.tests, as the get command is the easiest method to test this
         from world.rules.body import PART_STATUS, HUMANOID_BODY
         self.assertEqual(char.body.head.broke, 0)
         for part in HUMANOID_BODY:

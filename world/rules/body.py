@@ -14,6 +14,7 @@ PART_STATUS = (
     'bleeding',
     'missing',
     'occupied',
+    'wielding',
 )
 
 # represents Character positions

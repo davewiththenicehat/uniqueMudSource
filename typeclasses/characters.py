@@ -100,7 +100,6 @@ class Character(AllObjectsMixin, CharExAndObjMixin, ClothedCharacter, GenderChar
             Nearly all variables that are used in combat are inheiried from CharExAndObjMixin.
             There are several methods inherited also.
 
-
         inheirited from AllObjectsMixin
             targetable = True  # can this exit be targeted with an action
 
@@ -130,10 +129,10 @@ class Character(AllObjectsMixin, CharExAndObjMixin, ClothedCharacter, GenderChar
 
     Methods:
         All methods are fully documented in their docstrings.
-        self.get_pronoun(pattern), pattern is a gendersub pattern, returns Character's pronoun
-        self.ready(), returns True if a character is ready for a 'busy' action
-        self.stun(int() or float()), stun the Character for argument seconds
-        self.status_stop(status_type=str, stop_message=str, stop_cmd=str), stop a stun status early
+        get_pronoun(pattern), pattern is a gendersub pattern, returns Character's pronoun
+        ready(), returns True if a character is ready for a 'busy' action
+        stun(int() or float()), stun the Character for argument seconds
+        status_stop(status_type=str, stop_message=str, stop_cmd=str), stop a stun status early
         status_stop_request(stop_message=None, stop_cmd=None), Request for a player to stop a status.
         cache_stat_modifiers(), Creates "Stat modifiers" mentioned in the Attributes section of this docstring
         at_msg_receive(force=None, force_on_unconscious=None), a Character will silence messages when they are unconscious or dead.
@@ -146,6 +145,17 @@ class Character(AllObjectsMixin, CharExAndObjMixin, ClothedCharacter, GenderChar
             Example:
                 char.msg('This is a message', force_on_unconscious=True)
                 room.msg_contents('this is a message', force_on_unconscious=True)
+        hands(), returns a list of references of Characters hands.
+            As it is in self.body.***_hand
+            This can include objects that are not hands or are not left_hand right_hand.
+        open_hands(), returns a list of references of Characters hands that are open.
+            As it is in self.body.***_hand
+            This can include objects that are not hands or are not left_hand right_hand.
+        is_holding(obj), Returns True if the object reference passed is in the Character's hand.
+        wielding(), Returns a list of object instances the character is wielding
+                    or an empty list if the Character is wielding no objects.
+        is_wielding(self, obj), Returns a reference of the hand wielding the object passed.
+            Returns false if the object is not being wielded by the Character
 
     Scripts
         Character.NaturalHealing, heals Character automatically over time.
@@ -881,52 +891,115 @@ class Character(AllObjectsMixin, CharExAndObjMixin, ClothedCharacter, GenderChar
         """
         return message
 
-    def holding(self):
+    def hands(self):
         """
-        returns a dictionary representing hand state of Character
+        returns a list of references of Characters hands
 
         Returns:
-            dict of hand state
-                {"right_hand" = num(dbref of object in right_hand),
-                 "left_hand" = num(dbref of object in left_hand)}
-                Dictionary key will have a value of 0 if nothing in that hand
-                Example:
-                hands_state = char.holding()
-                hands['right_hand'] == '#20' # the dbref key of the object held.
-                hands['left_hand'] == 0  # nothing is in this hand.
+            list of hand references
+
+        Example:
+        hands_state = char.hands()
+        for hand in hands_state:  # loop through instances of hands that are open
+            if hand.broke:  # check if the hand is broke
+                pass
+            if hand.missing:  # check if the hand is missing
+                pass
 
         note:
-            Some character races many have many hands or hands with odd names.
+            Some character races may have many hands or hands with odd names.
             Avoid using right_hand left_hand logic.
+
+            Tested in commands.tests
         """
-        hands_state = dict()
+        hands_state = list()
         for hand in self.HANDS:
             hand_inst = getattr(self.body, hand, False)
             if hand_inst:
-                hands_state.update({hand: hand_inst.occupied})
+                hands_state.append(hand_inst)
         return hands_state
 
     def open_hands(self):
         """
         Returns:
-            a list of open hands or an empty one if hands are occupied.
+            a list of references to attributes from self.body for each open hand or an empty
+            list if hands are occupied.
+
             Example:
             open_hands = char.open_hands()
-            if 'right_hand' in open_hands:  the right hand is open
+            if not open_hands:  # would trigger when Character's hands are full.
                 pass
-            open_hand = open_hands[0]  # open_hand is not a string name of the first open hand
-
+            open_hand = open_hands[0]  # open_hand is now a reference of the first open hand
+            for hand in open_hands:  # loop through instances of hands that are open
+                if hand.broke:  # check if the hand is broke
+                    pass
+                if hand.missing:  # check if the hand is missing
+                    pass
         note:
             Some character races many have many hands or hands with odd names.
             Avoid using right_hand left_hand logic.
+
+            Tested in commands.tests
         """
         open_hands = list()
-        hands_state = self.holding()
-        for hand, occupied in hands_state.items():
-            if not occupied:
+        hands_state = self.hands()
+        for hand in hands_state:
+            if not hand.occupied:
                 open_hands.append(hand)
         return open_hands
 
+    def is_holding(self, obj):
+        """
+        Returns True if the object reference passed is in the Character's hand.
+        """
+        hands_state = self.hands()
+        for hand in hands_state:
+            if hand.occupied:
+                if hand.occupied == obj.dbref:
+                    return True
+        return False
+
+    def wielding(self):
+        """
+        Returns a list of object instances the character is wielding
+        or an empty list if the Character is wielding no objects.
+
+        Example:
+            if not caller.wielding():  # triggers when character is not wielding an item
+                pass
+            items_equipped = caller.wielding()
+            for item in items_equipped:
+                if isinstance()
+
+            Tested in commands.tests
+        """
+        hands_state = self.hands()
+        wielded_items = list()
+        for hand in hands_state:
+            if hand.wielding:
+                wielded_item = self.search(hand.wielding, quiet=True)
+                if wielded_item:
+                    wielded_item = wielded_item[0]
+                    wielded_items.append(wielded_item)
+        return wielded_items
+
+    def is_wielding(self, obj):
+        """
+        Returns a reference of the hand wielding the object passed.
+        Returns false if the object is not being wielded by the Character
+
+        Notes:
+            Tested in commands.tests
+        """
+        hands_state = self.hands()
+        for hand in hands_state:
+            if hand.wielding:
+                wielded_item = self.search(hand.wielding, quiet=True)
+                if wielded_item:
+                    wielded_item = wielded_item[0]
+                    if wielded_item == obj:
+                        return hand
+        return False
 
 class NaturalHealing(DefaultScript):
     """

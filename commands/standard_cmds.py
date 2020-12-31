@@ -578,10 +578,9 @@ class CmdGet(Command):
             caller.msg(f"{obj.usdesc.capitalize()} can not be picked up.")
         else:
             # occupy the hand used to get the object
-            hand_inst = getattr(caller.body, open_hand, False)
-            if hand_inst:
+            if open_hand:
                 # occupy with dbref to make it very easy to search for items in hand
-                hand_inst.occupied = obj.dbref
+                open_hand.occupied = obj.dbref
             else:
                 err_msg = f"CmdGet, failed for find an instance of the {open_hand} body part."
                 error_report(err_msg, caller)

@@ -30,7 +30,7 @@ class CharExAndObjMixin:
                 Do not manipulate Elements' database entries. Work with them
                 via the Element.
         BODY_PARTS, a list of body parts to reprenst a body on this object.
-            For example humans would be ('head', 'shoulders' so on.
+            For example humans would be ('head', 'shoulders') so on.
             Note, this could be used for obects ('left_turret', 'right_turret')
         body.parts, is a tuple of parts that make up the instances body
             This will be an exact duplicate of BODY_PARTS.
