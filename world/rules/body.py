@@ -42,6 +42,7 @@ HUMANOID_BODY = (
     'shoulders',
     'chest',
     'waist',
+    'back',
     'right_arm',
     'left_arm',
     'right_hand',
