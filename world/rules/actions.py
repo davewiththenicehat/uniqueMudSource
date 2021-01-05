@@ -3,13 +3,14 @@ Contains functions intended for use with combat commands
 """
 
 from random import randint
-from evennia.utils.logger import log_info, log_warn, log_err
+from evennia.utils.logger import log_info, log_warn
 from evennia.utils import inherits_from
 from utils import um_utils
 
 SITTING_EVADE_PENALTY = 20
 LAYING_EVADE_PENALTY = 50
 EVADE_MIN = 5
+
 
 def targeted_action(caller, target, log=False):
     """
@@ -68,7 +69,8 @@ def evade_roll(char, evade_mod_stat, log=False):
         Each evade action can have its own max action roll.
             Default max is 50.
         Each action can have its own stat used to modify the action roll.
-        evade roll is a random number from 1 to the evade roll's max plus the stat's evade modifier.
+        evade roll is a random number from 1 to the evade roll's max plus the
+            Characters stat's evade modifier.
         If no evade command is active the default max of 50 is used.
         An active evasion command must have the same evade_mod_stat as the
             action for the evasion commands's roll_max to be used.
@@ -101,7 +103,7 @@ def evade_roll(char, evade_mod_stat, log=False):
                     roll_max = getattr(evade_cmd, 'roll_max')
                 evade_cmd.stop_forced()  # stop the deffered evasion command
                 # inform characters in room this Character is using an evasion command.
-                room_msg = f'{char.name} tries '+evade_cmd.evade_msg
+                room_msg = f'{char.usdesc} tries '+evade_cmd.evade_msg
                 char.location.msg_contents(room_msg, exclude=(char))
                 char.msg('You try '+evade_cmd.evade_msg)
         if hasattr(evade_cmd, 'evade_mod_stat'):  # if the evade command has a evade mod stat use it instead of default

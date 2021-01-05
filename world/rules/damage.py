@@ -25,7 +25,6 @@ Notes
 """
 
 from random import randint
-from utils.element import ListElement
 from evennia.utils.logger import log_info, log_warn
 
 # a mapping of damage types and full names

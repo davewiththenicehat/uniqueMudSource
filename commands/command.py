@@ -11,7 +11,7 @@ from world import status_functions
 from evennia import utils
 from evennia.utils.logger import log_info
 from world.rules import damage, actions, body
-from utils.um_utils import error_report, highlighter
+from utils.um_utils import highlighter
 
 
 class Command(default_cmds.MuxCommand):
@@ -82,26 +82,36 @@ class Command(default_cmds.MuxCommand):
       strings, but case is preserved.
 
     UniqueMud:
-        To more seamlessly support UniqueMud's deffered command system, evennia's Command.func has been overridden.
+        To more seamlessly support UniqueMud's deffered command system,
+            evennia's Command.func has been overridden.
             If your command does not defer an action, override Command.func
-        To provide UM targeting system to Command.func, parse has been overridden and cleared.
+        To provide UM targeting system to Command.func, parse has been
+            overridden and cleared.
         parse is called manually in Command.at_pre_cmd via super().parse()
 
     Command attributes
         status_type = 'busy'  # Character status type used to track the command
-        defer_time = 3  # time is seconds for the command to wait before running action of command
+        defer_time = 3  # time is seconds for the command to wait before running
+            action of command
         evade_mod_stat = 'AGI'  # stat used to evade this command
+            AGI  # agility, defend against physical actions like attacks
         action_mod_stat = 'OBS'  # stat used to modify this command
+            OBS  # observation, for physical actions. Attacks
         cost_stat='END'  # stat this command will use for the action's cost
-        cost_level='low' #  level this action should cost. Acceptable levels: 'low', 'mid', 'high' or an integer
+        cost_level='low' #  level this action should cost.
+            Acceptable levels: 'low', 'mid', 'high' or an integer
             low, nearly free actions like walking
             mid, is for easy but exerting actions like punch.
             high, is for actions that require a lot of energy.
-            If a number is used for cost_level that number is used as the base cost for the command.
-        desc = None  # a present tense description for the action of this command. IE: "kicks"
+            If a number is used for cost_level that number is used as the base
+                cost for the command.
+        desc = None  # a present tense description for the action of this command.
+            IE: "kicks"
             If None when self.func is called, it will give assigned self.key
-        caller_weapon = None  # weapon name that will show up in Command.combat_action's automated messages
-            Will be automatically filled in Command.func when a Character weapon system is developed.
+        caller_weapon = None  # weapon name that will show up in
+            Command.combat_action's automated messages
+            Will be automatically filled in Command.func when a Character
+                weapon system is developed.
         roll_max = 50  # max number this command can roll to succeed
         dmg_max = 4  # the maximum damage this command can cause
         cmd_type = False  # Should be a string of the cmd type. IE: 'evasion' for an evasion cmd
@@ -131,10 +141,14 @@ class Command(default_cmds.MuxCommand):
             Failure message is handled automatically.
         dmg_types = None  # tuple or list of damage types this command can manupulate
             list of types is in world.rules.damage.TYPES
-            dmg_types = ('BLG') is not a tuple it is a string. dmg_types = ('BLG',), will return a tuple
-        caller_message = None  # text to message the caller. Will not call automatically, here to pass between Command functions
-        target_message = None  # text to message the target. Will not call automatically, here to pass between Command functions
-        room_message = None  # text to message the room. Will not call automatically, here to pass between Command functions
+            dmg_types = ('BLG') is not a tuple it is a string.
+            dmg_types = ('BLG',), will return a tuple
+        caller_message = None  # text to message the caller.
+            Will not call automatically, here to pass between Command functions
+        target_message = None  # text to message the target.
+            Will not call automatically, here to pass between Command functions
+        room_message = None  # text to message the room.
+            Will not call automatically, here to pass between Command functions
         log = False  # set to true to info logging should be enabled.
             Error and warning messages are always enabled.
 
@@ -154,6 +168,8 @@ class Command(default_cmds.MuxCommand):
         dmg_after_dr(dmg_dealt=None, body_part_name=None), Returns damage dealt after damage reduction.
         combat_action(action_mod=None, caller_msg=None, target_msg=None, room_msg=None, log=None),
             A command method intended to be a used to easily facilitate basic combat actions.
+        target_bad(target=object), returns True if object passed is not targetable by this command
+        target_search(target_name=str), Search for an instance of a target.
     """
     status_type = 'busy'  # Character status type used to track the command
     defer_time = 3  # time is seconds for the command to wait before running action of command
@@ -746,7 +762,7 @@ class Command(default_cmds.MuxCommand):
 
     def target_bad(self, target):
         """
-        Received an instance of an object and verifies it is useable by this command.
+        returns True if object passed is not targetable by this command
 
         Tests:
             self.can_not_target_self, if True this command will end with a message if the Character targets themself

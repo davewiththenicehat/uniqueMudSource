@@ -78,13 +78,24 @@ class Character(AllObjectsMixin, CharExAndObjMixin, ClothedCharacter, GenderChar
             In the database is would be saved as strength_value
         Full list of stats:
             self.STR  # strength
+                adjusts max carry weight
+                The default dmg_mod_stat for physical attack commands
             self.CON  # constitution
+                Adjusts max hp.
+                adjusts max endurance
             self.OBS  # observation
+                The default action_mod_stat for physical attack commands
             self.AGI  # agility
+                Default evade_mod_stat for physical attack commands
             self.SPD  # speed
+                Adjusts completion time of most busy status commands
             self.INT  # intelligence
+                The default dmg_mod_stat for special attacks commands
             self.WIS  # wisdom
+                adjusts max sanity
+                Default evade_mod_stat for mental attack commands
             self.CHR  # charisma
+                Adjusts NPC shop buying and selling prices
 
         Stat modifiers:
             All stat modifiers are cached on Characters as local attributes.
@@ -987,6 +998,9 @@ class Character(AllObjectsMixin, CharExAndObjMixin, ClothedCharacter, GenderChar
         """
         Returns a reference of the hand wielding the object passed.
         Returns false if the object is not being wielded by the Character
+
+        Arguments:
+            obj: a reference of the object the Character may be wielding
 
         Notes:
             Tested in commands.tests

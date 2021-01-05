@@ -63,31 +63,29 @@ class CmdWield(Command):
         # if the Character is already wielding an object of the same type stop the command
         # also get a reference of the hand holding the object to wield
         hands_state = caller.hands()
+        if not hands_state:
+            err_msg = f"Command wield, caller: {caller.id} | " \
+                       f"failed to find hands."
+            error_report(err_msg, caller)
         for hand in hands_state:
-            if hand:  # if the hand is holding something
-                if hand:
-                    if hand.wielding:  # if hand is wielding something
-                        wield_obj_inst = caller.search(hand.wielding, quiet=True)
-                        if wield_obj_inst:
-                            wield_obj_inst = wield_obj_inst[0]
-                            if type(target) == type(wield_obj_inst):
-                                stop_msg = f"You are already wielding {wield_obj_inst.usdesc}. " \
-                                            "You can not wield two objects of the same type."
-                                caller.msg(stop_msg)
-                                return
-                    if hand.occupied:
-                        if hand.occupied == target.dbref:
-                            holding_hand = hand
-                else:  # a hand instance was not found
-                    err_msg = f"Command wield, caller: {caller.id} | " \
-                               f"failed to find instance of hand: {hand}"
-                    error_report(err_msg, caller)
-        # wield the object
-        if holding_hand:
-            holding_hand.wielding = target.dbref
-            caller.msg(f"You wield {target.usdesc} in your {holding_hand.name}.")
-            room_message = f"{caller.usdesc} wields {target.usdesc}."
-            caller.location.msg_contents(room_message, exclude=caller)
+            if hand.wielding:  # if hand is wielding something
+                wield_obj_inst = caller.search(hand.wielding, quiet=True)
+                if wield_obj_inst:
+                    wield_obj_inst = wield_obj_inst[0]
+                    if type(target) == type(wield_obj_inst):
+                        stop_msg = f"You are already wielding {wield_obj_inst.usdesc}. " \
+                                    "You can not wield two objects of the same type."
+                        caller.msg(stop_msg)
+                        return
+            if hand.occupied:
+                if hand.occupied == target.dbref:
+                    holding_hand = hand
+                    holding_hand.wielding = target.dbref
+                    caller.msg(f"You wield {target.usdesc} in your {holding_hand.name}.")
+                    room_message = f"{caller.usdesc} wields {target.usdesc}."
+                    caller.location.msg_contents(room_message, exclude=caller)
+                    break
+
 
 
 class CmdUnwield(Command):
