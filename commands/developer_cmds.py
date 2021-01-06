@@ -386,6 +386,19 @@ class CmdCmdFuncTest(Command):
     requires_ready = False
     requires_conscious = False  # if true this command requires the caller to be conscious
 
+    def at_init(self):
+        """
+        Called when the Command object is initialized.
+        Created to bulk set local none class attributes.
+        This allows for adjusting attributes on the object instances and not having those changes
+        shared among all instances of the Command.
+
+        If overridden call super().at_init()
+        """
+        super().at_init()  # uncomment when overridden
+        # this is needed for testing function Command.dmg_after_dr
+        self.dmg_types = ["ACD", "PRC"]  # tuple of list or damage types this command can manupulate
+
     def func(self):
         caller = self.caller
         func_name, target_name = self.lhslist

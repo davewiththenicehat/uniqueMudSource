@@ -427,14 +427,12 @@ class TestCommands(CommandTest):
 
         # test function damage after damage reduction
         command = developer_cmds.CmdCmdFuncTest
-        command.dmg_types = ["ACD", "PRC"]  # give two types whose armor has different values
         arg = "/r dmg_after_dr, char = 3, head"
         wanted_message = "dmg_after_dr returned: 1"
         cmd_result = self.call(command(), arg, caller=self.char2)
         self.assertRegex(cmd_result, wanted_message)
         # make certain the lowest number returned is 0
         command = developer_cmds.CmdCmdFuncTest
-        command.dmg_types = ["ACD", "PRC"]  # give two types whose armor has different values
         arg = "/r dmg_after_dr, char = 0, head"
         wanted_message = "dmg_after_dr returned: 0"
         cmd_result = self.call(command(), arg, caller=self.char2)
@@ -443,7 +441,6 @@ class TestCommands(CommandTest):
         self.char1.dr.ACD = 3
         self.char1.dr.PRC = 1
         command = developer_cmds.CmdCmdFuncTest
-        command.dmg_types = ["ACD", "PRC"]  # give two types whose armor has different values
         arg = "/r dmg_after_dr, char = 3, head"
         wanted_message = "dmg_after_dr returned: 0"
         cmd_result = self.call(command(), arg, caller=self.char2)
@@ -452,7 +449,6 @@ class TestCommands(CommandTest):
         self.char1.dr.ACD = 3
         self.char1.dr.PRC = 1
         command = developer_cmds.CmdCmdFuncTest
-        command.dmg_types = ["ACD", "PRC"]  # give two types whose armor has different values
         arg = "/r dmg_after_dr, char = None, head"
         wanted_message = r"dmg_after_dr returned: \d+"
         cmd_result = self.call(command(), arg, caller=self.char2)

@@ -184,7 +184,6 @@ class Command(default_cmds.MuxCommand):
     target_inherits_from = False  # a tuple, position 0 string of a class type, position 1 is a string to show on mismatch
     target_in_hand = False  # if True the target of the command must be in the Characters hand to complete successfully
     search_caller_only = False  # if True the command will only search the caller for targets
-    dmg_types = None  # tuple of list or damage types this command can manupulate
     caller_message = None  # text to message the caller. Will not call automatically, here to pass between Command functions
     target_message = None  # text to message the target. Will not call automatically, here to pass between Command functions
     room_message = None  # text to message the room. Will not call automatically, here to pass between Command functions
@@ -195,10 +194,39 @@ class Command(default_cmds.MuxCommand):
     cost_stat = 'END'  # stat this command will use for the action's cost
     cost_level = None  # level this action should cost. Acceptable levels: 'low', 'mid', 'high'
     log = False  # set to true to info logging should be enabled. Error and warning messages are always enabled.
-    # do not decare these attributes globally. Global attributes will be kept between each command run for a player
-    # begins_to_or_at = False  # becomes string "to" or "at" if the commands arguments starts with "to " or "at "
-    # target  # the object target of this Command
-    # targets = ()  # collected in Command.at_pre_cmd if the command starts with "to " or "at "
+    """
+    do not decare these attributes in the class scope.
+    declared in Command.at_pre_cmd or Command.at_init
+
+    declared in Command.at_pre_cmd
+        begins_to_or_at = False  # becomes string "to" or "at" if the commands arguments starts with "to " or "at "
+        target  # the object target of this Command
+        targets = ()  # collected in Command.at_pre_cmd if the command starts with "to " or "at "
+
+    declared in Command.at_init
+        dmg_types = None  # tuple of list or damage types this command can manupulate
+    """
+
+    def __init__(self, **kwargs):
+        """
+        Overiding to call the at_init method.
+
+        """
+        if kwargs:
+            super().__init__(self, **kwargs)
+        self.at_init()
+
+    def at_init(self):
+        """
+        Called when the Command object is initialized.
+        Created to bulk set local none class attributes.
+        This allows for adjusting attributes on the object instances and not having those changes
+        shared among all instances of the Command.
+
+        If overridden call super().at_init()
+        """
+        # super().at_init()  # uncomment when overridden
+        self.dmg_types = None  # tuple of list or damage types this command can manupulate
 
     def parse(self):
         """
