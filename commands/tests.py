@@ -453,6 +453,17 @@ class TestCommands(CommandTest):
         wanted_message = r"dmg_after_dr returned: \d+"
         cmd_result = self.call(command(), arg, caller=self.char2)
         self.assertRegex(cmd_result, wanted_message)
+        # Verify max_defnse works
+        # Verify Command.dmg_type.TYPE value, adds to attack damage
+        # testing char.dr and the worn helmet.dr
+        # In this case ACD defense is 6
+        #    is the highest defense value vs Command.cmd_types.ACD value of 1 (adds to damage)
+        self.char1.dr.ACD = 3
+        self.char1.dr.PRC = 1
+        command = developer_cmds.CmdCmdFuncTest
+        arg = "/r dmg_after_dr, char = 7, head, True"
+        wanted_message = r"dmg_after_dr returned: 2"
+        cmd_result = self.call(command(), arg, wanted_message)
 
         # test sit stand lay also tests Character.set_position
         command = developer_cmds.CmdMultiCmd

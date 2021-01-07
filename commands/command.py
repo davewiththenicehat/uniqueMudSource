@@ -116,10 +116,13 @@ class Command(default_cmds.MuxCommand):
         dmg_max = 4  # the maximum damage this command can cause
         cmd_type = False  # Should be a string of the cmd type. IE: 'evasion' for an evasion cmd
         begins_to_or_at = False  # becomes string "to" or "at" if the commands arguments starts with "to " or "at "
+            This is a local or instance attribute. Not a class attribute.
             collected in Command.parse
         target = None  # collected in Command.at_pre_cmd if the command has a target
+            This is a local or instance attribute. Not a class attribute.
             Over ride after Command.at_pre_cmd, or your self.target will be replaced
         targets = ()  # multiple instances of targets, when multiple are supplied
+            This is a local or instance attribute. Not a class attribute.
             collected in Command.at_pre_cmd if the command starts with "to " or "at "
             If any targets are found, Command.target is always the first
                 instance found in commands.targets
@@ -139,10 +142,20 @@ class Command(default_cmds.MuxCommand):
             Failure message is handled automatically.
         requires_conscious = True  # if true this command requires the caller to be conscious before it can be used
             Failure message is handled automatically.
-        dmg_types = None  # tuple or list of damage types this command can manupulate
-            list of types is in world.rules.damage.TYPES
-            dmg_types = ('BLG') is not a tuple it is a string.
-            dmg_types = ('BLG',), will return a tuple
+        dmg_types = None  # dictionary of damage types this command can manipulate.
+            Attack commands should ALWAYS have one or more dmg_type.
+                If an attack command has no dmg_types,
+                there is no chance for the defenders dr to take affect.
+            This is a local or instance attribute. Not a class attribute.
+            key is the type of damage as they appear in rules.damage.TYPES
+            value is a flat bonus this command will provide in reference to damage.
+                Most commands the value should be 0.
+                Having the damage type offers the ability for this command to do that type of damage.
+            Usage Example:
+                An action that calls Command.dmg_after_dr(), will look for the defenders lowest
+                dr value from the commands dmg_types on the body part hit.
+                If the key has a value greater than 0, that value will be added to the damage dealt.
+                    Even if the key is a negative number.
         caller_message = None  # text to message the caller.
             Will not call automatically, here to pass between Command functions
         target_message = None  # text to message the target.
@@ -204,7 +217,7 @@ class Command(default_cmds.MuxCommand):
         targets = ()  # collected in Command.at_pre_cmd if the command starts with "to " or "at "
 
     declared in Command.at_init
-        dmg_types = None  # tuple of list or damage types this command can manupulate
+        dmg_types = None  # dictionary of damage types this command can manipulate.
     """
 
     def __init__(self, **kwargs):
@@ -226,7 +239,7 @@ class Command(default_cmds.MuxCommand):
         If overridden call super().at_init()
         """
         # super().at_init()  # uncomment when overridden
-        self.dmg_types = None  # tuple of list or damage types this command can manupulate
+        self.dmg_types = None  # dictionary of damage types this command can manipulate.
 
     def parse(self):
         """
@@ -616,39 +629,42 @@ class Command(default_cmds.MuxCommand):
                 target = self.caller
         return body.get_part(target, no_understore, log)
 
-    def dmg_after_dr(self, dmg_dealt=None, body_part_name=None):
+    def dmg_after_dr(self, dmg_dealt=None, body_part_name=None, max_defense=False):
         """
-        Returns damage dealt after damage reduction.
+        Get damage dealt after damage reduction.
         Minimum return value is 0.
 
         Arguments
+            command, the command that is manipulating damage
             dmg_dealt=None, the damage the command dealth
-                If None is provided dmg_after_dr will use self.dmg_dealt
+                If None is provided get_dmg_after_dr will use self.dmg_dealt
                 if self.dmg_dealt does not exist a random roll will be processed.
                     using standard rules: dmg_dealt = damage.roll(self)
                     where self.dmg_max is the max damage possible and self.dmg_mod_stat modifies the damage
             body_part_name=None, the body part the command is manipulating.
                 Leave blank if you want to ignore dr for armor
+            max_defense=False, if true the attack's least damaging dmg_type is used.
             log=False, should this function log messages
 
-        Usage:
-            dmg_result = self.dmg_after_dr()
-
-        equation:
-            Each action has a list of damage types they can manipulate.
-
-            Action's damage is reduced by
-                targets lowest dr value, that the action manipulates.
-
-                If the action hit a body part.
-                It is ALSO reduced by that body parts lowest dr value, that the action manipulates.
-                Normally this would be the armor's dr value for that body part.
+        Notes:
+            unit tests for this are in commands.tests
 
         Returns:
             damage dealt after dr for the body part hit and the target
-            The minimum value this method returns is 0
+            The minimum value this function returns is 0.
+
+        equation:
+            Each action has a list of damage types they can manipulate.
+            By default the damage type that does the most damage is chosen.
+            If argument max_defense is True, the type that does the least damage is chosen.
+
+            Action's damage is reduced by
+                targets dr value
+                If the action hit a body part.
+                That body part's dr value is also used to reduce damage.
+                    Normally this would be the armor's dr value for that body part.
         """
-        return damage.get_dmg_after_dr(self, dmg_dealt, body_part_name)
+        return damage.get_dmg_after_dr(self, dmg_dealt, body_part_name, max_defense)
 
     def combat_action(self, action_mod=None, caller_msg=None, target_msg=None, room_msg=None, log=None):
         """

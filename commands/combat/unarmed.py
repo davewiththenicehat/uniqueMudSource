@@ -51,7 +51,7 @@ class UnarmedCommand(Command):
         If overridden call super().at_init()
         """
         super().at_init()  # uncomment when overridden
-        self.dmg_types = ('BLG',)  # tuple of list of damage types this command can manupulate
+        self.dmg_types = {'BLG': 0}  # dictionary of damage types this command can manipulate.
 
     def at_pre_cmd(self):
         """

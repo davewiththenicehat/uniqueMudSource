@@ -26,6 +26,7 @@ Notes
 
 from random import randint
 from evennia.utils.logger import log_info, log_warn
+from utils.um_utils import error_report
 
 # a mapping of damage types and full names
 MAP_DICT = {
@@ -95,7 +96,7 @@ def roll(command, use_mod=True, log=False):
     return randint(1, dmg_max) + dmg_mod
 
 
-def get_dmg_after_dr(command, dmg_dealt=None, body_part_name=None, log=False):
+def get_dmg_after_dr(command, dmg_dealt=None, body_part_name=None, max_defense=False, log=False):
     """
     Get damage dealt after damage reduction.
     Minimum return value is 0.
@@ -109,17 +110,8 @@ def get_dmg_after_dr(command, dmg_dealt=None, body_part_name=None, log=False):
                 where self.dmg_max is the max damage possible and self.dmg_mod_stat modifies the damage
         body_part_name=None, the body part the command is manipulating.
             Leave blank if you want to ignore dr for armor
+        max_defense=False, if true the attack's least damaging dmg_type is used.
         log=False, should this function log messages
-
-    equation:
-        Each action has a list of damage types they can manipulate.
-
-        Action's damage is reduced by
-            targets lowest dr value, that the action manipulates.
-
-            If the action hit a body part.
-            It is ALSO reduced by that body parts lowest dr value, that the action manipulates.
-            Normally this would be the armor's dr value for that body part.
 
     Notes:
         unit tests for this are in commands.tests
@@ -127,66 +119,76 @@ def get_dmg_after_dr(command, dmg_dealt=None, body_part_name=None, log=False):
     Returns:
         damage dealt after dr for the body part hit and the target
         The minimum value this function returns is 0.
+
+    equation:
+        Each action has a list of damage types they can manipulate.
+        By default the damage type that does the most damage is chosen.
+        If argument max_defense is True, the type that does the least damage is chosen.
+
+        Action's damage is reduced by
+            targets dr value
+            If the action hit a body part.
+            That body part's dr value is also used to reduce damage.
+                Normally this would be the armor's dr value for that body part.
     """
     target = command.target
-    #
     if dmg_dealt is None:
         if hasattr(command, 'dmg_dealt'):
             dmg_dealt = command.dmg_dealt
         if dmg_dealt is None:
-            dmg_dealt = roll(command)
-    body_part_dr = 0
+            dmg_dealt = roll(command)  # get a random damage roll, none was provided
+    # decalare default variable values
     body_part_inst = None
-    body_part_dr_values = {}
-    target_dr_values = {}
+    dmg_type_mods = {}
+    result = 0
+    dmg_red_type = 'no type'
     # get an instance of the body part hit.
-    if target.body.parts:
-        if body_part_name:
+    if body_part_name:
+        if target.body.parts:
             if body_part_name in target.body.parts:
-                # bug this instance of target.body will not provide a full parts list
-                # it displays the full list at command line
-                # have attempted searching and getting a local instance of target
                 body_part_inst = getattr(target.body, body_part_name)
                 if not body_part_inst:
-                    log_warn(f"command {command.key}, Character id: {command.caller.id} | failed to get body_part_inst after finding it in target.body.parts")
-    # find drs on the target and their body part hit
+                    log_warn(f"command {command.key}, Character id: {command.caller.id} | " \
+                             "failed to get body_part_inst after finding it in target.body.parts")
+    # Get defense values vs action's dmg_types if any
     if command.dmg_types:
-        for dmg_type in command.dmg_types:
+        # Collect, into dictionary dmg_type_mods
+        #   target.dr.dmg_type value
+        #   + armor.dr.dmg_type value (on part hit if any)
+        #   - command.dmg_type value
+        for dmg_type, cmd_dmg_mod in command.dmg_types.items():
+            body_part_dr_value = 0
             if body_part_inst:  # if the object had that body part
-                # find the body part's dr values that match the commands damage types
-                if hasattr(body_part_inst.dr, dmg_type):
-                    dr_value = getattr(body_part_inst.dr, dmg_type)
-                    if dr_value and dr_value > 0:
-                        body_part_dr_values[dmg_type] = dr_value
+                body_part_dr_value = getattr(body_part_inst.dr, dmg_type, 0)
+            elif body_part_name:
+                err_msg = f"command: {command.key} | caller: {command.caller.id} | " \
+                          f"Failed to find body part instance {body_part_name}."
+                error_report(err_msg, command.caller)
             # find the targets dr values that match the commands damage types
+            target_dr_value = 0
             if hasattr(target.dr, dmg_type):
-                dr_value = getattr(target.dr, dmg_type)
-                if dr_value and dr_value > 0:
-                    target_dr_values[dmg_type] = dr_value
-    body_part_dr = None
-    target_dr = None
-    min_part_key = None
-    min_target_key = None
-    # find the lowest body part (armor) dr value among damage types this command can manipulate
-    if len(body_part_dr_values) > 0:
-        min_part_key = min(body_part_dr_values, key=body_part_dr_values.get)
-        body_part_dr = body_part_dr_values[min_part_key]
-    # find the lowest target dr value among damage types this command can manipulate
-    if len(target_dr_values) > 0:
-        min_target_key = min(target_dr_values, key=target_dr_values.get)
-        target_dr = target_dr_values[min_target_key]
-    # if target and body both have meaningful dr add them up
-    damage_reduction = 0
-    if body_part_dr:
-        damage_reduction += body_part_dr
-    if target_dr:
-        damage_reduction += target_dr
-    # damage is dmg_dealth - both the body part's and target's dr values
+                target_dr_value = getattr(target.dr, dmg_type, 0)
+            # calculate than record the damage type modifider value
+            dmg_type_mod_value = target_dr_value + body_part_dr_value - cmd_dmg_mod
+            if not dmg_type_mod_value == 0:  # only record if it would have an effect
+                dmg_type_mods.update({dmg_type: dmg_type_mod_value})
+        # get the lowest or highest damage after damage reduction
+        if len(dmg_type_mods) > 0:  # Only check if defenses would make a difference
+            if max_defense:  # get targets highest defense type against this action's dmg_types
+                dmg_red_type = max(dmg_type_mods, key=dmg_type_mods.get)
+            else:  # get the targets lowest defense type against this action's dmg_types
+                dmg_red_type = min(dmg_type_mods, key=dmg_type_mods.get)
+    # calculate damage after damage reduction
+    damage_reduction = dmg_type_mods.get(dmg_red_type, 0)
     result = dmg_dealt - damage_reduction
-    if result < 0:
+    if result < 0:  # do not allow damage to be less than 0
         result = 0
     if log:
-        log_info(f"command {command.key}, Character id: {command.caller.id} | result: {result} | dmg_dealt {dmg_dealt} | body_part_name {body_part_name} | body_part_inst: {body_part_inst.name} | min_part_key {min_part_key} | min_target_key {min_target_key} | body_part_dr_values: {body_part_dr_values} | target_dr_values: {target_dr_values}")
+        log_msg = f"command {command.key}, Character id: {command.caller.id} | " \
+                  f"result: {result} | dmg_dealt {dmg_dealt} | body_part_name {body_part_name} | " \
+                  f"dmg_red_type: {dmg_red_type} | damage_reduction: {damage_reduction}"
+        log_info(log_msg)
+        # command.caller.msg(log_msg)  # uncomment to see log to screen.
     return result
 
 

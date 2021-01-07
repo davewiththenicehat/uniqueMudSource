@@ -397,7 +397,7 @@ class CmdCmdFuncTest(Command):
         """
         super().at_init()  # uncomment when overridden
         # this is needed for testing function Command.dmg_after_dr
-        self.dmg_types = ["ACD", "PRC"]  # tuple of list or damage types this command can manupulate
+        self.dmg_types = {"ACD": 1, "PRC": 0}  # dictionary of damage types this command can manipulate.
 
     def func(self):
         caller = self.caller
