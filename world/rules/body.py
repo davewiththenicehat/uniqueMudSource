@@ -60,24 +60,23 @@ HUMANOID_HANDS = (
 )
 
 
-def get_part(target, no_underscore=False, log=None):
+def get_part(target, part_name=False, log=None):
     """
-    Return the name of a body part that exists on target
+    Return a randon or specified instance of a part on the objects body.
 
     Arguments:
         target, an Object target for get_part to choose a body part from
-        no_understore=False, if True underscores '_' will be removed from the returned part name.
+        part_name=False, Pass a string name of a body part and get_body_part will return an
+            instance of that part.
+            Example: 'left_leg'
         log=False, if True log the variables used
 
     Returns:
-        str, in the form of a body part description.
-            Example: "head" or "waist"
+        Instance of a body part on the target.
         False, if this object has no body parts to hit.
         None, the function failed on the python level.
 
     todo:
-        option to return an instance.
-            option to return a specific part
         option to target low middle or high
     """
     if hasattr(target, 'body'):
@@ -96,9 +95,8 @@ def get_part(target, no_underscore=False, log=None):
             log_info(f"world.rules.get_body_part, target.id: {target.id}; parts_count: {parts_count}. No parts found on target.")
         return False
     parts_key = randint(0, parts_count)
-    body_part = target.body.parts[parts_key]
-    if no_underscore:
-        body_part = body_part.replace('_', ' ')  # remove _ from the part's name
+    if not part_name:
+        part_name = target.body.parts[parts_key]
     if log:
-        log_info(f"world.rules.get_body_part, target.id: {target.id}; body_part: {body_part} | parts_key: {parts_key}")
-    return body_part
+        log_info(f"world.rules.get_body_part, target.id: {target.id}; body_part: {part_name} | parts_key: {parts_key}")
+    return getattr(target.body, part_name, False)

@@ -36,9 +36,16 @@ class TestRules(CommandTest):
         self.call(command(), arg, wanted_message)
 
         # test body.get_part
-        #get_part(target, no_underscore=False, log=None)
         body_part = body.get_part(self.char1)
-        self.assertTrue(body_part in self.char1.body.parts)
+        self.assertTrue(body_part.name in self.char1.body.parts)
+        # make certain getting a specific part works.
+        body_part = body.get_part(self.char1, 'head')
+        part_name = body_part.name
+        part_name_direct = self.char1.body.head.name
+        self.assertTrue(part_name == part_name_direct)
+        # make certain it returns false on fail
+        fail_body_part = body.get_part(self.char1, 'no_part_name')
+        self.assertFalse(fail_body_part)
 
 
 class TestUtils(CommandTest):

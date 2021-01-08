@@ -160,7 +160,7 @@ class TestObjects(CommandTest):
 
         # test Character, Object, Exit; .get_part()
         body_part = self.char1.get_body_part()
-        self.assertTrue(body_part in self.char1.body.parts)
+        self.assertTrue(body_part.name in self.char1.body.parts)
         obj_part = self.obj1.get_body_part()  # this object has no parts
         self.assertFalse(obj_part)
 

@@ -96,28 +96,32 @@ def roll(command, use_mod=True, log=False):
     return randint(1, dmg_max) + dmg_mod
 
 
-def get_dmg_after_dr(command, dmg_dealt=None, body_part_name=None, max_defense=False, log=False):
+def get_dmg_after_dr(command, dmg_dealt=None, max_defense=False, body_part=None, target=None, log=False):
     """
     Get damage dealt after damage reduction.
     Minimum return value is 0.
 
     Arguments
         command, the command that is manipulating damage
-        dmg_dealt=None, the damage the command dealth
+        dmg_dealt=None, the damage the command dealt
             If None is provided get_dmg_after_dr will use self.dmg_dealt
             if self.dmg_dealt does not exist a random roll will be processed.
                 using standard rules: dmg_dealt = damage.roll(self)
                 where self.dmg_max is the max damage possible and self.dmg_mod_stat modifies the damage
-        body_part_name=None, the body part the command is manipulating.
-            Leave blank if you want to ignore dr for armor
         max_defense=False, if true the attack's least damaging dmg_type is used.
+        body_part=None, the body part the command is manipulating.
+            Leave blank if you want to ignore dr for armor.
+            Can be an instance of the body part, or the parts string name.
+        target=None, instance of the target that would receive the damage.
         log=False, should this function log messages
 
     Notes:
         unit tests for this are in commands.tests
 
     Returns:
-        damage dealt after dr for the body part hit and the target
+        damage dealt after dr for the body part hit after the targets damage reduction.
+        Default the highest possible damage is returned.
+        pass max_defense=True, to return the lowest possible damage.
         The minimum value this function returns is 0.
 
     equation:
@@ -131,25 +135,39 @@ def get_dmg_after_dr(command, dmg_dealt=None, body_part_name=None, max_defense=F
             That body part's dr value is also used to reduce damage.
                 Normally this would be the armor's dr value for that body part.
     """
-    target = command.target
+    if not target:
+        target = command.target
     if dmg_dealt is None:
         if hasattr(command, 'dmg_dealt'):
             dmg_dealt = command.dmg_dealt
         if dmg_dealt is None:
             dmg_dealt = roll(command)  # get a random damage roll, none was provided
     # decalare default variable values
-    body_part_inst = None
     dmg_type_mods = {}
     result = 0
     dmg_red_type = 'no type'
-    # get an instance of the body part hit.
-    if body_part_name:
-        if target.body.parts:
-            if body_part_name in target.body.parts:
-                body_part_inst = getattr(target.body, body_part_name)
-                if not body_part_inst:
-                    log_warn(f"command {command.key}, Character id: {command.caller.id} | " \
-                             "failed to get body_part_inst after finding it in target.body.parts")
+    # If the body_part is a string, get an instance of the part
+    if body_part:
+        if isinstance(body_part, str):
+            if target.body.parts:
+                if body_part in target.body.parts:
+                    body_part = target.get_body_part(body_part)
+            # failed to find an instance throw a soft error
+            if isinstance(body_part, str):
+                err_msg = f"command: {command.key} | caller: {command.caller.id} | " \
+                          f"Failed to find body part instance for {body_part}."
+                error_report(err_msg, command.caller)
+                body_part = None  # keep the function from erroring futher
+        # if body_part is an instance, make certain it is not from an incorrect target
+        elif type(body_part) == "<class 'utils.element.ListElement'>":
+            test_part = target.get_body_part(body_part.name)
+            if test_part is not body_part:
+                err_msg = f"command: {command.key} | caller: {command.caller.id} | " \
+                          f"{body_part}."
+                error_report(err_msg, command.caller)
+                body_part = None  # keep the function from erroring futher
+        elif body_part == True:
+            pass
     # Get defense values vs action's dmg_types if any
     if command.dmg_types:
         # Collect, into dictionary dmg_type_mods
@@ -158,12 +176,8 @@ def get_dmg_after_dr(command, dmg_dealt=None, body_part_name=None, max_defense=F
         #   - command.dmg_type value
         for dmg_type, cmd_dmg_mod in command.dmg_types.items():
             body_part_dr_value = 0
-            if body_part_inst:  # if the object had that body part
-                body_part_dr_value = getattr(body_part_inst.dr, dmg_type, 0)
-            elif body_part_name:
-                err_msg = f"command: {command.key} | caller: {command.caller.id} | " \
-                          f"Failed to find body part instance {body_part_name}."
-                error_report(err_msg, command.caller)
+            if body_part:  # if the object had that body part
+                body_part_dr_value = getattr(body_part.dr, dmg_type, 0)
             # find the targets dr values that match the commands damage types
             target_dr_value = 0
             if hasattr(target.dr, dmg_type):
@@ -185,7 +199,7 @@ def get_dmg_after_dr(command, dmg_dealt=None, body_part_name=None, max_defense=F
         result = 0
     if log:
         log_msg = f"command {command.key}, Character id: {command.caller.id} | " \
-                  f"result: {result} | dmg_dealt {dmg_dealt} | body_part_name {body_part_name} | " \
+                  f"result: {result} | dmg_dealt {dmg_dealt} | body_part {body_part} | " \
                   f"dmg_red_type: {dmg_red_type} | damage_reduction: {damage_reduction}"
         log_info(log_msg)
         # command.caller.msg(log_msg)  # uncomment to see log to screen.

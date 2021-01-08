@@ -412,7 +412,7 @@ class TestCommands(CommandTest):
         cmd_result = self.call(command(), arg, caller=self.char1, receiver=self.char2)
         self.assertRegex(cmd_result, wanted_message)
 
-        # test function get_body_part
+        # test method get_body_part
         command = developer_cmds.CmdCmdFuncTest
         arg = "/r get_body_part, char2"
         wanted_message = r"get_body_part returned: False"
@@ -425,15 +425,15 @@ class TestCommands(CommandTest):
         cmd_result = self.call(command(), arg)
         self.assertRegex(cmd_result, wanted_message)
 
-        # test function damage after damage reduction
+        # test method damage after damage reduction
         command = developer_cmds.CmdCmdFuncTest
-        arg = "/r dmg_after_dr, char = 3, head"
+        arg = "/r dmg_after_dr, char = 3, None, head"
         wanted_message = "dmg_after_dr returned: 1"
         cmd_result = self.call(command(), arg, caller=self.char2)
         self.assertRegex(cmd_result, wanted_message)
         # make certain the lowest number returned is 0
         command = developer_cmds.CmdCmdFuncTest
-        arg = "/r dmg_after_dr, char = 0, head"
+        arg = "/r dmg_after_dr, char = 0, None, head"
         wanted_message = "dmg_after_dr returned: 0"
         cmd_result = self.call(command(), arg, caller=self.char2)
         self.assertRegex(cmd_result, wanted_message)
@@ -441,7 +441,7 @@ class TestCommands(CommandTest):
         self.char1.dr.ACD = 3
         self.char1.dr.PRC = 1
         command = developer_cmds.CmdCmdFuncTest
-        arg = "/r dmg_after_dr, char = 3, head"
+        arg = "/r dmg_after_dr, char = 3, None, head"
         wanted_message = "dmg_after_dr returned: 0"
         cmd_result = self.call(command(), arg, caller=self.char2)
         self.assertRegex(cmd_result, wanted_message)
@@ -449,7 +449,7 @@ class TestCommands(CommandTest):
         self.char1.dr.ACD = 3
         self.char1.dr.PRC = 1
         command = developer_cmds.CmdCmdFuncTest
-        arg = "/r dmg_after_dr, char = None, head"
+        arg = "/r dmg_after_dr, char = None, None, head"
         wanted_message = r"dmg_after_dr returned: \d+"
         cmd_result = self.call(command(), arg, caller=self.char2)
         self.assertRegex(cmd_result, wanted_message)
@@ -461,7 +461,7 @@ class TestCommands(CommandTest):
         self.char1.dr.ACD = 3
         self.char1.dr.PRC = 1
         command = developer_cmds.CmdCmdFuncTest
-        arg = "/r dmg_after_dr, char = 7, head, True"
+        arg = "/r dmg_after_dr, char = 7, True, head"
         wanted_message = r"dmg_after_dr returned: 2"
         cmd_result = self.call(command(), arg, wanted_message)
 

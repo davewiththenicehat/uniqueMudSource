@@ -629,28 +629,31 @@ class Command(default_cmds.MuxCommand):
                 target = self.caller
         return body.get_part(target, no_understore, log)
 
-    def dmg_after_dr(self, dmg_dealt=None, body_part_name=None, max_defense=False):
+    def dmg_after_dr(self, dmg_dealt=None, max_defense=False, body_part=None, target=None, log=False):
         """
         Get damage dealt after damage reduction.
         Minimum return value is 0.
 
         Arguments
-            command, the command that is manipulating damage
-            dmg_dealt=None, the damage the command dealth
+            dmg_dealt=None, the damage the command dealt
                 If None is provided get_dmg_after_dr will use self.dmg_dealt
                 if self.dmg_dealt does not exist a random roll will be processed.
                     using standard rules: dmg_dealt = damage.roll(self)
                     where self.dmg_max is the max damage possible and self.dmg_mod_stat modifies the damage
-            body_part_name=None, the body part the command is manipulating.
-                Leave blank if you want to ignore dr for armor
             max_defense=False, if true the attack's least damaging dmg_type is used.
+            body_part=None, the body part the command is manipulating.
+                Leave blank if you want to ignore dr for armor.
+                Can be an instance of the body part, or the parts string name.
+            target=None, instance of the target that would receive the damage.
             log=False, should this function log messages
 
         Notes:
             unit tests for this are in commands.tests
 
         Returns:
-            damage dealt after dr for the body part hit and the target
+            damage dealt after dr for the body part hit after the targets damage reduction.
+            Default the highest possible damage is returned.
+            pass max_defense=True, to return the lowest possible damage.
             The minimum value this function returns is 0.
 
         equation:
@@ -664,7 +667,7 @@ class Command(default_cmds.MuxCommand):
                 That body part's dr value is also used to reduce damage.
                     Normally this would be the armor's dr value for that body part.
         """
-        return damage.get_dmg_after_dr(self, dmg_dealt, body_part_name, max_defense)
+        return damage.get_dmg_after_dr(self, dmg_dealt, max_defense, body_part, target, log)
 
     def combat_action(self, action_mod=None, caller_msg=None, target_msg=None, room_msg=None, log=None):
         """
@@ -749,17 +752,17 @@ class Command(default_cmds.MuxCommand):
         if result > 0:  # the action hit
             # get the body part that was hit
             part_hit = self.get_body_part()
-            dmg_dealt = self.dmg_after_dr(body_part_name=part_hit)
+            dmg_dealt = self.dmg_after_dr(body_part=part_hit)
             if dmg_dealt > 0:  # make certain the combat action adjusts hp only when needed
                 target.hp -= dmg_dealt
             caller_msg += " and connect."
             target_msg += " and connects."
             room_msg += " and connects."
             if part_hit:  # if that target had parts to hit, add it to the action's messages
-                part_hit = part_hit.replace('_', ' ')  # change "side_name" to "side name"
-                caller_msg += f" Hitting {target.usdesc}'s {part_hit}."
+                part_hit_name = part_hit.name.replace('_', ' ')  # change "side_name" to "side name"
+                caller_msg += f" Hitting {target.usdesc}'s {part_hit_name}."
                 target_msg += f" Hitting your {part_hit}."
-                room_msg += f" Hitting {target.usdesc}'s {part_hit}."
+                room_msg += f" Hitting {target.usdesc}'s {part_hit_name}."
             caller_msg += f" Dealing {dmg_dealt} damage."
             target_msg += f" You take {dmg_dealt} damage."
             self.successful(True)  # record the success

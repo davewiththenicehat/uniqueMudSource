@@ -48,13 +48,15 @@ class CharExAndObjMixin:
                for example body.head.bleeding, for bleeding
 
     Methods:
-        get_body_part(no_understore=False), Return the name of a body part that exists on this Object
+        get_body_part(part_name), Return a randon or specified instance of a part on the object's body.
         cache_body_dr(), caches dr for all this Object's body parts
-        ascending_breakpoint(self), is automatically called when an object's hp rises above it's breakpoint (likely 0), when it was previous below it's breakpoint.
+        ascending_breakpoint(), is automatically called when an object's hp rises above it's
+            breakpoint (likely 0), when it was previous below it's breakpoint.
             Is intended to be overridden
-        descending_breakpoint(), is automatically called when an object's hp falls below it's breakpoint (likely 0), when it was previous above it's breakpoint.
+        descending_breakpoint(), is automatically called when an object's hp falls below it's
+            breakpoint (likely 0), when it was previous above it's breakpoint.
             Is intended to be overridden
-        self.destroy, This is automatically called an an object's hp reaches self.hp.min
+        destroy, This is automatically called when an object's hp reaches self.hp.min
             Intended to be overriden with a typeclass
 
     """
@@ -154,21 +156,24 @@ class CharExAndObjMixin:
                         dmg_type_dr_rating = getattr(item.dr, dmg_type)
                         setattr(body_part.dr, dmg_type, dmg_type_dr_rating)
 
-    def get_body_part(self, no_understore=False, log=False):
+    def get_body_part(self, part_name=False, log=False):
         """
-        Return the name of a body part that exists on this Object
+        Return a randon or specified instance of a part on the object's body.
 
         Arguments:
-            no_understore=False, if True underscores '_' will be removed from the returned part name.
+            part_name=False, Pass a string name of a body part and get_body_part will return an
+                instance of that part.
+                Example: 'left_leg'
+                If not provided a random part will be returned.
             log=False, if True log the variables used
 
         Returns:
-            str, in the form of a body part description.
-                Example: "head" or "waist"
-            False, if this object has no body parts to hit.
+            Instance of a body part on the target.
+            False, if this object has no body parts to hit
+                or if part_name does not exist on the object's body.
             None, the function failed on the python level.
         """
-        return body.get_part(self, no_understore, log)
+        return body.get_part(self, part_name, log)
 
     def ascending_breakpoint(self):
         """
