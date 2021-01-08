@@ -62,7 +62,7 @@ HUMANOID_HANDS = (
 
 def get_part(target, part_name=False, log=None):
     """
-    Return a randon or specified instance of a part on the objects body.
+    Return a randon or specified instance of a part on the object's body.
 
     Arguments:
         target, an Object target for get_part to choose a body part from
