@@ -56,6 +56,32 @@ class Weapon(Wieldable):
     def dmg_types(self):
         self._dmg_types.delete()
 
+    @property
+    def weapon_type(self):
+        """
+        Stores the type of weapon this object is.
+        """
+        pass
+    @weapon_type.setter
+    def weapon_type(self, value):
+        pass
+    @weapon_type.deleter
+    def weapon_type(self):
+        pass
+
+
+    def get_dmg_mods(self):
+        """
+        Returns a dictionary that represents the Weapon's damage modifiers.
+        """
+        dmg_mods = {}
+        dmg_types = self.dmg_types.el_list
+        for dmg_type in dmg_types:
+            modifier = getattr(self.dmg_types, dmg_type, 0)
+            if modifier:
+                dmg_mods.update({dmg_type: modifier})
+        return dmg_mods
+
 
 class WieldableCmdSet(CmdSet):
     """Command set for wielding items."""
