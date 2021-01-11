@@ -1,9 +1,10 @@
 from evennia import CmdSet
+from commands.command import Command
+from evennia import utils
 from world.rules import damage
 from typeclasses.objects import Object
-from commands.command import Command
 from utils.um_utils import error_report
-from evennia import utils
+from utils.element import ListElement
 
 
 
@@ -24,11 +25,36 @@ class Wieldable(Object):
 
 class Weapon(Wieldable):
     """
-    dmg_types = None  # tuple or list of damage types this weapon deals
-        list of types is in world.rules.damage.TYPES
-        dmg_types = ('BLG') is not a tuple it is a string. dmg_types = ('BLG',), will return a tuple
+    Object that can be used to add to attack action's damage.
+
+    dmg_types = ListElement  # ListElement of damage types this weapon can manipulate.
+        If a weapon has no dmg_types, attack actions will only use their base dmg_types attribute.
+        value is a flat bonus this weapon will add to attack actions of that dmg_type.
     """
-    dmg_types = None  # tuple or list of damage types this weapon can deal
+
+    @property
+    def dmg_types(self):
+        """
+        Track types and strength of damage this weapon does.
+
+        ListElement will track it in the database as dmg_types_TYPE
+            dmg_types_BLG for example
+        """
+        try:
+            if self._dmg_types:
+                pass
+        except AttributeError:
+            self._dmg_types = ListElement(self, damage.TYPES)
+            self._dmg_types.verify()
+        return self._dmg_types
+
+    @dmg_types.setter
+    def dmg_types(self, value):
+        self._dmg_types.set(value)
+
+    @dmg_types.deleter
+    def dmg_types(self):
+        self._dmg_types.delete()
 
 
 class WieldableCmdSet(CmdSet):

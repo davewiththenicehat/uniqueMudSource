@@ -7,8 +7,9 @@ from typeclasses.rooms import Room
 from typeclasses.objects import Object
 from evennia.contrib import gendersub
 from evennia.utils.test_resources import EvenniaTest
-from world.rules import body
+from world.rules import body, damage
 from commands import developer_cmds
+from typeclasses.equipment.wieldable import Weapon
 
 
 class TestObjects(CommandTest):
@@ -29,9 +30,11 @@ class TestObjects(CommandTest):
 
         # test the character's gender and the abilit to run the @gender command
         #char = create_object(Human, key="Gendered", location=self.room1)
-        self.char1.at_init()
-        self.char2.at_init()
+        self.sword = create_object(Weapon, key="a sword")
+        self.sword.targetable = True
+        self.sword.location = self.char1.location
         char = self.char1
+
         txt = "Test |p gender"
         self.assertEqual(gendersub._RE_GENDER_PRONOUN.sub(char._get_pronoun, txt), "Test their gender")
         char.execute_cmd("gender male")
@@ -205,6 +208,30 @@ class TestObjects(CommandTest):
         char.set_unconscious(False)
         self.assertTrue(char.ready())
         self.assertEqual(char.db.pose, 'is laying here.')
+
+
+        # test weapon dmg_types ListElement
+        self.assertFalse(self.sword.attributes.has('dmg_types_acd'))
+        self.sword.dmg_types.ACD = 1
+        self.assertEqual(self.sword.attributes.get('dmg_types_acd'), 1)
+        self.sword.dmg_types.ACD = 0
+        # tests all damage types
+        for type in damage.TYPES:
+            db_key = 'dmg_types_'+type.lower()
+            self.assertFalse(self.sword.attributes.has(db_key))
+            setattr(self.sword.dmg_types, type, 1)
+            self.assertEqual(self.sword.attributes.get(db_key), 1)
+            # make certain setting to 0 removes the attr from database
+            setattr(self.sword.dmg_types, type, 0)
+            self.assertFalse(self.sword.attributes.has(db_key))
+            setattr(self.sword.dmg_types, type, 1)  # set to test dmg_types.delete
+        # test deleting a dmg_types element
+        self.assertEqual(self.sword.attributes.get('dmg_types_acd'), 1)
+        self.sword.dmg_types.delete()
+        for type in TYPES:
+            db_key = 'dmg_types_'+type.lower()
+            self.assertFalse(self.sword.attributes.has(db_key))
+        self.assertEqual(self.sword.dmg_types.ACD, 0)
 
 
 # Testing of emoting / sdesc / recog system
