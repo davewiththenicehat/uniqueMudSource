@@ -7,7 +7,7 @@ from typeclasses.objects import Object
 from evennia import create_object
 from typeclasses.equipment import clothing
 from commands import standard_cmds
-from typeclasses.equipment.wieldable import Weapon
+from typeclasses.equipment.wieldable import Weapon, OneHandedWeapon
 
 
 class TestCommands(CommandTest):
@@ -43,7 +43,7 @@ class TestCommands(CommandTest):
         self.obj3 = create_object(Object, key="Obj3")
         self.obj3.targetable = True
         self.obj3.location = self.char1.location
-        self.sword = create_object(Weapon, key="a sword")
+        self.sword = create_object(OneHandedWeapon, key="a sword")
         self.sword.targetable = True
         self.sword.location = self.char1.location
 
@@ -206,7 +206,7 @@ class TestCommands(CommandTest):
         # Make a test hat
         test_hat = create_object(clothing.Clothing, key="test hat")
         test_hat.db.clothing_type = "hat"
-        test_hat.location = self.char1
+        test_hat.location = self.room1
         # Make a test shirt
         test_shirt = create_object(clothing.Clothing, key="test shirt")
         test_shirt.db.clothing_type = "top"
@@ -229,10 +229,17 @@ class TestCommands(CommandTest):
         self.assertRegex(cmd_result, wanted_message)
         # Test wearing an item
         command = developer_cmds.CmdMultiCmd
+        arg = "= get hat, complete_cmd_early"
+        wanted_message = "You pick up test hat"
+        cmd_result = self.call(command(), arg, caller=self.char1)
+        self.assertRegex(cmd_result, wanted_message)
+        command = developer_cmds.CmdMultiCmd
         arg = "= wear hat, complete_cmd_early"
         wanted_message = "You will be busy for 1 second.\nYou begin to put on test hat.\nChar puts on test hat.\nYou are no longer busy.\nChar allowed you to complete your wear command early with their complete_cmd_early command."
         cmd_result = self.call(command(), arg, caller=self.char1)
         self.assertRegex(cmd_result, wanted_message)
+        # make certain the hat is no longer in hand
+        self.assertFalse(self.char1.is_holding(test_hat))
         # Test tring to wear an item not on person also tests Command.search_caller_only
         command = developer_cmds.CmdMultiCmd
         arg = "= wear Obj"
@@ -300,7 +307,7 @@ class TestCommands(CommandTest):
         # test character with items worn and not
         command = developer_cmds.CmdMultiCmd
         arg = "= inv, complete_cmd_early"
-        wanted_message = "You are carrying:\n test shirt   \r\nYou are wearing:\n test hat      \n test helmet"
+        wanted_message = "You are carrying:\n test shirt   \r\nYou are wearing:\n test helmet   \n test hat"
         cmd_result = self.call(command(), arg, caller=self.char1)
         self.assertRegex(cmd_result, wanted_message)
         #misc tests
@@ -373,6 +380,8 @@ class TestCommands(CommandTest):
         wanted_message = "You are not wielding a sword."
         cmd_result = self.call(command(), arg, caller=self.char1)
         self.assertRegex(cmd_result, wanted_message)
+        # make certain the sword is in hand
+        self.assertTrue(self.char1.is_holding(self.sword))
         arg = "= wield sword"
         wanted_message = "You wield a sword in your"
         cmd_result = self.call(command(), arg, caller=self.char1)
@@ -407,10 +416,22 @@ class TestCommands(CommandTest):
         self.assertRegex(cmd_result, wanted_message)
         items_equipped = self.char1.wielding()
         self.assertFalse(self.sword in items_equipped)
-        arg = "= drop sword"
-        wanted_message = "Char drops a sword"
-        cmd_result = self.call(command(), arg, caller=self.char1, receiver=self.char2)
+        #verify an item deleted while held and or wielded will automatically be removed from hand.
+        arg = "= wield sword"
+        wanted_message = "You wield a sword in your"
+        cmd_result = self.call(command(), arg, caller=self.char1)
         self.assertRegex(cmd_result, wanted_message)
+        sword_dbref = self.sword.dbref
+        self.sword.delete()
+        self.assertFalse(self.char1.wielding())
+        hands_state = self.char1.hands()
+        self.assertNotEqual(hands_state[0].occupied, sword_dbref)
+        self.assertNotEqual(hands_state[1].occupied, sword_dbref)
+
+        #arg = "= drop sword"
+        #wanted_message = "Char drops a sword"
+        #cmd_result = self.call(command(), arg, caller=self.char1, receiver=self.char2)
+        #self.assertRegex(cmd_result, wanted_message)
 
         # test method get_body_part
         command = developer_cmds.CmdCmdFuncTest

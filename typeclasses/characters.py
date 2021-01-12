@@ -966,6 +966,14 @@ class Character(AllObjectsMixin, CharExAndObjMixin, ClothedCharacter, GenderChar
             hand_inst = getattr(self.body, hand, False)
             if hand_inst:
                 hands_state.append(hand_inst)
+                # if the item held has been delete or otherwise does not exist, unoccupy the hand
+                if hand_inst.occupied:
+                    item_held = self.search(hand_inst.occupied, quiet=True)
+                    if not item_held:  # item does not exist in database
+                        # the item is also being wielded
+                        if hand_inst.occupied == hand_inst.wielding:
+                            hand_inst.wielding = 0  # unwield the missing item
+                        hand_inst.occupied = 0  # unoccupy the hand
         return hands_state
 
     def open_hands(self):
@@ -999,13 +1007,13 @@ class Character(AllObjectsMixin, CharExAndObjMixin, ClothedCharacter, GenderChar
 
     def is_holding(self, obj):
         """
-        Returns True if the object reference passed is in the Character's hand.
+        If the character is holding the object, an instance of the hand holding it is returned.
         """
         hands_state = self.hands()
         for hand in hands_state:
             if hand.occupied:
                 if hand.occupied == obj.dbref:
-                    return True
+                    return hand
         return False
 
     def wielding(self):

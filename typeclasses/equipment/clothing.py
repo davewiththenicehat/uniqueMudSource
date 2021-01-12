@@ -301,7 +301,7 @@ class Clothing(Object):
                     garment.db.covered_by = self
         # Return if quiet
         if quiet:
-            return
+            return True
         # Echo a message to the room
         message = f"{wearer.usdesc} puts on {self.usdesc}"
         if wearstyle is not True:
@@ -309,6 +309,7 @@ class Clothing(Object):
         if to_cover:
             message = message + ", covering %s" % list_to_string(to_cover)
         wearer.location.msg_contents(message + ".")
+        return True
 
     def remove(self, wearer, quiet=False):
         """
@@ -505,7 +506,15 @@ class CmdWear(ClothingCommand):
             return
 
         wearstyle = True  # removed support for wearstyle
-        clothing.wear(caller, wearstyle)
+        wear_successful = clothing.wear(caller, wearstyle)
+        # empty the hand that was holding the item worn
+        if wear_successful:
+            hand = caller.is_holding(clothing)
+            if hand:
+                # the worn item was also being wielded
+                if hand.occupied == hand.wielding:
+                    hand.wielding = 0  # unwield the item
+                hand.occupied = 0  # unoccupy the hand
 
 
 class CmdRemove(ClothingCommand):
