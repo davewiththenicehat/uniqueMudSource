@@ -13,7 +13,7 @@ from utils.element import Element, ListElement
 from utils import um_utils
 from world import status_functions
 from evennia import utils
-from world.rules import stats, body, damage
+from world.rules import stats, body, damage, skills
 from evennia.contrib.rpsystem import ContribRPCharacter
 from typeclasses.equipment.clothing import ClothedCharacter
 from evennia.contrib.rpsystem import RPSystemCmdSet
@@ -138,6 +138,18 @@ class Character(AllObjectsMixin, CharExAndObjMixin, ClothedCharacter, GenderChar
                 Manage them through the element. char.condition.attribute_name
         condition.unconscious, special note: Refer to self.set_unconscious() for full details.
 
+        skills=object, skills is a blank object that contains ListElement of objects.
+            Each of those objects contains a skill set.
+            Skill sets are accessable as attributes.
+            For example:
+                skills.unarmed, to access the unarmed skill set.
+            If a skill set is accessed in any way that the __str__ descriptor would be used,
+            It returns a string example of the skills in that set with the ranks in each skill.
+            Any method that can be used to get attributes within an object is applicable here.
+                For example:
+                    punch_ranks = skills.unarmed.punch
+                    punch_ranks = getattr(skills.unarmed, 'punch')
+
     Methods:
         All methods are fully documented in their docstrings.
         get_pronoun(pattern), pattern is a gendersub pattern, returns Character's pronoun
@@ -203,8 +215,31 @@ class Character(AllObjectsMixin, CharExAndObjMixin, ClothedCharacter, GenderChar
         self.cmdset.remove(RPSystemCmdSet)  # overridden and added back in at commands.standard_cmds.UMRPSystemCmdSet
         return super_return
 
-    # define an empty hands dictionary
-    HANDS = dict()
+
+    @property
+    def skills(self):
+        """
+        Create object to hold characters' skill sets.
+
+        This forwards to a ListElement so all database interactions are handled automatically.
+        """
+        try:
+            if self._skills:
+                pass
+        except AttributeError:
+            # create an empty object
+            self._skills = type('_skills', (object,), {})()
+            self._skills  # initialize the empty object
+            self._skills.skills = skills.SKILLS  # make copy of the skills dictionary
+            # ListElements will want to know what its db method is
+            self._skills.attributes = self.attributes
+            for skill_name, skill in skills.SKILLS.items():
+                # create attributes to represent skill sets
+                setattr(self._skills, skill_name, ListElement(self._skills, skill))
+                # verify the newly created Element
+                part_inst = getattr(self._skills, skill_name)
+                part_inst.verify()
+        return self._skills
 
     # define objects's condition
     @property
@@ -901,6 +936,9 @@ class Character(AllObjectsMixin, CharExAndObjMixin, ClothedCharacter, GenderChar
         Here to overload rpsystem's at_before_say
         """
         return message
+
+    # define an empty hands dictionary
+    HANDS = dict()
 
     def hands(self):
         """

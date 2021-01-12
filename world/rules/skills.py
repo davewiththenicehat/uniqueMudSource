@@ -30,11 +30,6 @@ Each skill set has skills (actions or abilities) it grants access to learn.
             'daunting': 5
 """
 
-SKILLS = (
-    'evasion',
-    'unarmed'
-)
-
 DIFFICULTY_LEVELS = {
     1: 'very easy',
     2: 'easy',
@@ -59,4 +54,9 @@ UNARMED = {
         'learn_diff': 2,
         'comp_diff': 2,
     }
+}
+
+SKILLS = {
+    'evasion': tuple(EVASION.keys()),
+    'unarmed': tuple(UNARMED.keys())
 }

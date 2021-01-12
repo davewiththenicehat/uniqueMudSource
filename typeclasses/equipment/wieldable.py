@@ -38,7 +38,7 @@ class Weapon(Wieldable):
         Track types and strength of damage this weapon does.
 
         ListElement will track it in the database as dmg_types_TYPE
-            dmg_types_BLG for example
+            dmg_types_blg for example
         """
         try:
             if self._dmg_types:
