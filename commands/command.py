@@ -373,6 +373,9 @@ class Command(default_cmds.MuxCommand):
                     else:
                         caller.msg(f'{target_name} is not here.')
                         return True
+        # if the Character is wielding a weapon get it's name.
+        if not self.caller_weapon:
+            caller.wielding()
         return super().at_pre_cmd()
 
     def start_message(self):

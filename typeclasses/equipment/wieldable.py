@@ -16,9 +16,26 @@ class Wieldable(Object):
     """
     Used to represent an object that can be equipped or wielded
     """
+
+    @property
+    def item_type(self):
+        """
+        Stores the type of item this object is.
+
+        Forwards to the database with, self.db.item_type.
+        """
+        return self.db.item_type
+    @item_type.setter
+    def item_type(self, value):
+        self.db.item_type = value
+    @item_type.deleter
+    def item_type(self):
+        delattr(self.db, 'item_type')
+
     def at_object_creation(self):
         """Runs when Object is created."""
         self.at_init()  # initialize self.
+        self.item_type = 'unset'  # initialize item type
         self.targetable = True  # wieldable items can be targeted with commands
         return super().at_object_creation()
 
@@ -47,27 +64,12 @@ class Weapon(Wieldable):
             self._dmg_types = ListElement(self, damage.TYPES)
             self._dmg_types.verify()
         return self._dmg_types
-
     @dmg_types.setter
     def dmg_types(self, value):
         self._dmg_types.set(value)
-
     @dmg_types.deleter
     def dmg_types(self):
         self._dmg_types.delete()
-
-    @property
-    def weapon_type(self):
-        """
-        Stores the type of weapon this object is.
-        """
-        pass
-    @weapon_type.setter
-    def weapon_type(self, value):
-        pass
-    @weapon_type.deleter
-    def weapon_type(self):
-        pass
 
 
     def get_dmg_mods(self):
@@ -81,6 +83,19 @@ class Weapon(Wieldable):
             if modifier:
                 dmg_mods.update({dmg_type: modifier})
         return dmg_mods
+
+
+class OneHandedWeapon(Weapon):
+    """
+    Objects used for the one_handed skill and command sets.
+
+    Inherits typeclasses.equipment.wieldable.Weapon
+    """
+    def at_object_creation(self):
+        """Runs when Object is created."""
+        at_object_creation_return = super().at_object_creation()
+        self.item_type = 'one_handed'  # initialize item type
+        return at_object_creation_return
 
 
 class WieldableCmdSet(CmdSet):
