@@ -70,7 +70,6 @@ class CmdStab(OneHandedCommand):
     key = "stab"
     defer_time = 3  # time is seconds for the command to wait before running action of command
     dmg_max = 1  # the maximum damage this command can cause
-    caller_weapon = "weapon name"  # weapon name that will show up in Command.combat_action's automated messages
     desc = "stabs"  # a present tense description for the action of this command. IE: "kicks"
 
     def start_message(self):

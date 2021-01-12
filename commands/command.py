@@ -109,6 +109,7 @@ class Command(default_cmds.MuxCommand):
             IE: "kicks"
             If None when self.func is called, it will give assigned self.key
         caller_weapon = None  # weapon name that will show up in
+            This is a local or instance attribute. Not a class attribute.
             Command.combat_action's automated messages
             Will be automatically filled in Command.func when a Character
                 weapon system is developed.
@@ -200,7 +201,6 @@ class Command(default_cmds.MuxCommand):
     caller_message = None  # text to message the caller. Will not call automatically, here to pass between Command functions
     target_message = None  # text to message the target. Will not call automatically, here to pass between Command functions
     room_message = None  # text to message the room. Will not call automatically, here to pass between Command functions
-    caller_weapon = None  # weapon name that will show up in Command.combat_action's automated messages
     desc = None  # a present tense description for the action of this command. IE: "kicks"
     requires_ready = True  # if true this command requires the ready status before it can do anything. deferal commands still require ready to defer
     requires_conscious = True  # if true this command requires the caller to be conscious
@@ -218,6 +218,7 @@ class Command(default_cmds.MuxCommand):
 
     declared in Command.at_init
         dmg_types = None  # dictionary of damage types this command can manipulate.
+        caller_weapon = None  # weapon name that will show up in Command.combat_action's automated messages
     """
 
     def __init__(self, **kwargs):
@@ -240,6 +241,7 @@ class Command(default_cmds.MuxCommand):
         """
         # super().at_init()  # uncomment when overridden
         self.dmg_types = None  # dictionary of damage types this command can manipulate.
+        self.caller_weapon = None  # weapon name that will show up in Command.combat_action's automated messages
 
     def parse(self):
         """
