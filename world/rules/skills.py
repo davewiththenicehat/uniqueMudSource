@@ -56,7 +56,15 @@ UNARMED = {
     }
 }
 
+ONE_HANDED = {
+    'stab': {
+        'learn_diff': 1,
+        'comp_diff': 1,
+    }
+}
+
 SKILLS = {
     'evasion': tuple(EVASION.keys()),
-    'unarmed': tuple(UNARMED.keys())
+    'unarmed': tuple(UNARMED.keys()),
+    'one_handed': tuple(ONE_HANDED.keys())
 }
