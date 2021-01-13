@@ -108,11 +108,13 @@ class Command(default_cmds.MuxCommand):
         desc = None  # a present tense description for the action of this command.
             IE: "kicks"
             If None when self.func is called, it will give assigned self.key
-        caller_weapon = None  # weapon name that will show up in
+        weapon_desc = None  # weapon description that will show up in
             This is a local or instance attribute. Not a class attribute.
-            Command.combat_action's automated messages
-            Will be automatically filled in Command.func when a Character
-                weapon system is developed.
+            This is intended for attack commands that do note use a wielded weapon.
+            Leave as None if required_wielding is in use.
+        caller_weapon = None  # instance of the caller's wielded weapon from required_wielding
+            This is a local or instance attribute. Not a class attribute.
+            Automatically collected in Command.at_pre_cmd
         roll_max = 50  # max number this command can roll to succeed
         dmg_max = 4  # the maximum damage this command can cause
         cmd_type = False  # Should be a string of the cmd type. IE: 'evasion' for an evasion cmd
@@ -143,6 +145,10 @@ class Command(default_cmds.MuxCommand):
             Failure message is handled automatically.
         requires_conscious = True  # if true this command requires the caller to be conscious before it can be used
             Failure message is handled automatically.
+        required_wielding = None  # require a wielded item type for command to work.
+            item types can be found in typeclasses.equipment.wieldable
+            item types will match command set names in world.rules.skills.SKILLS
+            Example: 'one_handed'
         dmg_types = None  # dictionary of damage types this command can manipulate.
             Attack commands should ALWAYS have one or more dmg_type.
                 If an attack command has no dmg_types,
@@ -204,6 +210,7 @@ class Command(default_cmds.MuxCommand):
     desc = None  # a present tense description for the action of this command. IE: "kicks"
     requires_ready = True  # if true this command requires the ready status before it can do anything. deferal commands still require ready to defer
     requires_conscious = True  # if true this command requires the caller to be conscious
+    required_wielding = None  # require a wielded item type for command to work.
     cost_stat = 'END'  # stat this command will use for the action's cost
     cost_level = None  # level this action should cost. Acceptable levels: 'low', 'mid', 'high'
     log = False  # set to true to info logging should be enabled. Error and warning messages are always enabled.
@@ -215,10 +222,11 @@ class Command(default_cmds.MuxCommand):
         begins_to_or_at = False  # becomes string "to" or "at" if the commands arguments starts with "to " or "at "
         target  # the object target of this Command
         targets = ()  # collected in Command.at_pre_cmd if the command starts with "to " or "at "
+        self.caller_weapon = None  # instance of the caller's wielded weapon from required_wielding
 
     declared in Command.at_init
         dmg_types = None  # dictionary of damage types this command can manipulate.
-        caller_weapon = None  # weapon name that will show up in Command.combat_action's automated messages
+        weapon_desc = None  # weapon description that will show up in Command.combat_action's automated messages
     """
 
     def __init__(self, **kwargs):
@@ -241,7 +249,8 @@ class Command(default_cmds.MuxCommand):
         """
         # super().at_init()  # uncomment when overridden
         self.dmg_types = None  # dictionary of damage types this command can manipulate.
-        self.caller_weapon = None  # weapon name that will show up in Command.combat_action's automated messages
+        self.weapon_desc = None  # weapon description that will show up in Command.combat_action's automated messages
+        self.caller_weapon = None  # instance of the caller's wielded weapon from required_wielding
 
     def parse(self):
         """
@@ -288,6 +297,7 @@ class Command(default_cmds.MuxCommand):
         stops the command if targeting self an self.can_not_target_self is True
         stops the commnad if the targets self.targetable is False
         sets the commands self.desc to self.key if desc was not set manually
+
 
         Notes:
             if a command starts with "to " or "at ".
@@ -373,9 +383,24 @@ class Command(default_cmds.MuxCommand):
                     else:
                         caller.msg(f'{target_name} is not here.')
                         return True
-        # if the Character is wielding a weapon get it's name.
-        if not self.caller_weapon:
-            caller.wielding()
+        # check if required wielded weapon is being wielded.
+        if self.required_wielding:
+            wielded_items = caller.wielding()
+            if not wielded_items:
+                required_item_type = self.required_wielding.replace('_', ' ')
+                caller.msg(f'You must be wielding a {required_item_type} item to {self.key}.')
+                return True
+            # look for required wielded item type among wielded items
+            required_wielding_unfound = True
+            for item in wielded_items:
+                if item.item_type == self.required_wielding:
+                    self.caller_weapon = item
+                    self.weapon_desc = item.usdesc
+                    required_wielding_unfound = False
+            if required_wielding_unfound:
+                required_item_type = self.required_wielding.replace('_', ' ')
+                caller.msg(f'You must be wielding a {required_item_type} item to {self.key}.')
+                return True
         return super().at_pre_cmd()
 
     def start_message(self):
@@ -726,7 +751,7 @@ class Command(default_cmds.MuxCommand):
         caller = self.caller
         target = self.target
         cmd_desc = self.desc
-        caller_weapon = self.caller_weapon
+        weapon_desc = self.weapon_desc
         passed_caller_msg = caller_msg
         passed_target_msg = target_msg
         passed_room_msg = room_msg
@@ -740,20 +765,20 @@ class Command(default_cmds.MuxCommand):
             caller_msg += passed_caller_msg
         else:  # no custom caller message was passed
             caller_msg += f"You {self.key} at {target.usdesc}"
-            if caller_weapon:  # if the Command instance has a caller_weapon saved
-                caller_msg += f" with your {caller_weapon}"
+            if weapon_desc:  # if the Command instance has a weapon_desc saved
+                caller_msg += f" with your {weapon_desc}"
         if passed_target_msg:  # if a custom target message was pssed
             target_msg += passed_target_msg
         else:  # no custom target message was passed
             target_msg += f"{caller.usdesc} {cmd_desc} at you"
-            if caller_weapon:  # if the Command instance has a caller_weapon saved
-                target_msg += f" with {caller.get_pronoun('|p')} {caller_weapon}"
+            if weapon_desc:  # if the Command instance has a weapon_desc saved
+                target_msg += f" with {caller.get_pronoun('|p')} {weapon_desc}"
         if passed_room_msg:  # if a custom room message was passed
             room_msg = passed_room_msg
         else:  # no custom room message was passed
             room_msg = f"{caller.usdesc} {cmd_desc} at {target.usdesc}"
-            if caller_weapon:  # if the Command instance has a caller_weapon saved
-                room_msg += f" with {caller.get_pronoun('|p')} {caller_weapon}"
+            if weapon_desc:  # if the Command instance has a weapon_desc saved
+                room_msg += f" with {caller.get_pronoun('|p')} {weapon_desc}"
         if result > 0:  # the action hit
             # get the body part that was hit
             part_hit = self.get_body_part()

@@ -190,6 +190,29 @@ class TestCommands(CommandTest):
         cmd_result = self.call(command(), arg)
         self.assertRegex(cmd_result, wanted_message)
 
+    # test one_handed skillset
+        command = developer_cmds.CmdMultiCmd
+        arg = "= get sword, complete_cmd_early"
+        wanted_message = "You pick up a sword"
+        cmd_result = self.call(command(), arg, caller=self.char1)
+        self.assertRegex(cmd_result, wanted_message)
+        arg = "= wield sword"
+        wanted_message = "You wield a sword in your"
+        cmd_result = self.call(command(), arg, caller=self.char1)
+        self.assertRegex(cmd_result, wanted_message)
+
+        # test the stab command
+        command = developer_cmds.CmdMultiCmd
+        arg = "= stab char2, complete_cmd_early"
+        wanted_message = 'You will be busy for \\d+ seconds.\nFacing Char2 Char raises a sword preparing an attack.\nstab \\d+ VS evade \\d+: You stab at Char2.*'
+        cmd_result = self.call(command(), arg)
+        self.assertRegex(cmd_result, wanted_message)
+
+        arg = "= drop sword"
+        wanted_message = "You drop a sword"
+        cmd_result = self.call(command(), arg, caller=self.char1)
+        self.assertRegex(cmd_result, wanted_message)
+
     # test clothing commands
         # test character with empty inventory
         command = developer_cmds.CmdMultiCmd
@@ -398,6 +421,9 @@ class TestCommands(CommandTest):
         wanted_message = "You drop a sword"
         cmd_result = self.call(command(), arg, caller=self.char1)
         self.assertRegex(cmd_result, wanted_message)
+        # make certain it is not wielded after dropping
+        items_equipped = self.char1.wielding()
+        self.assertFalse(self.sword in items_equipped)
         # make certain wield & unwield room messages are correct
         command = developer_cmds.CmdMultiCmd
         arg = "= get sword, complete_cmd_early"
@@ -427,11 +453,10 @@ class TestCommands(CommandTest):
         hands_state = self.char1.hands()
         self.assertNotEqual(hands_state[0].occupied, sword_dbref)
         self.assertNotEqual(hands_state[1].occupied, sword_dbref)
-
-        #arg = "= drop sword"
-        #wanted_message = "Char drops a sword"
-        #cmd_result = self.call(command(), arg, caller=self.char1, receiver=self.char2)
-        #self.assertRegex(cmd_result, wanted_message)
+        # remake the sword
+        self.sword = create_object(OneHandedWeapon, key="a sword")
+        self.sword.targetable = True
+        self.sword.location = self.char1.location
 
         # test method get_body_part
         command = developer_cmds.CmdCmdFuncTest

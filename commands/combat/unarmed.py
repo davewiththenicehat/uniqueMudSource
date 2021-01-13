@@ -95,7 +95,7 @@ class CmdPunch(UnarmedCommand):
 
         Automatically called at the end of Command.func
         """
-        self.caller_weapon = "fist"  # weapon name that will show up in Command.combat_action's automated messages
+        self.weapon_desc = "fist"  # weapon description that will show up in Command.combat_action's automated messages
         caller_pronoun = self.caller.get_pronoun('|a')
         message = f"Facing {self.target.usdesc} {self.caller.usdesc} pulls {caller_pronoun} hand back preparing an attack."
         self.caller.location.msg_contents(message)
@@ -135,7 +135,7 @@ class CmdKick(UnarmedCommand):
         """
         target = self.target
         caller = self.caller
-        self.caller_weapon = "foot"  # weapon name that will show up in Command.combat_action's automated messages
+        self.weapon_desc = "foot"  # weapon description that will show up in Command.combat_action's automated messages
         caller_pronoun = self.caller.get_pronoun('|a')
         message = f"Facing {target.usdesc} {caller.usdesc} lifts {caller_pronoun} knee up preparing an attack."
         caller.location.msg_contents(message)

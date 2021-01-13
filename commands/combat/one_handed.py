@@ -29,9 +29,10 @@ class OneHandedCommand(Command):
     help_category = "one handed"
     target_required = True  # if True and the command has no target, Command.func will stop execution and message the player
     cmd_type = 'one_handed'  # Should be a string of the cmd type. IE: 'evasion' for an evasion cmd
+    required_wielding = "one_handed"  # require a wielded item type for command to work.
+    dmg_max = 1  # the maximum damage this command can cause
     can_not_target_self = True  # if True this command will end with a message if the Character targets themself
     cost_level = 'mid' #  level this action should cost. Acceptable levels: 'low', 'mid', 'high'
-
 
     def at_init(self):
         """
@@ -69,7 +70,6 @@ class CmdStab(OneHandedCommand):
 
     key = "stab"
     defer_time = 3  # time is seconds for the command to wait before running action of command
-    dmg_max = 1  # the maximum damage this command can cause
     desc = "stabs"  # a present tense description for the action of this command. IE: "kicks"
 
     def start_message(self):
@@ -79,8 +79,8 @@ class CmdStab(OneHandedCommand):
         Automatically called at the end of Command.func
         """
         caller_pronoun = self.caller.get_pronoun('|a')
-        message = f"Facing {self.target.usdesc} {self.caller.usdesc} raises {caller_pronoun} " \
-                  f"{self.caller_weapon} back preparing an attack."
+        message = f"Facing {self.target.usdesc} {self.caller.usdesc} raises " \
+                  f"{self.weapon_desc} preparing an attack."
         self.caller.location.msg_contents(message)
 
     def deferred_action(self):
