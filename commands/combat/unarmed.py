@@ -85,7 +85,7 @@ class CmdPunch(UnarmedCommand):
 
     key = "punch"
     defer_time = 3  # time is seconds for the command to wait before running action of command
-    dmg_max = 2  # the maximum damage this command can cause
+    dmg_max = 2  # the maximum damage this command can roll
     cmd_type = 'unarmed'  # Should be a string of the command type. IE: 'evasion' for an evasion command
     desc = "punches"  # a present tense description for the action of this command. IE: "kicks"
 
@@ -123,7 +123,7 @@ class CmdKick(UnarmedCommand):
 
     key = "kick"
     defer_time = 5  # time is seconds for the command to wait before running action of command
-    dmg_max = 4  # the maximum damage this command can cause
+    dmg_max = 4  # the maximum damage this command can roll
     desc = "kicks"  # a present tense description for the action of this command. IE: "kicks"
     cost_level = 'high' #  level this action should cost. Acceptable levels: 'low', 'mid', 'high'
 

@@ -116,7 +116,8 @@ class Command(default_cmds.MuxCommand):
             This is a local or instance attribute. Not a class attribute.
             Automatically collected in Command.at_pre_cmd
         roll_max = 50  # max number this command can roll to succeed
-        dmg_max = 4  # the maximum damage this command can cause
+        dmg_max = 4  # the maximum damage this command can roll
+            This is a local or instance attribute. Not a class attribute.
         cmd_type = False  # Should be a string of the cmd type. IE: 'evasion' for an evasion cmd
         begins_to_or_at = False  # becomes string "to" or "at" if the commands arguments starts with "to " or "at "
             This is a local or instance attribute. Not a class attribute.
@@ -197,7 +198,6 @@ class Command(default_cmds.MuxCommand):
     evade_mod_stat = 'AGI'  # stat used to evade this command
     action_mod_stat = 'OBS'  # stat used to modify this command
     roll_max = 50  # max number this command can roll to succeed
-    dmg_max = 4  # the maximum damage this command can cause
     dmg_mod_stat = 'STR'  # the stat that will modifier damage this command manipulates
     target_required = False  # if True and the command has no target, Command.func will stop execution and message the player
     can_not_target_self = False  # if True this command will end with a message if the Character targets themself
@@ -252,6 +252,7 @@ class Command(default_cmds.MuxCommand):
         self.dmg_types = None  # dictionary of damage types this command can manipulate.
         self.weapon_desc = None  # weapon description that will show up in Command.combat_action's automated messages
         self.caller_weapon = None  # instance of the caller's wielded weapon from requires_wielding
+        dmg_max = 4  # the maximum damage this command can roll
 
     def parse(self):
         """
@@ -298,6 +299,7 @@ class Command(default_cmds.MuxCommand):
         stops the command if targeting self an self.can_not_target_self is True
         stops the commnad if the targets self.targetable is False
         sets the commands self.desc to self.key if desc was not set manually
+        collects an instance of wielded weapon of same type as command
         collects self.caller_weapon if self.requires_wielding is set.
 
 
@@ -398,6 +400,7 @@ class Command(default_cmds.MuxCommand):
                 if item.item_type == self.cmd_type:
                     self.caller_weapon = item
                     self.weapon_desc = item.usdesc
+                    self.dmg_max = item.dmg_max
                     requires_wielding_unfound = False
                     break
             if requires_wielding_unfound:

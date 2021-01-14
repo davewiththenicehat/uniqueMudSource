@@ -200,7 +200,6 @@ class TestCommands(CommandTest):
         wanted_message = "You wield a sword in your"
         cmd_result = self.call(command(), arg, caller=self.char1)
         self.assertRegex(cmd_result, wanted_message)
-
         # test the stab command
         command = developer_cmds.CmdMultiCmd
         arg = "= stab char2, complete_cmd_early"

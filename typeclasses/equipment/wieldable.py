@@ -71,6 +71,26 @@ class Weapon(Wieldable):
     def dmg_types(self):
         self._dmg_types.delete()
 
+    @property
+    def dmg_max(self):
+        """
+        Stores the max damage this weapon can roll
+        This property auto initializes to 4.
+
+        Forwards to the database with, self.db.dmg_max.
+        """
+        value = getattr(self.db, 'dmg_max', False)
+        if value:
+            return value
+        else:
+            self.db.dmg_max = 4
+            return 4
+    @dmg_max.setter
+    def dmg_max(self, value):
+        self.db.dmg_max = value
+    @dmg_max.deleter
+    def dmg_max(self):
+        delattr(self.db, 'dmg_max')
 
     def get_dmg_mods(self):
         """
