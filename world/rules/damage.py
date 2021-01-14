@@ -119,7 +119,7 @@ def get_dmg_after_dr(command, dmg_dealt=None, max_defense=False, body_part=None,
 
     Notes:
         unit tests for this are in commands.tests
-        If the command has required_wielding is set.
+        If the command has requires_wielding is set.
             The required item's dmg_types are added to the command's
             A key is only updated if it has a value other than 0.
             When a key is updated. If their was an existing key in the command.
@@ -188,7 +188,7 @@ def get_dmg_after_dr(command, dmg_dealt=None, max_defense=False, body_part=None,
         #   - command.dmg_type value
 
         # add a wielded item's damage modifier's to the command's
-        if command.required_wielding:  # if the command requires a wielded item
+        if command.requires_wielding:  # if the command requires a wielded item
             item_dmg_types = command.caller_weapon.get_dmg_mods()  # dictionay of item dmg_types
             # add the wielded item's damage modifiers to the command's
             for item_dmg_type, item_dmg_mod in item_dmg_types.items():

@@ -29,7 +29,7 @@ class OneHandedCommand(Command):
     help_category = "one handed"
     target_required = True  # if True and the command has no target, Command.func will stop execution and message the player
     cmd_type = 'one_handed'  # Should be a string of the cmd type. IE: 'evasion' for an evasion cmd
-    required_wielding = "one_handed"  # require a wielded item type for command to work.
+    requires_wielding = True  # If True this command will require a wielded item that matches Command.cmd_type
     dmg_max = 1  # the maximum damage this command can cause
     can_not_target_self = True  # if True this command will end with a message if the Character targets themself
     cost_level = 'mid' #  level this action should cost. Acceptable levels: 'low', 'mid', 'high'

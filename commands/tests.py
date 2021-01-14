@@ -523,7 +523,8 @@ class TestCommands(CommandTest):
         cmd_result = self.call(command(), arg, caller=self.char1)
         self.assertRegex(cmd_result, wanted_message)
         command = developer_cmds.CmdCmdFuncTest
-        command.required_wielding = 'one_handed'
+        command.requires_wielding = True
+        command.cmd_type = 'one_handed'
         arg = "/r dmg_after_dr, char = 7, True, head"
         wanted_message = r"dmg_after_dr returned: 3"
         cmd_result = self.call(command(), arg, wanted_message)
