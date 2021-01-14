@@ -9,6 +9,8 @@ Attributes:
 
 Modules:
     roll, Get a damage roll adjusted by a character's damage stat modifier.
+    get_dmg_after_dr, Get a command's damage dealt after the command's target's damage reduction
+    restoration_roll, Get a number to restore health on an object
 
 Notes
     A list of damage types:
@@ -117,6 +119,12 @@ def get_dmg_after_dr(command, dmg_dealt=None, max_defense=False, body_part=None,
 
     Notes:
         unit tests for this are in commands.tests
+        If the command has required_wielding is set.
+            The required item's dmg_types are added to the command's
+            A key is only updated if it has a value other than 0.
+            When a key is updated. If their was an existing key in the command.
+                The command's and the item's dmg_type values are added together, before the
+                command's dmg_types key is updated.
 
     Returns:
         damage dealt after dr for the body part hit after the targets damage reduction.
@@ -125,11 +133,14 @@ def get_dmg_after_dr(command, dmg_dealt=None, max_defense=False, body_part=None,
         The minimum value this function returns is 0.
 
     equation:
-        Each action has a list of damage types they can manipulate.
+        Each action has a list of damage types it can manipulate.
         By default the damage type that does the most damage is chosen.
-        If argument max_defense is True, the type that does the least damage is chosen.
+        Some actions instead choose the least possible damage.
 
-        Action's damage is reduced by
+        An actions's damage is increase by
+            A wielded item that is required for the action.
+            The item's list of damage types is added to the actions.
+        An action's damage is reduced by
             targets dr value
             If the action hit a body part.
             That body part's dr value is also used to reduce damage.
@@ -144,6 +155,7 @@ def get_dmg_after_dr(command, dmg_dealt=None, max_defense=False, body_part=None,
             dmg_dealt = roll(command)  # get a random damage roll, none was provided
     # decalare default variable values
     dmg_type_mods = {}
+    dmg_types = {}
     result = 0
     dmg_red_type = 'no type'
     # If the body_part is a string, get an instance of the part
@@ -174,6 +186,20 @@ def get_dmg_after_dr(command, dmg_dealt=None, max_defense=False, body_part=None,
         #   target.dr.dmg_type value
         #   + armor.dr.dmg_type value (on part hit if any)
         #   - command.dmg_type value
+
+        # add a wielded item's damage modifier's to the command's
+        if command.required_wielding:  # if the command requires a wielded item
+            item_dmg_types = command.caller_weapon.get_dmg_mods()  # dictionay of item dmg_types
+            # add the wielded item's damage modifiers to the command's
+            for item_dmg_type, item_dmg_mod in item_dmg_types.items():
+                if item_dmg_mod:  # do not add 0 values to the Command.dmg_types dictionary
+                    cmd_dmg_mod = command.dmg_types.get(item_dmg_type)
+                    if cmd_dmg_mod:
+                        cmd_dmg_mod += item_dmg_mod
+                    else:  # if the key did not exist or value was 0
+                        cmd_dmg_mod = item_dmg_mod
+                    command.dmg_types.update({item_dmg_type: cmd_dmg_mod})
+        # collect the command's damage types and modifiers into a dictionary
         for dmg_type, cmd_dmg_mod in command.dmg_types.items():
             body_part_dr_value = 0
             if body_part:  # if the object had that body part

@@ -297,6 +297,7 @@ class Command(default_cmds.MuxCommand):
         stops the command if targeting self an self.can_not_target_self is True
         stops the commnad if the targets self.targetable is False
         sets the commands self.desc to self.key if desc was not set manually
+        collects self.caller_weapon if self.required_wielding is set.
 
 
         Notes:

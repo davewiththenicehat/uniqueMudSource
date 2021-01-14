@@ -510,6 +510,27 @@ class TestCommands(CommandTest):
         arg = "/r dmg_after_dr, char = 7, True, head"
         wanted_message = r"dmg_after_dr returned: 2"
         cmd_result = self.call(command(), arg, wanted_message)
+        # test adding a weapon to the equation
+        self.sword.dmg_types.ACD = 1
+        command = developer_cmds.CmdMultiCmd
+        arg = "= get sword, complete_cmd_early"
+        wanted_message = "Char picks up a sword"
+        cmd_result = self.call(command(), arg, caller=self.char1, receiver=self.char2)
+        self.assertRegex(cmd_result, wanted_message)
+        command = developer_cmds.CmdMultiCmd
+        arg = "= wield sword"
+        wanted_message = "You wield a sword in your"
+        cmd_result = self.call(command(), arg, caller=self.char1)
+        self.assertRegex(cmd_result, wanted_message)
+        command = developer_cmds.CmdCmdFuncTest
+        command.required_wielding = 'one_handed'
+        arg = "/r dmg_after_dr, char = 7, True, head"
+        wanted_message = r"dmg_after_dr returned: 3"
+        cmd_result = self.call(command(), arg, wanted_message)
+        # change the sword's ACD modifier, damage should change by the adjustment
+        self.sword.dmg_types.ACD = 2
+        wanted_message = r"dmg_after_dr returned: 4"
+        cmd_result = self.call(command(), arg, wanted_message)
 
         # test sit stand lay also tests Character.set_position
         command = developer_cmds.CmdMultiCmd
