@@ -41,10 +41,7 @@ class UnarmedCommand(Command):
         Created to bulk set local none class attributes.
         This allows for adjusting attributes on the object instances and not having those changes
         shared among all instances of the Command.
-
-        If overridden call super().at_init()
         """
-        super().at_init()  # uncomment when overridden
         self.dmg_types = {'BLG': 0}  # dictionary of damage types this command can manipulate.
         self.unarmed_str_mod = 0  # half of the unarmed command caller's strength modifier
         self.target_required = True  # if True and the command has no target, Command.func will stop execution and message the player
@@ -91,10 +88,8 @@ class CmdPunch(UnarmedCommand):
         Created to bulk set local none class attributes.
         This allows for adjusting attributes on the object instances and not having those changes
         shared among all instances of the Command.
-
-        If overridden call super().at_init()
         """
-        super().at_init()  # uncomment when overridden
+        super().at_init()
         self.desc = "punches"  # a present tense description for the action of this command. IE: "kicks"
 
     def start_message(self):
@@ -138,10 +133,8 @@ class CmdKick(UnarmedCommand):
         Created to bulk set local none class attributes.
         This allows for adjusting attributes on the object instances and not having those changes
         shared among all instances of the Command.
-
-        If overridden call super().at_init()
         """
-        super().at_init()  # uncomment when overridden
+        super().at_init()
         self.defer_time = 5  # time is seconds for the command to wait before running action of command
         self.desc = "kicks"  # a present tense description for the action of this command. IE: "kicks"
         self.cost_level = 'high' #  level this action should cost. Acceptable levels: 'low', 'mid', 'high'

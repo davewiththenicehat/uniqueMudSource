@@ -177,7 +177,6 @@ class Command(default_cmds.MuxCommand):
     Methods:
         All methods are fully documented in their docstrings.
         at_init, Called when the Command object is initialized.
-            If overridden call super().at_init() within the method.
         func, To more seamlessly support UniqueMud's deffered command system, evennia's Command.func has been overridden.
         defer(int or float), defer the action of a command by calling Command.deferred_action after the number of seconds passed to defer
         deferred_action(), override to commit the action of a command to a later time.
@@ -204,18 +203,6 @@ class Command(default_cmds.MuxCommand):
         """
         if kwargs:
             super().__init__(self, **kwargs)
-        self.at_init()
-
-    def at_init(self):
-        """
-        Called when the Command object is initialized.
-        Created to bulk set local none class attributes.
-        This allows for adjusting attributes on the object instances and not having those changes
-        shared among all instances of the Command.
-
-        If overridden call super().at_init()
-        """
-        # super().at_init()  # uncomment when overridden
         self.dmg_types = None  # dictionary of damage types this command can manipulate.
         self.weapon_desc = None  # weapon description that will show up in Command.combat_action's automated messages
         self.caller_weapon = None  # instance of the caller's wielded weapon from requires_wielding
@@ -247,6 +234,16 @@ class Command(default_cmds.MuxCommand):
         self.cost_stat = 'END'  # stat this command will use for the action's cost
         self.cost_level = None  # level this action should cost. Acceptable levels: 'low', 'mid', 'high'
         self.log = False  # set to true to info logging should be enabled. Error and warning messages are always enabled.
+        self.at_init()
+
+    def at_init(self):
+        """
+        Called when the Command object is initialized.
+        Created to bulk set local none class attributes.
+        This allows for adjusting attributes on the object instances and not having those changes
+        shared among all instances of the Command.
+        """
+        pass
 
     def parse(self):
         """

@@ -51,10 +51,7 @@ class CmdDeferCmd(Command):
         Created to bulk set local none class attributes.
         This allows for adjusting attributes on the object instances and not having those changes
         shared among all instances of the Command.
-
-        If overridden call super().at_init()
         """
-        super().at_init()  # uncomment when overridden
         self.defer_time = 5  # time is seconds for the command to wait before running action of command
         self.requires_ready = False
         self.requires_conscious = False  # if true this command requires the caller to be conscious
@@ -93,10 +90,7 @@ class CmdInterruptCmd(Command):
         Created to bulk set local none class attributes.
         This allows for adjusting attributes on the object instances and not having those changes
         shared among all instances of the Command.
-
-        If overridden call super().at_init()
         """
-        super().at_init()  # uncomment when overridden
         self.requires_ready = False
         self.requires_conscious = False  # if true this command requires the caller to be conscious
 
@@ -141,10 +135,7 @@ class CmdStopCmd(Command):
         Created to bulk set local none class attributes.
         This allows for adjusting attributes on the object instances and not having those changes
         shared among all instances of the Command.
-
-        If overridden call super().at_init()
         """
-        super().at_init()  # uncomment when overridden
         self.defer_time = 5  # time is seconds for the command to wait before running action of command
         self.requires_ready = False
         self.requires_conscious = False  # if true this command requires the caller to be conscious
@@ -182,10 +173,7 @@ class CmdCompleteCmdEarly(Command):
         Created to bulk set local none class attributes.
         This allows for adjusting attributes on the object instances and not having those changes
         shared among all instances of the Command.
-
-        If overridden call super().at_init()
         """
-        super().at_init()  # uncomment when overridden
         self.defer_time = 5  # time is seconds for the command to wait before running action of command
         self.requires_ready = False
         self.requires_conscious = False  # if true this command requires the caller to be conscious
@@ -220,10 +208,7 @@ class CmdTestCmd(Command):
         Created to bulk set local none class attributes.
         This allows for adjusting attributes on the object instances and not having those changes
         shared among all instances of the Command.
-
-        If overridden call super().at_init()
         """
-        super().at_init()  # uncomment when overridden
         self.defer_time = 5  # time is seconds for the command to wait before running action of command
         self.requires_ready = False
         self.requires_conscious = False  # if true this command requires the caller to be conscious
@@ -256,10 +241,7 @@ class CmdStunSelf(Command):
         Created to bulk set local none class attributes.
         This allows for adjusting attributes on the object instances and not having those changes
         shared among all instances of the Command.
-
-        If overridden call super().at_init()
         """
-        super().at_init()  # uncomment when overridden
         self.defer_time = 5  # time is seconds for the command to wait before running action of command
         self.requires_ready = False
         self.requires_conscious = False  # if true this command requires the caller to be conscious
@@ -291,10 +273,7 @@ class CmdStopStun(Command):
         Created to bulk set local none class attributes.
         This allows for adjusting attributes on the object instances and not having those changes
         shared among all instances of the Command.
-
-        If overridden call super().at_init()
         """
-        super().at_init()  # uncomment when overridden
         self.defer_time = 5  # time is seconds for the command to wait before running action of command
         self.requires_ready = False
         self.requires_conscious = False  # if true this command requires the caller to be conscious
@@ -337,10 +316,7 @@ class CmdMultiCmd(Command):
         Created to bulk set local none class attributes.
         This allows for adjusting attributes on the object instances and not having those changes
         shared among all instances of the Command.
-
-        If overridden call super().at_init()
         """
-        super().at_init()  # uncomment when overridden
         self.defer_time = 5  # time is seconds for the command to wait before running action of command
         self.requires_ready = False
         self.requires_conscious = False  # if true this command requires the caller to be conscious
@@ -382,10 +358,7 @@ class CmdViewObj(Command):
         Created to bulk set local none class attributes.
         This allows for adjusting attributes on the object instances and not having those changes
         shared among all instances of the Command.
-
-        If overridden call super().at_init()
         """
-        super().at_init()  # uncomment when overridden
         self.defer_time = 5  # time is seconds for the command to wait before running action of command
         self.requires_ready = False
         self.requires_conscious = False  # if true this command requires the caller to be conscious
@@ -456,10 +429,7 @@ class CmdContrlOther(Command):
         Created to bulk set local none class attributes.
         This allows for adjusting attributes on the object instances and not having those changes
         shared among all instances of the Command.
-
-        If overridden call super().at_init()
         """
-        super().at_init()  # uncomment when overridden
         self.defer_time = 5  # time is seconds for the command to wait before running action of command
         self.requires_ready = False
         self.requires_conscious = False  # if true this command requires the caller to be conscious
@@ -521,10 +491,7 @@ class CmdCmdFuncTest(Command):
         Created to bulk set local none class attributes.
         This allows for adjusting attributes on the object instances and not having those changes
         shared among all instances of the Command.
-
-        If overridden call super().at_init()
         """
-        super().at_init()  # uncomment when overridden
         # this is needed for testing function Command.dmg_after_dr
         self.dmg_types = {"ACD": 1, "PRC": 0}  # dictionary of damage types this command can manipulate.
         self.requires_ready = False

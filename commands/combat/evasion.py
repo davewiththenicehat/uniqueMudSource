@@ -41,10 +41,7 @@ class EvasionCommand(Command):
         Created to bulk set local none class attributes.
         This allows for adjusting attributes on the object instances and not having those changes
         shared among all instances of the Command.
-
-        If overridden call super().at_init()
         """
-        super().at_init()  # uncomment when overridden
         self.cmd_type = 'evasion'  # Should be a string of the cmd type. IE: 'evasion' for an evasion cmd
         self.cost_level = 'low' #  level this action should cost. Acceptable levels: 'low', 'mid', 'high'
 
@@ -81,8 +78,6 @@ class CmdDodge(EvasionCommand):
         Created to bulk set local none class attributes.
         This allows for adjusting attributes on the object instances and not having those changes
         shared among all instances of the Command.
-
-        If overridden call super().at_init()
         """
         super().at_init()  # uncomment when overridden
         self.defer_time = 10  # time is seconds for the command to wait before running action of command

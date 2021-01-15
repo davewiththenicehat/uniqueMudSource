@@ -150,10 +150,7 @@ class CmdWield(Command):
         Created to bulk set local none class attributes.
         This allows for adjusting attributes on the object instances and not having those changes
         shared among all instances of the Command.
-
-        If overridden call super().at_init()
         """
-        super().at_init()  # uncomment when overridden
         self.target_required = True  # if True and the command has no target, Command.func will stop execution and message the player
         self.can_not_target_self = True  # if True this command will end with a message if the Character targets themself
         # a tuple, position 0 string of a class type, position 1 is a string to show on mismatch
@@ -209,10 +206,7 @@ class CmdUnwield(Command):
         Created to bulk set local none class attributes.
         This allows for adjusting attributes on the object instances and not having those changes
         shared among all instances of the Command.
-
-        If overridden call super().at_init()
         """
-        super().at_init()  # uncomment when overridden
         self.target_required = True  # if True and the command has no target, Command.func will stop execution and message the player
         self.can_not_target_self = True  # if True this command will end with a message if the Character targets themself
         # a tuple, position 0 string of a class type, position 1 is a string to show on mismatch

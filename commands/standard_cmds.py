@@ -64,10 +64,7 @@ class CmdStatus(Command):
         Created to bulk set local none class attributes.
         This allows for adjusting attributes on the object instances and not having those changes
         shared among all instances of the Command.
-
-        If overridden call super().at_init()
         """
-        super().at_init()  # uncomment when overridden
         self.requires_ready = False  # if true this command requires the ready status before it can do anything. deferal commands still require ready to defer
         self.requires_conscious = False  # if true this command requires the caller to be conscious
 
@@ -149,10 +146,7 @@ class CmdLook(EvCmdLook, Command):
         Created to bulk set local none class attributes.
         This allows for adjusting attributes on the object instances and not having those changes
         shared among all instances of the Command.
-
-        If overridden call super().at_init()
         """
-        super().at_init()  # uncomment when overridden
         self.requires_ready = False  # if true this command requires the ready status before it can do anything. deferal commands still require ready to defer
 
     def func(self):
@@ -327,10 +321,7 @@ class CmdSay(Command):
         Created to bulk set local none class attributes.
         This allows for adjusting attributes on the object instances and not having those changes
         shared among all instances of the Command.
-
-        If overridden call super().at_init()
         """
-        super().at_init()  # uncomment when overridden
         self.requires_ready = False  # if true this command requires the ready status before it can do anything. deferal commands still require ready to defer
 
     def func(self):
@@ -424,10 +415,7 @@ class CmdWhisper(Command):
         Created to bulk set local none class attributes.
         This allows for adjusting attributes on the object instances and not having those changes
         shared among all instances of the Command.
-
-        If overridden call super().at_init()
         """
-        super().at_init()  # uncomment when overridden
         self.target_required = True  # if True and the command has no target, Command.func will stop execution and message the player
 
     def func(self):
@@ -522,10 +510,7 @@ class CmdDrop(Command):
         Created to bulk set local none class attributes.
         This allows for adjusting attributes on the object instances and not having those changes
         shared among all instances of the Command.
-
-        If overridden call super().at_init()
         """
-        super().at_init()  # uncomment when overridden
         self.target_required = True  # if True and the command has no target, Command.func will stop execution and message the player
         self.search_caller_only = True  # if True the command will only search the caller for targets
         self.requires_ready = False  # if true this command requires the ready status before it can do anything. deferal commands still require ready to defer
@@ -581,10 +566,7 @@ class CmdGet(Command):
         Created to bulk set local none class attributes.
         This allows for adjusting attributes on the object instances and not having those changes
         shared among all instances of the Command.
-
-        If overridden call super().at_init()
         """
-        super().at_init()  # uncomment when overridden
         self.defer_time = 1  # time is seconds for the command to wait before running action of command
         self.target_required = True  # if True and the command has no target, Command.func will stop execution and message the player
         self.can_not_target_self = True  # if True this command will end with a message if the Character targets themself
@@ -690,10 +672,7 @@ class CmdInventory(Command):
         Created to bulk set local none class attributes.
         This allows for adjusting attributes on the object instances and not having those changes
         shared among all instances of the Command.
-
-        If overridden call super().at_init()
         """
-        super().at_init()  # uncomment when overridden
         self.defer_time = 1  # time is seconds for the command to wait before running action of command
 
     def start_message(self):
@@ -767,10 +746,7 @@ class CmdSit(Command):
         Created to bulk set local none class attributes.
         This allows for adjusting attributes on the object instances and not having those changes
         shared among all instances of the Command.
-
-        If overridden call super().at_init()
         """
-        super().at_init()  # uncomment when overridden
         self.defer_time = 1  # time is seconds for the command to wait before running action of command
 
     def at_pre_cmd(self):
@@ -863,10 +839,7 @@ class CmdLay(Command):
         Created to bulk set local none class attributes.
         This allows for adjusting attributes on the object instances and not having those changes
         shared among all instances of the Command.
-
-        If overridden call super().at_init()
         """
-        super().at_init()  # uncomment when overridden
         self.defer_time = 1  # time is seconds for the command to wait before running action of command
 
     def at_pre_cmd(self):
