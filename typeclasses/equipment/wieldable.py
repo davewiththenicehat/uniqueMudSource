@@ -8,13 +8,18 @@ from utils.element import ListElement
 
 
 
-# used to refer to the clothing class, to make this easier to create instances of
+# used in wield and unwield commands to require an item type for those commands.
 WIELDABLE_OBJECT_CLASS = "typeclasses.equipment.wieldable.Wieldable"
 
 
 class Wieldable(Object):
     """
     Used to represent an object that can be equipped or wielded
+
+    Attributes:
+        item_type='unset', string of the type of item this is.
+            item types must match command set names in world.rules.skills.SKILLS
+            IE: 'one_handed'
     """
 
     @property
@@ -43,10 +48,15 @@ class Wieldable(Object):
 class Weapon(Wieldable):
     """
     Object that can be used to add to attack action's damage.
+    Inherits typeclasses.equipment.wieldable.Wieldable
 
+    Attributes:
     dmg_types = ListElement  # ListElement of damage types this weapon can manipulate.
-        If a weapon has no dmg_types, attack actions will only use their base dmg_types attribute.
+        If a weapon has no dmg_types, attack Commands will only use their base dmg_types attribute.
         value is a flat bonus this weapon will add to attack actions of that dmg_type.
+    dmg_max = 4  # the maximum damage this weapon can roll
+        This number will replace Command.dmg_max when a command requiring the item_type is run
+
     """
 
     @property

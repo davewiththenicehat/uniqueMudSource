@@ -1,6 +1,21 @@
 """
 contains functions and variables that interact with game damage.
 
+Equation:
+    Command.max_dmg is used to determine the max damage that command can randomly roll.
+    item.max_dmg replaced Command.max_dmg if the command requires a wielded weapon.
+        item.max_dmg defaults to 4
+    damage.roll will roll a random number between 1 and command.max_dmg
+        adding the Characters.TYPE_dmg_mod where TYPE is Command.dmg_mod_stat
+            Default is 'STR'
+            dmg_mod is option but is added by default.
+            dmg_mod can be a negative number
+    Command.dmg_types and item.dmg_types are merged, and their values are added together.
+        The value of each damage type is added as a flat bonus to the damage.
+    The Character receiving the damage has a corrisponding damage types in Character.dr.TYPE.
+    damage.dmg_after_dr finds the Command.dmg_type that does the most damage and returns that number
+        It has an option to instead return the least damaging attack.
+
 Attributes:
     MAP_DICT = dict, a mapping of damage types and full names
         aliase: MAP

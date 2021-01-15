@@ -178,8 +178,8 @@ class Command(default_cmds.MuxCommand):
         All methods are fully documented in their docstrings.
         func, To more seamlessly support UniqueMud's deffered command system, evennia's Command.func has been overridden.
         defer(int or float), defer the action of a command by calling Command.deferred_action after the number of seconds passed to defer
-        Command.deferred_action(), override to commit the action of a command to a later time.
-        start_message, Displays a message after a command has been successfully deffered.
+        deferred_action(), override to commit the action of a command to a later time.
+        start_message(), Displays a message after a command has been successfully deffered.
         stop_request(self, target, stop_message, stop_cmd), request a Character to stop a deffered command early
         stop_forced(self, target, stop_message, stop_cmd, status_type), force a character to stop a deffered command early
         complete_early(self, target, stop_message), make a Character to complete a deffered command early
@@ -190,6 +190,7 @@ class Command(default_cmds.MuxCommand):
         dmg_after_dr(dmg_dealt=None, body_part_name=None), Returns damage dealt after damage reduction.
         combat_action(action_mod=None, caller_msg=None, target_msg=None, room_msg=None, log=None),
             A command method intended to be a used to easily facilitate basic combat actions.
+        cost(cost_level='low', cost_stat='END'), Calculate and remove the cost of this Command
         target_bad(target=object), returns True if object passed is not targetable by this command
         target_search(target_name=str), Search for an instance of a target.
     """
@@ -299,9 +300,13 @@ class Command(default_cmds.MuxCommand):
         stops the command if targeting self an self.can_not_target_self is True
         stops the commnad if the targets self.targetable is False
         sets the commands self.desc to self.key if desc was not set manually
-        collects an instance of wielded weapon of same type as command
-        collects self.caller_weapon if self.requires_wielding is set.
-
+        if Command.required_wielding is True
+            collects an instance of wielded weapon of same type as command in Command.caller_weapon
+                IE: For an item to be accepted item.item_type == command.cmd_type
+            Command.weapon_desc is set to item.usdesc
+            Command.dmg_max is set to item.dmg_max
+            item.dmg_types is merged with command.dmg_types
+                Where values are added together, not replaced.
 
         Notes:
             if a command starts with "to " or "at ".
