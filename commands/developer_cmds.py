@@ -43,10 +43,21 @@ class CmdDeferCmd(Command):
     key = "defer_cmd"
     help_category = "developer"
     status_type = 'busy'
-    defer_time = 5
     locks = "cmd:perm(Developer)"
-    requires_ready = False
-    requires_conscious = False  # if true this command requires the caller to be conscious
+
+    def at_init(self):
+        """
+        Called when the Command object is initialized.
+        Created to bulk set local none class attributes.
+        This allows for adjusting attributes on the object instances and not having those changes
+        shared among all instances of the Command.
+
+        If overridden call super().at_init()
+        """
+        super().at_init()  # uncomment when overridden
+        self.defer_time = 5  # time is seconds for the command to wait before running action of command
+        self.requires_ready = False
+        self.requires_conscious = False  # if true this command requires the caller to be conscious
 
     def func(self):
         defer_successful = self.defer()
@@ -75,8 +86,19 @@ class CmdInterruptCmd(Command):
     key = "interrupt_cmd"
     help_category = "developer"
     locks = "cmd:perm(Developer)"
-    requires_ready = False
-    requires_conscious = False  # if true this command requires the caller to be conscious
+
+    def at_init(self):
+        """
+        Called when the Command object is initialized.
+        Created to bulk set local none class attributes.
+        This allows for adjusting attributes on the object instances and not having those changes
+        shared among all instances of the Command.
+
+        If overridden call super().at_init()
+        """
+        super().at_init()  # uncomment when overridden
+        self.requires_ready = False
+        self.requires_conscious = False  # if true this command requires the caller to be conscious
 
     def func(self):
         target = None
@@ -112,8 +134,20 @@ class CmdStopCmd(Command):
     key = "stop_cmd"
     help_category = "developer"
     locks = "cmd:perm(Developer)"
-    requires_ready = False
-    requires_conscious = False  # if true this command requires the caller to be conscious
+
+    def at_init(self):
+        """
+        Called when the Command object is initialized.
+        Created to bulk set local none class attributes.
+        This allows for adjusting attributes on the object instances and not having those changes
+        shared among all instances of the Command.
+
+        If overridden call super().at_init()
+        """
+        super().at_init()  # uncomment when overridden
+        self.defer_time = 5  # time is seconds for the command to wait before running action of command
+        self.requires_ready = False
+        self.requires_conscious = False  # if true this command requires the caller to be conscious
 
     def func(self):
         target = None
@@ -141,8 +175,20 @@ class CmdCompleteCmdEarly(Command):
     key = "complete_cmd_early"
     help_category = "developer"
     locks = "cmd:perm(Developer)"
-    requires_ready = False
-    requires_conscious = False  # if true this command requires the caller to be conscious
+
+    def at_init(self):
+        """
+        Called when the Command object is initialized.
+        Created to bulk set local none class attributes.
+        This allows for adjusting attributes on the object instances and not having those changes
+        shared among all instances of the Command.
+
+        If overridden call super().at_init()
+        """
+        super().at_init()  # uncomment when overridden
+        self.defer_time = 5  # time is seconds for the command to wait before running action of command
+        self.requires_ready = False
+        self.requires_conscious = False  # if true this command requires the caller to be conscious
 
     def func(self):
         target = None
@@ -167,8 +213,20 @@ class CmdTestCmd(Command):
     key = "test_cmd"
     help_category = "developer"
     locks = "cmd:perm(Developer)"
-    requires_ready = False
-    requires_conscious = False  # if true this command requires the caller to be conscious
+
+    def at_init(self):
+        """
+        Called when the Command object is initialized.
+        Created to bulk set local none class attributes.
+        This allows for adjusting attributes on the object instances and not having those changes
+        shared among all instances of the Command.
+
+        If overridden call super().at_init()
+        """
+        super().at_init()  # uncomment when overridden
+        self.defer_time = 5  # time is seconds for the command to wait before running action of command
+        self.requires_ready = False
+        self.requires_conscious = False  # if true this command requires the caller to be conscious
 
     def func(self):
         self.caller.msg("Test command ran successfully.")
@@ -191,8 +249,20 @@ class CmdStunSelf(Command):
     key = "stun_self"
     help_category = "developer"
     locks = "cmd:perm(Developer)"
-    requires_ready = False
-    requires_conscious = False  # if true this command requires the caller to be conscious
+
+    def at_init(self):
+        """
+        Called when the Command object is initialized.
+        Created to bulk set local none class attributes.
+        This allows for adjusting attributes on the object instances and not having those changes
+        shared among all instances of the Command.
+
+        If overridden call super().at_init()
+        """
+        super().at_init()  # uncomment when overridden
+        self.defer_time = 5  # time is seconds for the command to wait before running action of command
+        self.requires_ready = False
+        self.requires_conscious = False  # if true this command requires the caller to be conscious
 
     def func(self):
         self.caller.stun(3)
@@ -214,8 +284,20 @@ class CmdStopStun(Command):
     key = "stop_stun"
     help_category = "developer"
     locks = "cmd:perm(Developer)"
-    requires_ready = False
-    requires_conscious = False  # if true this command requires the caller to be conscious
+
+    def at_init(self):
+        """
+        Called when the Command object is initialized.
+        Created to bulk set local none class attributes.
+        This allows for adjusting attributes on the object instances and not having those changes
+        shared among all instances of the Command.
+
+        If overridden call super().at_init()
+        """
+        super().at_init()  # uncomment when overridden
+        self.defer_time = 5  # time is seconds for the command to wait before running action of command
+        self.requires_ready = False
+        self.requires_conscious = False  # if true this command requires the caller to be conscious
 
     def func(self):
         stop_success = self.caller.status_stop('stunned', "Stunned stopped message successful.", 'test_cmd')
@@ -248,8 +330,20 @@ class CmdMultiCmd(Command):
     key = "multi_cmd"
     help_category = "developer"
     locks = "cmd:perm(Developer)"
-    requires_ready = False
-    requires_conscious = False  # if true this command requires the caller to be conscious
+
+    def at_init(self):
+        """
+        Called when the Command object is initialized.
+        Created to bulk set local none class attributes.
+        This allows for adjusting attributes on the object instances and not having those changes
+        shared among all instances of the Command.
+
+        If overridden call super().at_init()
+        """
+        super().at_init()  # uncomment when overridden
+        self.defer_time = 5  # time is seconds for the command to wait before running action of command
+        self.requires_ready = False
+        self.requires_conscious = False  # if true this command requires the caller to be conscious
 
     def func(self):
         commands = self.rhslist
@@ -281,8 +375,20 @@ class CmdViewObj(Command):
     key = "view_obj"
     help_category = "developer"
     locks = "cmd:perm(Developer)"
-    requires_ready = False
-    requires_conscious = False  # if true this command requires the caller to be conscious
+
+    def at_init(self):
+        """
+        Called when the Command object is initialized.
+        Created to bulk set local none class attributes.
+        This allows for adjusting attributes on the object instances and not having those changes
+        shared among all instances of the Command.
+
+        If overridden call super().at_init()
+        """
+        super().at_init()  # uncomment when overridden
+        self.defer_time = 5  # time is seconds for the command to wait before running action of command
+        self.requires_ready = False
+        self.requires_conscious = False  # if true this command requires the caller to be conscious
 
     def view_cache_stat_modifiers(self, target=None):
         if not target:
@@ -343,8 +449,20 @@ class CmdContrlOther(Command):
     key = "control_other"
     help_category = "developer"
     locks = "cmd:perm(Developer)"
-    requires_ready = False
-    requires_conscious = False  # if true this command requires the caller to be conscious
+
+    def at_init(self):
+        """
+        Called when the Command object is initialized.
+        Created to bulk set local none class attributes.
+        This allows for adjusting attributes on the object instances and not having those changes
+        shared among all instances of the Command.
+
+        If overridden call super().at_init()
+        """
+        super().at_init()  # uncomment when overridden
+        self.defer_time = 5  # time is seconds for the command to wait before running action of command
+        self.requires_ready = False
+        self.requires_conscious = False  # if true this command requires the caller to be conscious
 
     def func(self):
         caller = self.caller
@@ -383,8 +501,6 @@ class CmdCmdFuncTest(Command):
     key = "cmd_func_test"
     help_category = "developer"
     locks = "cmd:perm(Developer)"
-    requires_ready = False
-    requires_conscious = False  # if true this command requires the caller to be conscious
 
     def at_init(self):
         """
@@ -398,6 +514,8 @@ class CmdCmdFuncTest(Command):
         super().at_init()  # uncomment when overridden
         # this is needed for testing function Command.dmg_after_dr
         self.dmg_types = {"ACD": 1, "PRC": 0}  # dictionary of damage types this command can manipulate.
+        self.requires_ready = False
+        self.requires_conscious = False  # if true this command requires the caller to be conscious
 
     def func(self):
         caller = self.caller

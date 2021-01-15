@@ -34,8 +34,19 @@ class EvasionCommand(Command):
     """
 
     help_category = 'evasion'
-    cmd_type = 'evasion'  # Should be a string of the cmd type. IE: 'evasion' for an evasion cmd
-    cost_level = 'low' #  level this action should cost. Acceptable levels: 'low', 'mid', 'high'
+
+    def at_init(self):
+        """
+        Called when the Command object is initialized.
+        Created to bulk set local none class attributes.
+        This allows for adjusting attributes on the object instances and not having those changes
+        shared among all instances of the Command.
+
+        If overridden call super().at_init()
+        """
+        super().at_init()  # uncomment when overridden
+        self.cmd_type = 'evasion'  # Should be a string of the cmd type. IE: 'evasion' for an evasion cmd
+        self.cost_level = 'low' #  level this action should cost. Acceptable levels: 'low', 'mid', 'high'
 
     def at_pre_cmd(self):
         """
@@ -63,8 +74,19 @@ class CmdDodge(EvasionCommand):
     """
 
     key = "dodge"
-    defer_time = 10  # time is seconds for the command to wait before running action of command
-    roll_max = 51  # default max roll for evade rolls
+
+    def at_init(self):
+        """
+        Called when the Command object is initialized.
+        Created to bulk set local none class attributes.
+        This allows for adjusting attributes on the object instances and not having those changes
+        shared among all instances of the Command.
+
+        If overridden call super().at_init()
+        """
+        super().at_init()  # uncomment when overridden
+        self.defer_time = 10  # time is seconds for the command to wait before running action of command
+        self.roll_max = 51  # default max roll for evade rolls
 
     def start_message(self):
         """

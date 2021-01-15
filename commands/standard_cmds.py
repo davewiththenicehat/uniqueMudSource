@@ -57,8 +57,19 @@ class CmdStatus(Command):
     """
     key = "stat"
     aliases = ["statistics", "stats"]
-    requires_ready = False  # if true this command requires the ready status before it can do anything. deferal commands still require ready to defer
-    requires_conscious = False  # if true this command requires the caller to be conscious
+
+    def at_init(self):
+        """
+        Called when the Command object is initialized.
+        Created to bulk set local none class attributes.
+        This allows for adjusting attributes on the object instances and not having those changes
+        shared among all instances of the Command.
+
+        If overridden call super().at_init()
+        """
+        super().at_init()  # uncomment when overridden
+        self.requires_ready = False  # if true this command requires the ready status before it can do anything. deferal commands still require ready to defer
+        self.requires_conscious = False  # if true this command requires the caller to be conscious
 
     def func(self):
         caller = self.caller
@@ -127,11 +138,22 @@ class CmdLook(EvCmdLook, Command):
 
     Observes your location or objects in your vicinity.
     """
-    requires_ready = False  # if true this command requires the ready status before it can do anything.
     key = "look"
     aliases = ["l", "ls"]
     locks = "cmd:all()"
     arg_regex = r"\s|$"
+
+    def at_init(self):
+        """
+        Called when the Command object is initialized.
+        Created to bulk set local none class attributes.
+        This allows for adjusting attributes on the object instances and not having those changes
+        shared among all instances of the Command.
+
+        If overridden call super().at_init()
+        """
+        super().at_init()  # uncomment when overridden
+        self.requires_ready = False  # if true this command requires the ready status before it can do anything. deferal commands still require ready to defer
 
     def func(self):
         """
@@ -298,7 +320,18 @@ class CmdSay(Command):
     aliases = ['"', "'"]
     locks = "cmd:all()"
     rhs_split = ('=', '"')
-    requires_ready = False  # if true this command requires the ready status before it can do anything.
+
+    def at_init(self):
+        """
+        Called when the Command object is initialized.
+        Created to bulk set local none class attributes.
+        This allows for adjusting attributes on the object instances and not having those changes
+        shared among all instances of the Command.
+
+        If overridden call super().at_init()
+        """
+        super().at_init()  # uncomment when overridden
+        self.requires_ready = False  # if true this command requires the ready status before it can do anything. deferal commands still require ready to defer
 
     def func(self):
         """Run the say command"""
@@ -384,7 +417,18 @@ class CmdWhisper(Command):
     key = "whisper"
     locks = "cmd:all()"
     rhs_split = ('=', '"')
-    target_required = True  # if True and the command has no target, Command.func will stop execution and message the player
+
+    def at_init(self):
+        """
+        Called when the Command object is initialized.
+        Created to bulk set local none class attributes.
+        This allows for adjusting attributes on the object instances and not having those changes
+        shared among all instances of the Command.
+
+        If overridden call super().at_init()
+        """
+        super().at_init()  # uncomment when overridden
+        self.target_required = True  # if True and the command has no target, Command.func will stop execution and message the player
 
     def func(self):
         """Run the whisper command"""
@@ -471,9 +515,20 @@ class CmdDrop(Command):
     key = "drop"
     locks = "cmd:all()"
     arg_regex = r"\s|$"
-    requires_ready = False  # if true this command requires the ready status before it can do anything.
-    target_required = True  # if True and the command has no target, Command.func will stop execution and message the player
-    search_caller_only = True  # if True the command will only search the caller for targets
+
+    def at_init(self):
+        """
+        Called when the Command object is initialized.
+        Created to bulk set local none class attributes.
+        This allows for adjusting attributes on the object instances and not having those changes
+        shared among all instances of the Command.
+
+        If overridden call super().at_init()
+        """
+        super().at_init()  # uncomment when overridden
+        self.target_required = True  # if True and the command has no target, Command.func will stop execution and message the player
+        self.search_caller_only = True  # if True the command will only search the caller for targets
+        self.requires_ready = False  # if true this command requires the ready status before it can do anything. deferal commands still require ready to defer
 
     def func(self):
         """Implement command"""
@@ -519,9 +574,20 @@ class CmdGet(Command):
     aliases = "grab"
     locks = "cmd:all()"
     arg_regex = r"\s|$"
-    defer_time = 1  # time is seconds for the command to wait before running action of command
-    can_not_target_self = True  # if True this command will end with a message if the Character targets themself
-    target_required = True  # if True and the command has no target, Command.func will stop execution and message the player
+
+    def at_init(self):
+        """
+        Called when the Command object is initialized.
+        Created to bulk set local none class attributes.
+        This allows for adjusting attributes on the object instances and not having those changes
+        shared among all instances of the Command.
+
+        If overridden call super().at_init()
+        """
+        super().at_init()  # uncomment when overridden
+        self.defer_time = 1  # time is seconds for the command to wait before running action of command
+        self.target_required = True  # if True and the command has no target, Command.func will stop execution and message the player
+        self.can_not_target_self = True  # if True this command will end with a message if the Character targets themself
 
     def start_message(self):
         """
@@ -617,7 +683,18 @@ class CmdInventory(Command):
     aliases = ["inv", "i"]
     locks = "cmd:all()"
     arg_regex = r"$"
-    defer_time = 1  # time is seconds for the command to wait before running action of command
+
+    def at_init(self):
+        """
+        Called when the Command object is initialized.
+        Created to bulk set local none class attributes.
+        This allows for adjusting attributes on the object instances and not having those changes
+        shared among all instances of the Command.
+
+        If overridden call super().at_init()
+        """
+        super().at_init()  # uncomment when overridden
+        self.defer_time = 1  # time is seconds for the command to wait before running action of command
 
     def start_message(self):
         """
@@ -683,7 +760,18 @@ class CmdSit(Command):
     key = "sit"
     locks = "cmd:all()"
     arg_regex = r"\s|$"
-    defer_time = 1  # time is seconds for the command to wait before running action of command
+
+    def at_init(self):
+        """
+        Called when the Command object is initialized.
+        Created to bulk set local none class attributes.
+        This allows for adjusting attributes on the object instances and not having those changes
+        shared among all instances of the Command.
+
+        If overridden call super().at_init()
+        """
+        super().at_init()  # uncomment when overridden
+        self.defer_time = 1  # time is seconds for the command to wait before running action of command
 
     def at_pre_cmd(self):
         caller = self.caller
@@ -768,7 +856,18 @@ class CmdLay(Command):
     key = "lay"
     locks = "cmd:all()"
     arg_regex = r"\s|$"
-    defer_time = 1  # time is seconds for the command to wait before running action of command
+
+    def at_init(self):
+        """
+        Called when the Command object is initialized.
+        Created to bulk set local none class attributes.
+        This allows for adjusting attributes on the object instances and not having those changes
+        shared among all instances of the Command.
+
+        If overridden call super().at_init()
+        """
+        super().at_init()  # uncomment when overridden
+        self.defer_time = 1  # time is seconds for the command to wait before running action of command
 
     def at_pre_cmd(self):
         caller = self.caller

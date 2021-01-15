@@ -34,12 +34,6 @@ class UnarmedCommand(Command):
     """
 
     help_category = "unarmed"
-    target_required = True  # if True and the command has no target, Command.func will stop execution and message the player
-    cmd_type = 'unarmed'  # Should be a string of the cmd type. IE: 'evasion' for an evasion cmd
-    unarmed_str_mod = 0  # half of the unarmed command caller's strength modifier
-    can_not_target_self = True  # if True this command will end with a message if the Character targets themself
-    cost_level = 'mid' #  level this action should cost. Acceptable levels: 'low', 'mid', 'high'
-
 
     def at_init(self):
         """
@@ -52,6 +46,11 @@ class UnarmedCommand(Command):
         """
         super().at_init()  # uncomment when overridden
         self.dmg_types = {'BLG': 0}  # dictionary of damage types this command can manipulate.
+        self.unarmed_str_mod = 0  # half of the unarmed command caller's strength modifier
+        self.target_required = True  # if True and the command has no target, Command.func will stop execution and message the player
+        self.can_not_target_self = True  # if True this command will end with a message if the Character targets themself
+        self.cmd_type = 'unarmed'  # Should be a string of the cmd type. IE: 'evasion' for an evasion cmd
+        self.cost_level = 'mid' #  level this action should cost. Acceptable levels: 'low', 'mid', 'high'
 
     def at_pre_cmd(self):
         """
@@ -84,10 +83,19 @@ class CmdPunch(UnarmedCommand):
     """
 
     key = "punch"
-    defer_time = 3  # time is seconds for the command to wait before running action of command
     dmg_max = 2  # the maximum damage this command can roll
-    cmd_type = 'unarmed'  # Should be a string of the command type. IE: 'evasion' for an evasion command
-    desc = "punches"  # a present tense description for the action of this command. IE: "kicks"
+
+    def at_init(self):
+        """
+        Called when the Command object is initialized.
+        Created to bulk set local none class attributes.
+        This allows for adjusting attributes on the object instances and not having those changes
+        shared among all instances of the Command.
+
+        If overridden call super().at_init()
+        """
+        super().at_init()  # uncomment when overridden
+        self.desc = "punches"  # a present tense description for the action of this command. IE: "kicks"
 
     def start_message(self):
         """
@@ -122,10 +130,21 @@ class CmdKick(UnarmedCommand):
     """
 
     key = "kick"
-    defer_time = 5  # time is seconds for the command to wait before running action of command
     dmg_max = 4  # the maximum damage this command can roll
-    desc = "kicks"  # a present tense description for the action of this command. IE: "kicks"
-    cost_level = 'high' #  level this action should cost. Acceptable levels: 'low', 'mid', 'high'
+
+    def at_init(self):
+        """
+        Called when the Command object is initialized.
+        Created to bulk set local none class attributes.
+        This allows for adjusting attributes on the object instances and not having those changes
+        shared among all instances of the Command.
+
+        If overridden call super().at_init()
+        """
+        super().at_init()  # uncomment when overridden
+        self.defer_time = 5  # time is seconds for the command to wait before running action of command
+        self.desc = "kicks"  # a present tense description for the action of this command. IE: "kicks"
+        self.cost_level = 'high' #  level this action should cost. Acceptable levels: 'low', 'mid', 'high'
 
     def start_message(self):
         """

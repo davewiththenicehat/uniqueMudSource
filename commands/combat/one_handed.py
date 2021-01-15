@@ -27,12 +27,6 @@ class OneHandedCommand(Command):
     """
 
     help_category = "one handed"
-    target_required = True  # if True and the command has no target, Command.func will stop execution and message the player
-    cmd_type = 'one_handed'  # Should be a string of the cmd type. IE: 'evasion' for an evasion cmd
-    requires_wielding = True  # If True this command will require a wielded item that matches Command.cmd_type
-    dmg_max = 1  # the maximum damage this command can roll
-    can_not_target_self = True  # if True this command will end with a message if the Character targets themself
-    cost_level = 'mid' #  level this action should cost. Acceptable levels: 'low', 'mid', 'high'
 
     def at_init(self):
         """
@@ -44,7 +38,12 @@ class OneHandedCommand(Command):
         If overridden call super().at_init()
         """
         super().at_init()  # uncomment when overridden
-
+        self.dmg_max = 1  # the maximum damage this command can roll
+        self.target_required = True  # if True and the command has no target, Command.func will stop execution and message the player
+        self.can_not_target_self = True  # if True this command will end with a message if the Character targets themself
+        self.cmd_type = 'one_handed'  # Should be a string of the cmd type. IE: 'evasion' for an evasion cmd
+        self.requires_wielding = True  # require a wielded item type for command to work.
+        self.cost_level = 'mid' #  level this action should cost. Acceptable levels: 'low', 'mid', 'high'
 
 
 class CmdStab(OneHandedCommand):
@@ -69,8 +68,6 @@ class CmdStab(OneHandedCommand):
     """
 
     key = "stab"
-    defer_time = 3  # time is seconds for the command to wait before running action of command
-    desc = "stabs"  # a present tense description for the action of this command. IE: "kicks"
 
     def start_message(self):
         """
@@ -82,6 +79,7 @@ class CmdStab(OneHandedCommand):
         message = f"Facing {self.target.usdesc} {self.caller.usdesc} raises " \
                   f"{self.weapon_desc} preparing an attack."
         self.caller.location.msg_contents(message)
+        self.desc = "stabs"  # a present tense description for the action of this command. IE: "kicks"
 
     def deferred_action(self):
         """Causes the action of the stab command."""

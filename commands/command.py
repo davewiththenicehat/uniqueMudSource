@@ -88,8 +88,15 @@ class Command(default_cmds.MuxCommand):
         To provide UM targeting system to Command.func, parse has been
             overridden and cleared.
         parse is called manually in Command.at_pre_cmd via super().parse()
+        All attributes added for UM are local or non-class attributes.
+        Command.at_init has been created for a high degree of instance customization.
 
-    Command attributes
+    Attributes:
+        Important: All attributes added for UM are local or non-class attributes.
+            This allows for an extreme degree of automation and customization on the instance level.
+            Allowing Object attributes to interact with Command attributes.
+            To initalize an attribute created by UM it needs to be declared in Command.at_init.
+
         status_type = 'busy'  # Character status type used to track the command
         defer_time = 3  # time is seconds for the command to wait before running
             action of command
@@ -109,24 +116,18 @@ class Command(default_cmds.MuxCommand):
             IE: "kicks"
             If None when self.func is called, it will give assigned self.key
         weapon_desc = None  # weapon description that will show up in
-            This is a local or instance attribute. Not a class attribute.
             This is intended for attack commands that do note use a wielded weapon.
             Leave as None if requires_wielding is in use.
         caller_weapon = None  # instance of the caller's wielded weapon from requires_wielding
-            This is a local or instance attribute. Not a class attribute.
             Automatically collected in Command.at_pre_cmd
         roll_max = 50  # max number this command can roll to succeed
         dmg_max = 4  # the maximum damage this command can roll
-            This is a local or instance attribute. Not a class attribute.
         cmd_type = False  # Should be a string of the cmd type. IE: 'evasion' for an evasion cmd
         begins_to_or_at = False  # becomes string "to" or "at" if the commands arguments starts with "to " or "at "
-            This is a local or instance attribute. Not a class attribute.
             collected in Command.parse
         target = None  # collected in Command.at_pre_cmd if the command has a target
-            This is a local or instance attribute. Not a class attribute.
             Over ride after Command.at_pre_cmd, or your self.target will be replaced
         targets = ()  # multiple instances of targets, when multiple are supplied
-            This is a local or instance attribute. Not a class attribute.
             collected in Command.at_pre_cmd if the command starts with "to " or "at "
             If any targets are found, Command.target is always the first
                 instance found in commands.targets
@@ -155,7 +156,6 @@ class Command(default_cmds.MuxCommand):
             Attack commands should ALWAYS have one or more dmg_type.
                 If an attack command has no dmg_types,
                 there is no chance for the defenders dr to take affect.
-            This is a local or instance attribute. Not a class attribute.
             key is the type of damage as they appear in rules.damage.TYPES
             value is a flat bonus this command will provide in reference to damage.
                 Most commands the value should be 0.
@@ -165,7 +165,7 @@ class Command(default_cmds.MuxCommand):
                 dr value from the commands dmg_types on the body part hit.
                 If the key has a value greater than 0, that value will be added to the damage dealt.
                     Even if the key is a negative number.
-        caller_message = None  # text to message the caller.
+        caller_message_pass = None  # text to message the caller.
             Will not call automatically, here to pass between Command functions
         target_message = None  # text to message the target.
             Will not call automatically, here to pass between Command functions
@@ -176,6 +176,8 @@ class Command(default_cmds.MuxCommand):
 
     Methods:
         All methods are fully documented in their docstrings.
+        at_init, Called when the Command object is initialized.
+            If overridden call super().at_init() within the method.
         func, To more seamlessly support UniqueMud's deffered command system, evennia's Command.func has been overridden.
         defer(int or float), defer the action of a command by calling Command.deferred_action after the number of seconds passed to defer
         deferred_action(), override to commit the action of a command to a later time.
@@ -193,42 +195,6 @@ class Command(default_cmds.MuxCommand):
         cost(cost_level='low', cost_stat='END'), Calculate and remove the cost of this Command
         target_bad(target=object), returns True if object passed is not targetable by this command
         target_search(target_name=str), Search for an instance of a target.
-    """
-    status_type = 'busy'  # Character status type used to track the command
-    defer_time = 3  # time is seconds for the command to wait before running action of command
-    evade_mod_stat = 'AGI'  # stat used to evade this command
-    action_mod_stat = 'OBS'  # stat used to modify this command
-    roll_max = 50  # max number this command can roll to succeed
-    dmg_mod_stat = 'STR'  # the stat that will modifier damage this command manipulates
-    target_required = False  # if True and the command has no target, Command.func will stop execution and message the player
-    can_not_target_self = False  # if True this command will end with a message if the Character targets themself
-    cmd_type = False  # Should be a string of the cmd type. IE: 'evasion' for an evasion cmd
-    target_inherits_from = False  # a tuple, position 0 string of a class type, position 1 is a string to show on mismatch
-    target_in_hand = False  # if True the target of the command must be in the Characters hand to complete successfully
-    search_caller_only = False  # if True the command will only search the caller for targets
-    caller_message = None  # text to message the caller. Will not call automatically, here to pass between Command functions
-    target_message = None  # text to message the target. Will not call automatically, here to pass between Command functions
-    room_message = None  # text to message the room. Will not call automatically, here to pass between Command functions
-    desc = None  # a present tense description for the action of this command. IE: "kicks"
-    requires_ready = True  # if true this command requires the ready status before it can do anything. deferal commands still require ready to defer
-    requires_conscious = True  # if true this command requires the caller to be conscious
-    requires_wielding = None  # require a wielded item type for command to work.
-    cost_stat = 'END'  # stat this command will use for the action's cost
-    cost_level = None  # level this action should cost. Acceptable levels: 'low', 'mid', 'high'
-    log = False  # set to true to info logging should be enabled. Error and warning messages are always enabled.
-    """
-    do not decare these attributes in the class scope.
-    declared in Command.at_pre_cmd or Command.at_init
-
-    declared in Command.at_pre_cmd
-        begins_to_or_at = False  # becomes string "to" or "at" if the commands arguments starts with "to " or "at "
-        target  # the object target of this Command
-        targets = ()  # collected in Command.at_pre_cmd if the command starts with "to " or "at "
-        self.caller_weapon = None  # instance of the caller's wielded weapon from requires_wielding
-
-    declared in Command.at_init
-        dmg_types = None  # dictionary of damage types this command can manipulate.
-        weapon_desc = None  # weapon description that will show up in Command.combat_action's automated messages
     """
 
     def __init__(self, **kwargs):
@@ -253,7 +219,34 @@ class Command(default_cmds.MuxCommand):
         self.dmg_types = None  # dictionary of damage types this command can manipulate.
         self.weapon_desc = None  # weapon description that will show up in Command.combat_action's automated messages
         self.caller_weapon = None  # instance of the caller's wielded weapon from requires_wielding
-        dmg_max = 4  # the maximum damage this command can roll
+        self.dmg_max = 4  # the maximum damage this command can roll
+        self.status_type = 'busy'  # Character status type used to track the command
+        self.defer_time = 3  # time is seconds for the command to wait before running action of command
+        self.evade_mod_stat = 'AGI'  # stat used to evade this command
+        self.action_mod_stat = 'OBS'  # stat used to modify this command
+        self.roll_max = 50  # max number this command can roll to succeed
+        self.dmg_mod_stat = 'STR'  # the stat that will modifier damage this command manipulates
+        self.target_required = False  # if True the command will stop without a target
+        self.can_not_target_self = False  # if True this command will end with a message if the Character targets themself
+        self.cmd_type = False  # Should be a string of the cmd type. IE: 'evasion' for an evasion cmd
+        self.target_inherits_from = False  # a tuple
+            # position 0 string of a class type, position 1 is a string to show on mismatch
+        self.target_in_hand = False  # if True the target of the command must be in the Characters hand to complete successfully
+        self.search_caller_only = False  # if True the command will only search the caller for targets
+        self.caller_message_pass = None  # text to message the caller.
+            # Will not call automatically, here to pass between Command functions
+        self.target_message_pass = None  # text to message the target.
+            # Will not call automatically, here to pass between Command functions
+        self.room_message_pass = None  # text to message the room.
+            # Will not call automatically, here to pass between Command functions
+        self.desc = None  # a present tense description for the action of this command. IE: "kicks"
+        self.requires_ready = True  # if true this command requires the ready status before it can do anything.
+            # deferal commands still require ready to defer
+        self.requires_conscious = True  # if true this command requires the caller to be conscious
+        self.requires_wielding = None  # require a wielded item type for command to work.
+        self.cost_stat = 'END'  # stat this command will use for the action's cost
+        self.cost_level = None  # level this action should cost. Acceptable levels: 'low', 'mid', 'high'
+        self.log = False  # set to true to info logging should be enabled. Error and warning messages are always enabled.
 
     def parse(self):
         """

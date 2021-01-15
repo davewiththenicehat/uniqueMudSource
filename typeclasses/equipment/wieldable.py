@@ -143,12 +143,23 @@ class CmdWield(Command):
     """
     key = "wield"
     aliases = ["equip",]
-    can_not_target_self = True  # if True this command will end with a message if the Character targets themself
-    target_required = True  # if True and the command has no target, Command.func will stop execution and message the player
-    search_caller_only = False  # if True the command will only search the caller for targets
-    # a tuple, position 0 string of a class type, position 1 is a string to show on mismatch
-    target_inherits_from = (WIELDABLE_OBJECT_CLASS, 'weapon')
-    target_in_hand = True  # if True the target of the command must be in the Characters hand to complete successfully
+
+    def at_init(self):
+        """
+        Called when the Command object is initialized.
+        Created to bulk set local none class attributes.
+        This allows for adjusting attributes on the object instances and not having those changes
+        shared among all instances of the Command.
+
+        If overridden call super().at_init()
+        """
+        super().at_init()  # uncomment when overridden
+        self.target_required = True  # if True and the command has no target, Command.func will stop execution and message the player
+        self.can_not_target_self = True  # if True this command will end with a message if the Character targets themself
+        # a tuple, position 0 string of a class type, position 1 is a string to show on mismatch
+        self.target_inherits_from = (WIELDABLE_OBJECT_CLASS, 'weapon')
+        self.target_in_hand = True  # if True the target of the command must be in the Characters hand to complete successfully
+        self.search_caller_only = True  # if True the command will only search the caller for targets
 
     def func(self):
         """
@@ -191,12 +202,23 @@ class CmdUnwield(Command):
     """
     key = "unwield"
     aliases = ["unequip",]
-    can_not_target_self = True  # if True this command will end with a message if the Character targets themself
-    target_required = True  # if True and the command has no target, Command.func will stop execution and message the player
-    search_caller_only = False  # if True the command will only search the caller for targets
-    # a tuple, position 0 string of a class type, position 1 is a string to show on mismatch
-    target_inherits_from = (WIELDABLE_OBJECT_CLASS, 'weapon')
-    target_in_hand = True  # if True the target of the command must be in the Characters hand to complete successfully
+
+    def at_init(self):
+        """
+        Called when the Command object is initialized.
+        Created to bulk set local none class attributes.
+        This allows for adjusting attributes on the object instances and not having those changes
+        shared among all instances of the Command.
+
+        If overridden call super().at_init()
+        """
+        super().at_init()  # uncomment when overridden
+        self.target_required = True  # if True and the command has no target, Command.func will stop execution and message the player
+        self.can_not_target_self = True  # if True this command will end with a message if the Character targets themself
+        # a tuple, position 0 string of a class type, position 1 is a string to show on mismatch
+        self.target_inherits_from = (WIELDABLE_OBJECT_CLASS, 'weapon')
+        self.target_in_hand = True  # if True the target of the command must be in the Characters hand to complete successfully
+        self.search_caller_only = True  # if True the command will only search the caller for targets
 
     def func(self):
         """
