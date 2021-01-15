@@ -490,11 +490,24 @@ class CmdCmdFuncTest(Command):
         Will also be used in unit testing.
 
     usage:
-        cmd_func_test <function name>,<target>=<arg1>,<arg2>...
+        cmd_func_test <function name>,<target>,<cmd_attr_name>:value=<arg1>,<arg2>...
         only <function name> is required
+        <cmd_attr_name>:value, is the name of a command attribute, and a value to set it to.
         Can pass 0 or more arguments after =
             CmdCmdFuncTest will attempt to convert arguments to number.
             Any argument that can be turned into an int will be.
+    Example:
+        cmd_func_test /r dmg_after_dr, char, requires_wielding:True, cmd_type:one_handed = 7, True, head
+
+        /r, shows the return from the function
+        char, the name of the character the command will target
+        requires_wielding:True,
+            requires_wielding refers to Command.requires_wielding
+            :True set this commands requires_wielding attribute to True
+        cmd_type:one_handed,
+            cmd_type refers to Command.cmd_type
+            :one_handed, sets this command's cmd_type to 'one_handed'
+        =, shows CmdCmdFuncTest where the function arguments start.
 
         The target of this command is saved as self.target, for the function to use also.
     """
@@ -517,18 +530,100 @@ class CmdCmdFuncTest(Command):
         self.requires_ready = False
         self.requires_conscious = False  # if true this command requires the caller to be conscious
 
+    def at_pre_cmd(self):
+        cmd_args = self.args.split('=')
+        if len(cmd_args) > 1:
+            cmd_args = cmd_args[0]
+            cmd_args = cmd_args.split(',')
+            if len(cmd_args) > 2:
+                for attribute in cmd_args[2:]:
+                    key, value = attribute.split(':')
+                    # convert strings to ints if they are ints.
+                    try:
+                        value = int(value)
+                    except ValueError:
+                        # if None was passed as an argument turn it into None
+                        value = value.strip()
+                        if value == 'None':
+                            value = None
+                        if value == 'True':
+                            value = True
+                    key = key.strip()
+                    # set know local attributes
+                    if key == 'requires_wielding':
+                        self.requires_wielding = value
+                    elif key == 'cmd_type':
+                        self.cmd_type = value
+                    elif key == 'dmg_types':
+                        self.dmg_types = value
+                    elif key == 'weapon_desc':
+                        self.weapon_desc = value
+                    elif key == 'caller_weapon':
+                        self.caller_weapon = value
+                    elif key == 'dmg_max':
+                        self.dmg_max = value
+                    elif key == 'status_type':
+                        self.status_type = value
+                    elif key == 'defer_time':
+                        self.defer_time = value
+                    elif key == 'evade_mod_stat':
+                        self.evade_mod_stat = value
+                    elif key == 'action_mod_stat':
+                        self.action_mod_stat = value
+                    elif key == 'roll_max':
+                        self.roll_max = value
+                    elif key == 'dmg_mod_stat':
+                        self.dmg_mod_stat = value
+                    elif key == 'target_required':
+                        self.target_required = value
+                    elif key == 'can_not_target_self':
+                        self.can_not_target_self = value
+                    elif key == 'target_inherits_from':
+                        self.target_inherits_from = value
+                    elif key == 'target_in_hand':
+                        self.target_in_hand = value
+                    elif key == 'search_caller_only':
+                        self.search_caller_only = value
+                    elif key == 'caller_message_pass':
+                        self.caller_message_pass = value
+                    elif key == 'target_message_pass':
+                        self.target_message_pass = value
+                    elif key == 'room_message_pass':
+                        self.room_message_pass = value
+                    elif key == 'desc':
+                        self.desc = value
+                    elif key == 'requires_ready':
+                        self.requires_ready = value
+                    elif key == 'requires_conscious':
+                        self.requires_conscious = value
+                    elif key == 'cost_stat':
+                        self.cost_stat = value
+                    elif key == 'cost_level':
+                        self.cost_level = value
+                    elif key == 'log':
+                        self.log = value
+                    else:
+                        # These will be set as class attributes
+                        setattr(self, key, value)
+        super().at_pre_cmd()
+
     def func(self):
         caller = self.caller
-        func_name, target_name = self.lhslist
-        target = None
-        if target_name:
-            target = caller.search(target_name, quiet=True)
-            if target:
-                target=target[0]
-                self.target = target
-            else:
-                caller.msg(f'{target_name} is not here.')
-                return
+        cmd_args = self.lhslist
+        if not cmd_args:
+            caller.msg("A function name is required.")
+        func_name = cmd_args[0]
+        if len(cmd_args) > 1:
+            target_name = cmd_args[1]
+            target = None
+            if target_name:
+                target = caller.search(target_name, quiet=True)
+                if target:
+                    target=target[0]
+                    self.target = target
+                else:
+                    caller.msg(f'{target_name} is not here.')
+                    return
         if hasattr(self, func_name): # find this function in the command module
             func_inst = getattr(self, func_name)
             arguments = []

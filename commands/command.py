@@ -393,7 +393,6 @@ class Command(default_cmds.MuxCommand):
                 caller.msg(f'You must be wielding a {required_item_type} item to {self.key}.')
                 return True
             # look for required wielded item type among wielded items
-            requires_wielding_unfound = True
             for item in wielded_items:
                 if item.item_type == self.cmd_type:
                     self.caller_weapon = item
@@ -401,7 +400,7 @@ class Command(default_cmds.MuxCommand):
                     self.dmg_max = item.dmg_max
                     requires_wielding_unfound = False
                     break
-            if requires_wielding_unfound:
+            if not self.caller_weapon:
                 required_item_type = self.cmd_type.replace('_', ' ')
                 caller.msg(f'You must be wielding a {required_item_type} item to {self.key}.')
                 return True
