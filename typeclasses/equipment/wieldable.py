@@ -56,7 +56,8 @@ class Weapon(Wieldable):
         value is a flat bonus this weapon will add to attack actions of that dmg_type.
     dmg_max = 4  # the maximum damage this weapon can roll
         This number will replace Command.dmg_max when a command requiring the item_type is run
-
+    roll_max_mod = 0  # an intiger to add to Command.roll_max.
+        Can be a negative number
     """
 
     @property
@@ -101,6 +102,27 @@ class Weapon(Wieldable):
     @dmg_max.deleter
     def dmg_max(self):
         delattr(self.db, 'dmg_max')
+
+    @property
+    def roll_max_mod(self):
+        """
+        Is added to a commands roll_max attribute.
+        This property auto initializes to 0.
+
+        Forwards to the database with, self.db.roll_max_mod.
+        """
+        value = getattr(self.db, 'roll_max_mod', False)
+        if value:
+            return value
+        else:
+            self.db.roll_max_mod = 0
+            return 0
+    @roll_max_mod.setter
+    def roll_max_mod(self, value):
+        self.db.roll_max_mod = value
+    @roll_max_mod.deleter
+    def roll_max_mod(self):
+        delattr(self.db, 'roll_max_mod')
 
     def get_dmg_mods(self):
         """

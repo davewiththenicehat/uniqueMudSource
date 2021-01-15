@@ -498,7 +498,7 @@ class TestCommands(CommandTest):
         wanted_message = r"dmg_after_dr returned: \d+"
         cmd_result = self.call(command(), arg, caller=self.char2)
         self.assertRegex(cmd_result, wanted_message)
-        # Verify max_defnse works
+        # Verify max_defense works
         # Verify Command.dmg_type.TYPE value, adds to attack damage
         # testing char.dr and the worn helmet.dr
         # In this case ACD defense is 6
@@ -528,7 +528,16 @@ class TestCommands(CommandTest):
         # change the sword's ACD modifier, damage should change by the adjustment
         self.sword.dmg_types.ACD = 2
         wanted_message = r"dmg_after_dr returned: 4"
-        cmd_result = self.call(command(), arg, wanted_message)
+        self.call(command(), arg, wanted_message)
+        # Test item.roll_max_mod
+        self.sword.roll_max_mod = 1
+        command = developer_cmds.CmdCmdAttrTest
+        arg = "requires_wielding:True, cmd_type:one_handed=roll_max"
+        wanted_message = r"roll_max: 51"
+        self.call(command(), arg, wanted_message)
+        self.sword.roll_max_mod = 10
+        wanted_message = r"roll_max: 60"
+        self.call(command(), arg, wanted_message)
 
         # test sit stand lay also tests Character.set_position
         command = developer_cmds.CmdMultiCmd

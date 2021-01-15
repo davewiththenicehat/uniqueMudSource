@@ -140,6 +140,7 @@ def action_roll(char, log=False):
             Default max is 50.
         Each action can have its own stat used to modify the action roll.
             Default stat is observation.
+        If an action requires a wielded item that item can adjust the actions max roll.
         Action roll is a random number from 1 to the action roll's max plus the stat's action modifier.
     """
     roll_max = 50

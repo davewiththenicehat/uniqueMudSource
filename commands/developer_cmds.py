@@ -27,6 +27,117 @@ class DeveloperCmdSet(CmdSet):
         self.add(CmdCmdFuncTest)
 
 
+class DeveloperCommand(Command):
+    """
+
+    """
+    key = 'dev cmd'
+    help_category = "developer"
+    locks = "cmd:perm(Developer)"
+
+    def at_init(self):
+        """
+        Called when the Command object is initialized.
+        Created to bulk set local none class attributes.
+        This allows for adjusting attributes on the object instances and not having those changes
+        shared among all instances of the Command.
+        """
+        # this is needed for testing function Command.dmg_after_dr
+        self.requires_ready = False
+        self.requires_conscious = False  # if true this command requires the caller to be conscious
+
+    def set_inst_attrs(self, attributes):
+        """
+        Accept a list of instance attributes and values to set them to.
+        Set local instance attributes to those values.
+        Most of the time this method should be used in at_init or the top of at_pre_cmd
+
+        Example:
+            def at_pre_cmd(self):
+                set_list = ["cmd_type:one_handed","requires_ready:True"]
+                self.set_inst_attr(set_list)
+                # self.cmd_type is now 'one_handed'
+                # self.requires_ready is now True
+                super().at_pre_cmd()
+
+            def at_init(self):
+                super().at_init()
+                set_list = ["cmd_type:one_handed","requires_ready:True"]
+                self.set_inst_attr(set_list)
+                # self.cmd_type is now 'one_handed'
+                # self.requires_ready is now True
+        """
+        for attribute in attributes:
+            key, value = attribute.split(':')
+            # convert strings to ints if they are ints.
+            try:
+                value = int(value)
+            except ValueError:
+                # if None was passed as an argument turn it into None
+                value = value.strip()
+                if value == 'None':
+                    value = None
+                if value == 'True':
+                    value = True
+            key = key.strip()
+            # set know local attributes
+            if key == 'requires_wielding':
+                self.requires_wielding = value
+            elif key == 'cmd_type':
+                self.cmd_type = value
+            elif key == 'dmg_types':
+                self.dmg_types = value
+            elif key == 'weapon_desc':
+                self.weapon_desc = value
+            elif key == 'caller_weapon':
+                self.caller_weapon = value
+            elif key == 'dmg_max':
+                self.dmg_max = value
+            elif key == 'status_type':
+                self.status_type = value
+            elif key == 'defer_time':
+                self.defer_time = value
+            elif key == 'evade_mod_stat':
+                self.evade_mod_stat = value
+            elif key == 'action_mod_stat':
+                self.action_mod_stat = value
+            elif key == 'roll_max':
+                self.roll_max = value
+            elif key == 'dmg_mod_stat':
+                self.dmg_mod_stat = value
+            elif key == 'target_required':
+                self.target_required = value
+            elif key == 'can_not_target_self':
+                self.can_not_target_self = value
+            elif key == 'target_inherits_from':
+                self.target_inherits_from = value
+            elif key == 'target_in_hand':
+                self.target_in_hand = value
+            elif key == 'search_caller_only':
+                self.search_caller_only = value
+            elif key == 'caller_message_pass':
+                self.caller_message_pass = value
+            elif key == 'target_message_pass':
+                self.target_message_pass = value
+            elif key == 'room_message_pass':
+                self.room_message_pass = value
+            elif key == 'desc':
+                self.desc = value
+            elif key == 'requires_ready':
+                self.requires_ready = value
+            elif key == 'requires_conscious':
+                self.requires_conscious = value
+            elif key == 'cost_stat':
+                self.cost_stat = value
+            elif key == 'cost_level':
+                self.cost_level = value
+            elif key == 'log':
+                self.log = value
+            else:
+                # These will be set as class attributes
+                setattr(self, key, value)
+
+
 class CmdDeferCmd(Command):
     """
     Test deffering the action portion of a command.
@@ -451,7 +562,7 @@ class CmdContrlOther(Command):
             target.execute_cmd(cmd)
 
 
-class CmdCmdFuncTest(Command):
+class CmdCmdFuncTest(DeveloperCommand):
     """
     Used to test an individual function in the command module.
 
@@ -492,10 +603,9 @@ class CmdCmdFuncTest(Command):
         This allows for adjusting attributes on the object instances and not having those changes
         shared among all instances of the Command.
         """
+        super().at_init()
         # this is needed for testing function Command.dmg_after_dr
         self.dmg_types = {"ACD": 1, "PRC": 0}  # dictionary of damage types this command can manipulate.
-        self.requires_ready = False
-        self.requires_conscious = False  # if true this command requires the caller to be conscious
 
     def at_pre_cmd(self):
         cmd_args = self.args.split('=')
@@ -503,75 +613,7 @@ class CmdCmdFuncTest(Command):
             cmd_args = cmd_args[0]
             cmd_args = cmd_args.split(',')
             if len(cmd_args) > 2:
-                for attribute in cmd_args[2:]:
-                    key, value = attribute.split(':')
-                    # convert strings to ints if they are ints.
-                    try:
-                        value = int(value)
-                    except ValueError:
-                        # if None was passed as an argument turn it into None
-                        value = value.strip()
-                        if value == 'None':
-                            value = None
-                        if value == 'True':
-                            value = True
-                    key = key.strip()
-                    # set know local attributes
-                    if key == 'requires_wielding':
-                        self.requires_wielding = value
-                    elif key == 'cmd_type':
-                        self.cmd_type = value
-                    elif key == 'dmg_types':
-                        self.dmg_types = value
-                    elif key == 'weapon_desc':
-                        self.weapon_desc = value
-                    elif key == 'caller_weapon':
-                        self.caller_weapon = value
-                    elif key == 'dmg_max':
-                        self.dmg_max = value
-                    elif key == 'status_type':
-                        self.status_type = value
-                    elif key == 'defer_time':
-                        self.defer_time = value
-                    elif key == 'evade_mod_stat':
-                        self.evade_mod_stat = value
-                    elif key == 'action_mod_stat':
-                        self.action_mod_stat = value
-                    elif key == 'roll_max':
-                        self.roll_max = value
-                    elif key == 'dmg_mod_stat':
-                        self.dmg_mod_stat = value
-                    elif key == 'target_required':
-                        self.target_required = value
-                    elif key == 'can_not_target_self':
-                        self.can_not_target_self = value
-                    elif key == 'target_inherits_from':
-                        self.target_inherits_from = value
-                    elif key == 'target_in_hand':
-                        self.target_in_hand = value
-                    elif key == 'search_caller_only':
-                        self.search_caller_only = value
-                    elif key == 'caller_message_pass':
-                        self.caller_message_pass = value
-                    elif key == 'target_message_pass':
-                        self.target_message_pass = value
-                    elif key == 'room_message_pass':
-                        self.room_message_pass = value
-                    elif key == 'desc':
-                        self.desc = value
-                    elif key == 'requires_ready':
-                        self.requires_ready = value
-                    elif key == 'requires_conscious':
-                        self.requires_conscious = value
-                    elif key == 'cost_stat':
-                        self.cost_stat = value
-                    elif key == 'cost_level':
-                        self.cost_level = value
-                    elif key == 'log':
-                        self.log = value
-                    else:
-                        # These will be set as class attributes
-                        setattr(self, key, value)
+               self.set_inst_attrs(cmd_args[2:])
         super().at_pre_cmd()
 
     def func(self):
@@ -611,3 +653,31 @@ class CmdCmdFuncTest(Command):
                 caller.msg(f'{func_name} returned: {func_return}')
         else:
             caller.msg(f'No function {func_name} found.')
+
+
+class CmdCmdAttrTest(DeveloperCommand):
+    """
+    Test Command instance attributes.
+    Tests ran in Command.func
+
+    Usage:
+        cmd_attr_test <set_attr_name>:value,...=<test_attr_name>,...
+        Where <set_attr_name> is the name of
+
+    Example:
+    """
+    key = "cmd_attr_test"
+    help_category = "developer"
+    locks = "cmd:perm(Developer)"
+
+    def at_pre_cmd(self):
+        cmd_args = self.args.split('=')
+        cmd_args = cmd_args[0]
+        cmd_args = cmd_args.split(',')
+        self.set_inst_attrs(cmd_args)
+        super().at_pre_cmd()
+
+    def func(self):
+        for argument in self.rhslist:
+            value = getattr(self, argument, '!Missing!')
+            self.caller.msg(f"{argument}: {value}")

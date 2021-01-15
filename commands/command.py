@@ -121,6 +121,8 @@ class Command(default_cmds.MuxCommand):
         caller_weapon = None  # instance of the caller's wielded weapon from requires_wielding
             Automatically collected in Command.at_pre_cmd
         roll_max = 50  # max number this command can roll to succeed
+            If a command requires a wielded item. item.roll_max_mod is added to Command.roll_max
+                item.roll_max_mod can be a negative number.
         dmg_max = 4  # the maximum damage this command can roll
         cmd_type = False  # Should be a string of the cmd type. IE: 'evasion' for an evasion cmd
         begins_to_or_at = False  # becomes string "to" or "at" if the commands arguments starts with "to " or "at "
@@ -297,6 +299,7 @@ class Command(default_cmds.MuxCommand):
             Command.dmg_max is set to item.dmg_max
             item.dmg_types is merged with command.dmg_types
                 Where values are added together, not replaced.
+            item.roll_max_mod is added to Command.roll_max_mod
 
         Notes:
             if a command starts with "to " or "at ".
@@ -396,6 +399,8 @@ class Command(default_cmds.MuxCommand):
                     self.weapon_desc = item.usdesc
                     self.dmg_max = item.dmg_max
                     requires_wielding_unfound = False
+                    if item.roll_max_mod:  # the item has a meaningful roll_max modifier add it
+                        self.roll_max += item.roll_max_mod
                     break
             if not self.caller_weapon:
                 required_item_type = self.cmd_type.replace('_', ' ')
