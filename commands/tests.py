@@ -538,6 +538,17 @@ class TestCommands(CommandTest):
         self.sword.act_roll_max_mod = 10
         wanted_message = r"roll_max: 60"
         self.call(command(), arg, wanted_message)
+        # test item evasion bonus
+        self.assertFalse(self.sword.attributes.has('evd_stats'))
+        self.sword.evd_stats = ('AGI',)
+        self.assertEqual(self.sword.attributes.get('evd_stats'), ('AGI',))
+        command = developer_cmds.CmdMultiCmd
+        arg = "= dodge, control_other Char2=punch Char, complete_cmd_early Char2"
+        wanted_message = r"You will be busy for \d+ seconds.\nYou begin to sway warily.\nFacing Char Char2 pulls theirs hand back preparing an attack.\nYou are no longer busy.\nYou try to dodge the incoming attack.\nevade \d+ VS punch \d+: Char2 punches at you with their fist "
+        cmd_result = self.call(command(), arg)
+        self.assertRegex(cmd_result, wanted_message)
+        del self.sword.evd_stats
+        self.assertFalse(self.sword.attributes.has('evd_stats'))
 
         # test sit stand lay also tests Character.set_position
         command = developer_cmds.CmdMultiCmd

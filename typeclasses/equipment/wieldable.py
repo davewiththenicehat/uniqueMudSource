@@ -58,6 +58,11 @@ class Weapon(Wieldable):
         This number will replace Command.dmg_max when a command requiring the item_type is run
     act_roll_max_mod = 0  # an intiger to add to Command.roll_max.
         Can be a negative number
+    evd_roll_max_mod = 0  # added to an evade commands roll_max in actions.evade_roll
+    evd_stats=()  # a list or tuple of stats this weapon can assist with evasion
+        To set item.evd_stats = ('AGI',)
+            Forgetting the leading , will result in the string being the tuple.
+            Using tuple('AGI',), will result in the string being the tuple.
     """
 
     @property
@@ -162,7 +167,11 @@ class Weapon(Wieldable):
         """
         Before adding self.act_roll_max_mod to an evade's Command.roll_max
         The attack action's Command.action_mod_stat must be in self.evd_stats
-        This property auto initializes to ().
+        This property auto initializes to an empty tuple.
+
+        To set item.evd_stats = ('AGI',)
+            Forgetting the leading , will result in the string being the tuple.
+            Using tuple('AGI',), will result in the string being the tuple.
 
         Forwards to the database with, self.db.evd_stats.
         """

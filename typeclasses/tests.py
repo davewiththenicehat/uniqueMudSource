@@ -259,11 +259,10 @@ class TestObjects(CommandTest):
             self.assertEqual(self.sword.attributes.get(db_key), 1)
         # test wieldable.evd_stats
         self.assertFalse(self.sword.attributes.has('evd_stats'))
-        self.sword.evd_stats = tuple('STR',)
-        self.assertEqual(self.sword.attributes.get('evd_stats'), tuple('STR',))
+        self.sword.evd_stats = ('STR',)
+        self.assertEqual(self.sword.attributes.get('evd_stats'), ('STR',))
         del self.sword.evd_stats
         self.assertFalse(self.sword.attributes.has('evd_stats'))
-
 
 
 # Testing of emoting / sdesc / recog system

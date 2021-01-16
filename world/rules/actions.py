@@ -52,7 +52,12 @@ def evade_roll(char, evade_mod_stat, log=False):
     evade roll is  a random roll between 1 and the evade's max roll.
         Plus the evade's stat modifier
         Default max is 50
-    evade_roll will check if the evading Character's active command is an evasion command that is compatible with the action being used against the evader.
+    evade_roll will check if the evading Character's active command is an
+        evasion command that is compatible with the action being used against
+        the evader.
+    evade_roll will add all wielded item.evd_roll_max_mod to the roll_max
+        If an evade command is used.
+        If evade_mod_stat is in the item.evd_stats tuple
     evade_roll will display a message if the evasion command is used
 
     Arguments:
@@ -70,10 +75,11 @@ def evade_roll(char, evade_mod_stat, log=False):
             Default max is 50.
         Each action can have its own stat used to modify the action roll.
         evade roll is a random number from 1 to the evade roll's max plus the
-            Characters stat's evade modifier.
-        If no evade command is active the default max of 50 is used.
-        An active evasion command must have the same evade_mod_stat as the
-            action for the evasion commands's roll_max to be used.
+            Characters stat's evade modifier. (ushaully agility)
+        If no evade action is active the default max of 50 is used.
+        If an active evade action is active, that can dodge the attack action.
+            The evade command will be used for the max roll.
+            All wielded items that can modify the max roll will.
         If a character is sitting or laying they will suffer a penalty.
             Sitting provides a 20 penalty
             Laying provides a 50 penalty
@@ -90,24 +96,37 @@ def evade_roll(char, evade_mod_stat, log=False):
         evade_mod -= LAYING_EVADE_PENALTY
     # get reference of the command creating the action
     evade_cmd = char.nattributes.get('deffered_command')
-    if evade_cmd:  # if there is an active evade command
-        if hasattr(evade_cmd, 'cmd_type'):  # if the command is an evasion command
-            cmd_type = getattr(evade_cmd, 'cmd_type')
+    if evade_cmd:  # if there is an active command
+        cmd_type = getattr(evade_cmd, 'cmd_type', False)
+        if cmd_type:  # very cmd_type existance
             if log:
-                log_info(f'Character ID: {char.id} | cmd_type: {cmd_type} | {evade_cmd.evade_mod_stat}')
-            # If the command is an evasion command and it's evade type is the same as the action
+                log_info(f'Character ID: {char.id} | cmd_type: {cmd_type} | " \
+                         f"{evade_cmd.evade_mod_stat}')
+            # If the command is an evasion command and
+            # it's evade type is the same as the attack action's
             if cmd_type == 'evasion' and evade_cmd.evade_mod_stat == evade_mod_stat:
                 if log:
                     log_info(f'Character ID: {char.id}: evade_roll found a deffered command.')
-                if hasattr(evade_cmd, 'roll_max'):  # if the evade command has a roll max use it instead of default
-                    roll_max = getattr(evade_cmd, 'roll_max')
+                # if the evade command has a roll max use it instead of default
+                roll_max = getattr(evade_cmd, 'roll_max', roll_max)
+                # check if any wielded items will assist with this evasion
+                wielded_items = char.wielding()
+                if wielded_items:  # target is wielding item(s)
+                    for item in wielded_items:
+                        # if the item can assist with this dodge type
+                        if evade_mod_stat in item.evd_stats:
+                            roll_max += item.evd_roll_max_mod
+                            if log:
+                                msg = f"Character ID: {char.id} | item {item.dbref} " \
+                                      f"added {item.evd_roll_max_mod} to evasion."
+                                log_info(msg)
                 evade_cmd.stop_forced()  # stop the deffered evasion command
-                # inform characters in room this Character is using an evasion command.
+                # message target and room of the evade action.
                 room_msg = f'{char.usdesc} tries '+evade_cmd.evade_msg
                 char.location.msg_contents(room_msg, exclude=(char))
                 char.msg('You try '+evade_cmd.evade_msg)
-        if hasattr(evade_cmd, 'evade_mod_stat'):  # if the evade command has a evade mod stat use it instead of default
-            evade_mod_stat = getattr(evade_cmd, 'evade_mod_stat')
+        # if the evade command has a evade mod stat use it instead of default
+        evade_mod_stat = getattr(evade_cmd, 'evade_mod_stat', evade_mod_stat)
     evade_mod_name = evade_mod_stat+'_evade_mod'  # assemble name of evade modifier
     if hasattr(char, evade_mod_name):  # if the character has a evade modifier for this stat.
         stat_mod = getattr(char, evade_mod_name)
@@ -119,7 +138,10 @@ def evade_roll(char, evade_mod_stat, log=False):
     if result < EVADE_MIN:
         result = EVADE_MIN
     if log:
-        log_info(f'actions.evade_roll, Character ID: {char.id} | result {result} | roll_max: {roll_max} | evade_mod: {evade_mod} | evade_mod_stat: {evade_mod_stat } | evade_mod_name: {evade_mod_name}')
+        msg = f'actions.evade_roll, Character ID: {char.id} | result {result} " \
+              f"| roll_max: {roll_max} | evade_mod: {evade_mod} | " \
+              f"evade_mod_stat: {evade_mod_stat } | evade_mod_name: {evade_mod_name}'
+        log_info(msg)
     return result
 
 
