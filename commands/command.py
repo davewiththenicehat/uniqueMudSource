@@ -922,3 +922,25 @@ class Command(default_cmds.MuxCommand):
         if target:  # a target(s) was found
             target = target[target_number]  # get the correct target number
             return target
+
+    def evade_roll(self, evade_mod_stat='AGI', log=False, unit_test=False):
+        """
+        Roll evasion for the command's target.
+        This is wrapper for rules.actions.evade_roll
+
+        Returns:
+            int, the evasion roll the commands target rolled.
+
+        Arguments:
+            evade_mod_stat, the stat required to evade the action evade_roll to evade
+            log=False, if True log the variables used
+            unit_test=False, if True evade_roll will display variables to screen
+        """
+        if not self.target:
+            self.caller.msg('A target is required.')
+            return
+        else:
+            target = self.target
+        if self.evade_mod_stat:
+            evade_mod_stat = self.evade_mod_stat
+        return actions.evade_roll(target, evade_mod_stat, log, unit_test)

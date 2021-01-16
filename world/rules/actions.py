@@ -34,7 +34,8 @@ def targeted_action(caller, target, log=False):
     action_cmd = caller.nattributes.get('deffered_command')
     if not action_cmd:
         if log:
-            log_info(f"actions.targeted_action, caller id {caller.id}: caller has no deffered actions.")
+            log_info(f"actions.targeted_action, caller id {caller.id}: caller " \
+                     f"has no deffered actions.")
         caller.msg('You no longer have an action waiting.')
         return
     action_result = action_roll(caller, log)
@@ -43,11 +44,12 @@ def targeted_action(caller, target, log=False):
     if inherits_from(target, 'typeclasses.characters.Character'):
         evade_result = evade_roll(target, action_cmd.evade_mod_stat, log)
     if log:
-        log_info(f'actions.targeted_action, caller id {caller.id}: action_result: {action_result} | evade_result {evade_result}')
+        log_info(f'actions.targeted_action, caller id {caller.id}: ' \
+                 f'action_result: {action_result} | evade_result {evade_result}')
     return action_result - evade_result, action_result, evade_result
 
 
-def evade_roll(char, evade_mod_stat, log=False):
+def evade_roll(char, evade_mod_stat, log=False, unit_test=False):
     """
     evade roll is  a random roll between 1 and the evade's max roll.
         Plus the evade's stat modifier
@@ -65,6 +67,7 @@ def evade_roll(char, evade_mod_stat, log=False):
         evade_mod_stat, the stat required to evade the action
             evade_roll was called to evade
         log=False, if True log the variables used
+        unit_test=False, if True evade_roll will display variables to screen
 
     Returns:
         random int between 1 and roll max plus character's stat evade modifier
@@ -142,6 +145,11 @@ def evade_roll(char, evade_mod_stat, log=False):
               f"| roll_max: {roll_max} | evade_mod: {evade_mod} | " \
               f"evade_mod_stat: {evade_mod_stat } | evade_mod_name: {evade_mod_name}'
         log_info(msg)
+    if unit_test:
+        msg = f"roll_max: {roll_max} | evade_mod: {evade_mod} | " \
+              f"evade_mod_stat: {evade_mod_stat } | evade_mod_name: " \
+              f"{evade_mod_name}"
+        char.msg(msg)
     return result
 
 
