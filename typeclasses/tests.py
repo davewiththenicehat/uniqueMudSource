@@ -248,15 +248,21 @@ class TestObjects(CommandTest):
             self.assertFalse(self.sword.attributes.has(db_key))
         self.assertEqual(self.sword.dmg_types.ACD, 0)
         # test wieldable item attributes
-        for type in ('dmg_max', 'act_roll_max_mod'):
+        for type in ('dmg_max', 'act_roll_max_mod', 'evd_roll_max_mod'):
             db_key = type.lower()
             if db_key == 'dmg_max':
                 def_value = 4
-            elif db_key == 'act_roll_max_mod':
+            elif db_key in ('act_roll_max_mod', 'evd_roll_max_mod'):
                 def_value = 0
             self.assertFalse(self.sword.attributes.has(db_key))
             setattr(self.sword, type, 1)
             self.assertEqual(self.sword.attributes.get(db_key), 1)
+        # test wieldable.evd_stats
+        self.assertFalse(self.sword.attributes.has('evd_stats'))
+        self.sword.evd_stats = tuple('STR',)
+        self.assertEqual(self.sword.attributes.get('evd_stats'), tuple('STR',))
+        del self.sword.evd_stats
+        self.assertFalse(self.sword.attributes.has('evd_stats'))
 
 
 

@@ -84,6 +84,7 @@ class Weapon(Wieldable):
     def dmg_types(self):
         self._dmg_types.delete()
 
+	# declare item.dmg_max
     @property
     def dmg_max(self):
         """
@@ -107,10 +108,11 @@ class Weapon(Wieldable):
     def dmg_max(self):
         delattr(self.db, 'dmg_max')
 
+	# decalre item.act_roll_max_mod
     @property
     def act_roll_max_mod(self):
         """
-        Is added to a commands roll_max attribute.
+        Is added to a commands roll_max attribute, on action rolls.
         This property auto initializes to 0.
 
         Forwards to the database with, self.db.act_roll_max_mod.
@@ -129,6 +131,55 @@ class Weapon(Wieldable):
     @act_roll_max_mod.deleter
     def act_roll_max_mod(self):
         delattr(self.db, 'act_roll_max_mod')
+
+	# decalre item.evd_roll_max_mod
+    @property
+    def evd_roll_max_mod(self):
+        """
+        Is added to a commands roll_max attribute, on evasion rolls.
+        This property auto initializes to 0.
+
+        Forwards to the database with, self.db.evd_roll_max_mod.
+        """
+        value = getattr(self.db, 'evd_roll_max_mod', False)
+        if value:
+            return value
+        else:
+            self.db.evd_roll_max_mod = 0
+            return 0
+
+    @evd_roll_max_mod.setter
+    def evd_roll_max_mod(self, value):
+        self.db.evd_roll_max_mod = value
+
+    @evd_roll_max_mod.deleter
+    def evd_roll_max_mod(self):
+        delattr(self.db, 'evd_roll_max_mod')
+
+	# decalre item.evd_stats
+    @property
+    def evd_stats(self):
+        """
+        Before adding self.act_roll_max_mod to an evade's Command.roll_max
+        The attack action's Command.action_mod_stat must be in self.evd_stats
+        This property auto initializes to ().
+
+        Forwards to the database with, self.db.evd_stats.
+        """
+        value = getattr(self.db, 'evd_stats', False)
+        if value:
+            return value
+        else:
+            self.db.evd_stats = tuple()
+            return self.db.evd_stats
+
+    @evd_stats.setter
+    def evd_stats(self, value):
+        self.db.evd_stats = value
+
+    @evd_stats.deleter
+    def evd_stats(self):
+        delattr(self.db, 'evd_stats')
 
     def get_dmg_mods(self):
         """
