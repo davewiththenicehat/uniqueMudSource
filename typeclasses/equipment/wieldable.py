@@ -1,11 +1,9 @@
 from evennia import CmdSet
 from commands.command import Command
-from evennia import utils
 from world.rules import damage
 from typeclasses.objects import Object
 from utils.um_utils import error_report
 from utils.element import ListElement
-
 
 
 # used in wield and unwield commands to require an item type for those commands.
@@ -30,9 +28,11 @@ class Wieldable(Object):
         Forwards to the database with, self.db.item_type.
         """
         return self.db.item_type
+
     @item_type.setter
     def item_type(self, value):
         self.db.item_type = value
+
     @item_type.deleter
     def item_type(self):
         delattr(self.db, 'item_type')
@@ -56,7 +56,7 @@ class Weapon(Wieldable):
         value is a flat bonus this weapon will add to attack actions of that dmg_type.
     dmg_max = 4  # the maximum damage this weapon can roll
         This number will replace Command.dmg_max when a command requiring the item_type is run
-    roll_max_mod = 0  # an intiger to add to Command.roll_max.
+    act_roll_max_mod = 0  # an intiger to add to Command.roll_max.
         Can be a negative number
     """
 
@@ -75,9 +75,11 @@ class Weapon(Wieldable):
             self._dmg_types = ListElement(self, damage.TYPES)
             self._dmg_types.verify()
         return self._dmg_types
+
     @dmg_types.setter
     def dmg_types(self, value):
         self._dmg_types.set(value)
+
     @dmg_types.deleter
     def dmg_types(self):
         self._dmg_types.delete()
@@ -96,33 +98,37 @@ class Weapon(Wieldable):
         else:
             self.db.dmg_max = 4
             return 4
+
     @dmg_max.setter
     def dmg_max(self, value):
         self.db.dmg_max = value
+
     @dmg_max.deleter
     def dmg_max(self):
         delattr(self.db, 'dmg_max')
 
     @property
-    def roll_max_mod(self):
+    def act_roll_max_mod(self):
         """
         Is added to a commands roll_max attribute.
         This property auto initializes to 0.
 
-        Forwards to the database with, self.db.roll_max_mod.
+        Forwards to the database with, self.db.act_roll_max_mod.
         """
-        value = getattr(self.db, 'roll_max_mod', False)
+        value = getattr(self.db, 'act_roll_max_mod', False)
         if value:
             return value
         else:
-            self.db.roll_max_mod = 0
+            self.db.act_roll_max_mod = 0
             return 0
-    @roll_max_mod.setter
-    def roll_max_mod(self, value):
-        self.db.roll_max_mod = value
-    @roll_max_mod.deleter
-    def roll_max_mod(self):
-        delattr(self.db, 'roll_max_mod')
+
+    @act_roll_max_mod.setter
+    def act_roll_max_mod(self, value):
+        self.db.act_roll_max_mod = value
+
+    @act_roll_max_mod.deleter
+    def act_roll_max_mod(self):
+        delattr(self.db, 'act_roll_max_mod')
 
     def get_dmg_mods(self):
         """
@@ -143,6 +149,7 @@ class OneHandedWeapon(Weapon):
 
     Inherits typeclasses.equipment.wieldable.Weapon
     """
+
     def at_object_creation(self):
         """Runs when Object is created."""
         at_object_creation_return = super().at_object_creation()
@@ -164,7 +171,7 @@ class CmdWield(Command):
     Equip a weapon or item in hand.
     """
     key = "wield"
-    aliases = ["equip",]
+    aliases = ["equip", ]
 
     def at_init(self):
         """
@@ -212,7 +219,6 @@ class CmdWield(Command):
                     room_message = f"{caller.usdesc} wields {target.usdesc}."
                     caller.location.msg_contents(room_message, exclude=caller)
                     break
-
 
 
 class CmdUnwield(Command):

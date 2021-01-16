@@ -7,7 +7,7 @@ from typeclasses.objects import Object
 from evennia import create_object
 from typeclasses.equipment import clothing
 from commands import standard_cmds
-from typeclasses.equipment.wieldable import Weapon, OneHandedWeapon
+from typeclasses.equipment.wieldable import OneHandedWeapon
 
 
 class TestCommands(CommandTest):
@@ -529,13 +529,13 @@ class TestCommands(CommandTest):
         self.sword.dmg_types.ACD = 2
         wanted_message = r"dmg_after_dr returned: 4"
         self.call(command(), arg, wanted_message)
-        # Test item.roll_max_mod
-        self.sword.roll_max_mod = 1
+        # Test item.act_roll_max_mod
+        self.sword.act_roll_max_mod = 1
         command = developer_cmds.CmdCmdAttrTest
         arg = "requires_wielding:True, cmd_type:one_handed=roll_max"
         wanted_message = r"roll_max: 51"
         self.call(command(), arg, wanted_message)
-        self.sword.roll_max_mod = 10
+        self.sword.act_roll_max_mod = 10
         wanted_message = r"roll_max: 60"
         self.call(command(), arg, wanted_message)
 
