@@ -181,18 +181,20 @@ def action_roll(char, log=False):
     if action_cmd:  # if there is an active command
         if log:
             log_info(f'Character ID: {char.id}: action_roll found a deffered command.')
-        if hasattr(action_cmd, 'roll_max'):  # if exists use the roll_max from the command instead of default
-            roll_max = getattr(action_cmd, 'roll_max')
-        if hasattr(action_cmd, 'action_mod_stat'):  # if exists use the stat modifier from the command instead of default
-            action_mod_stat = getattr(action_cmd, 'action_mod_stat')
-    action_mod_name = action_mod_stat+'_action_mod'  # assemble the name of the action modifier
+        # if exists use the roll_max from the command instead of default
+        roll_max = getattr(action_cmd, 'roll_max', roll_max)
+        # if exists use the stat modifier from the command instead of default
+        action_mod_stat = getattr(action_cmd, 'action_mod_stat', action_mod_stat)
+    action_mod_name = action_mod_stat+'_action_mod'  # assemble action modifer name
     if hasattr(char, action_mod_name):  # if exists use the evade modifier on the Character
-        action_mod = getattr(char, action_mod_name)
+        action_mod = getattr(char, action_mod_name, action_mod)
     else:
         log_warn(f'Character ID: {char.id}: missing stat modifier cache: {action_mod_name}')
     result = randint(1, roll_max) + action_mod
     if log:
-        log_info(f'actions.action_roll, Character ID: {char.id}: result {result} | roll_max: {roll_max} | action_mod: {action_mod}| action_mod_stat: {action_mod_stat} | evade_mod_name: {action_mod_name}')
+        log_info(f'actions.action_roll, Character ID: {char.id}: result ' \
+                 f'{result} | roll_max: {roll_max} | action_mod: {action_mod}| ' \
+                 f'action_mod_stat: {action_mod_stat} | evade_mod_name: {action_mod_name}')
     return result
 
 
@@ -226,7 +228,8 @@ def action_cost(char, cost_level='low', cost_stat='END', subt_cost=True, log=Fal
     """
     action_cmd = char.nattributes.get('deffered_command')  # get the command
     if not action_cmd:  # if there is no active command stop the cost
-        error_message = f"rules.action.cost, character: {char.id}. Failed to find an active command."
+        error_message = f"rules.action.cost, character: {char.id}. " \
+                        f"Failed to find an active command."
         um_utils.error_report(error_message, char)
         return False
     # if the command has a cost_stat, use it
@@ -240,14 +243,17 @@ def action_cost(char, cost_level='low', cost_stat='END', subt_cost=True, log=Fal
     else:  # this command does not have a cost
         return 0
     # get the stat modifier for this action, IE char.CON_action_cost_mod
-    cost_stat_instance = getattr(char, cost_stat, False)  # get an instance of that stat used for the cost of this action
-    cost_mod_stat = cost_stat # if this stat has no , default to itself
+    cost_stat_instance = getattr(char, cost_stat, False)
+    cost_mod_stat = cost_stat  # if this stat has no , default to itself
     if cost_stat_instance:
-        # each cost attribute (END, will) has a modifier_stat. types are stats WIS, CON so on
+        # each cost attribute (END, will) has a modifier_stat.
+        # types are stats WIS, CON so on
         # base stats CON, WIS so on will use themselves as the cost modifider
         cost_mod_stat = getattr(cost_stat_instance, 'modifier_stat', None)
-    else: # an instance of the stat is required, cost has to be taken from something
-        error_message = f"rules.action.cost, character: {char.id}, action: {action_cmd.key}. Failed to find an instance of {cost_stat} on character."
+    else:  # an instance of the stat is required
+        error_message = f"rules.action.cost, character: {char.id}, action: " \
+                        f"{action_cmd.key}. Failed to find an instance of " \
+                        f"{cost_stat} on character."
         um_utils.error_report(error_message, char)
         return False
     stat_action_cost_mod = getattr(char, f"{cost_mod_stat}_action_cost_mod", 0)
@@ -260,22 +266,29 @@ def action_cost(char, cost_level='low', cost_stat='END', subt_cost=True, log=Fal
         elif cost_level == 'high':
             base_cost = 1
         else:
-            error_message = f"rules.action.cost, character: {char.id} | action: {action_cmd.key} | cost_level argument must equal 'low' 'mid' 'high' or a number."
+            error_message = f"rules.action.cost, character: {char.id} | action: " \
+                            f"{action_cmd.key} | cost_level argument must equal " \
+                            f"'low' 'mid' 'high' or a number."
             um_utils.error_report(error_message, char)
             return False
-    elif isinstance(cost_level, (int, float)):  # if the cost level is a number, use it as base cost
+    # if the cost level is a number, use it as base cost
+    elif isinstance(cost_level, (int, float)):
         char.msg("cost_level is a number")
         base_cost = cost_level
     else:
-        error_message = f"rules.action.cost, character: {char.id} | action: {action_cmd.key} | cost_level argument must equal 'low' 'mid' 'high' or a number."
+        error_message = f"rules.action.cost, character: {char.id} | action: " \
+                        f"{action_cmd.key} | cost_level argument must equal " \
+                        "'low' 'mid' 'high' or a number."
         um_utils.error_report(error_message, char)
         return False
     # adjust the action cost by the stat action cost modifier
     cost = base_cost - (base_cost * stat_action_cost_mod)
     if log:
-        log_info(f"rules.action_cost, character: {char.id} | action: {action_cmd.key} | cost: {cost} | cost_stat: {cost_stat} | " \
-                 f"base_cost: {base_cost} | {cost_mod_stat}_action_cost_mod: {stat_action_cost_mod} | cost_stat_instance.name: {cost_stat_instance.name} | " \
-                 f"cost_mod_stat: {cost_mod_stat}")
+        log_info(f"rules.action_cost, character: {char.id} | action: " \
+                 f"{action_cmd.key} | cost: {cost} | cost_stat: {cost_stat} | " \
+                 f"base_cost: {base_cost} | {cost_mod_stat}_action_cost_mod: " \
+                 f"{stat_action_cost_mod} | cost_stat_instance.name: " \
+                 f"{cost_stat_instance.name} | cost_mod_stat: {cost_mod_stat}")
     if subt_cost:
         cost_stat_instance.set(cost_stat_instance - cost)  # subtract the cost
     return cost
