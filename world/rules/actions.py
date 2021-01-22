@@ -6,6 +6,7 @@ from random import randint
 from evennia.utils.logger import log_info, log_warn
 from evennia.utils import inherits_from
 from utils import um_utils
+from world.rules import skills
 
 SITTING_EVADE_PENALTY = 20
 LAYING_EVADE_PENALTY = 50
@@ -112,6 +113,8 @@ def evade_roll(char, evade_mod_stat, log=False, unit_test=False):
                     log_info(f'Character ID: {char.id}: evade_roll found a deffered command.')
                 # if the evade command has a roll max use it instead of default
                 roll_max = getattr(evade_cmd, 'roll_max', roll_max)
+                # get Character's skill bonus modifier
+                roll_max += skills.evd_max_mod(evade_cmd)
                 # check if any wielded items will assist with this evasion
                 wielded_items = char.wielding()
                 if wielded_items:  # target is wielding item(s)

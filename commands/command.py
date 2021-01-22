@@ -175,6 +175,12 @@ class Command(default_cmds.MuxCommand):
             Will not call automatically, here to pass between Command functions
         log = False  # set to true to info logging should be enabled.
             Error and warning messages are always enabled.
+        learn_diff = 1  # How difficult the command is to learn.
+            1: 'very easy', 2: 'easy', 3: 'moderate', 4: 'hard', 5: 'daunting'
+            difficulty rules in world.rules.skills
+        comp_diff = 2  # How difficult the command is to complete
+            1: 'very easy', 2: 'easy', 3: 'moderate', 4: 'hard', 5: 'daunting'
+            difficulty rules in world.rules.skills
 
     Methods:
         All methods are fully documented in their docstrings.
@@ -236,6 +242,8 @@ class Command(default_cmds.MuxCommand):
         self.cost_stat = 'END'  # stat this command will use for the action's cost
         self.cost_level = None  # level this action should cost. Acceptable levels: 'low', 'mid', 'high'
         self.log = False  # set to true to info logging should be enabled. Error and warning messages are always enabled.
+        self.learn_diff = 1  # How difficult the command is to learn.
+        self.comp_diff = 2  # How difficult the command is to complete
         self.at_init()
 
     def at_init(self):

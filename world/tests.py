@@ -23,8 +23,18 @@ class TestRules(CommandTest):
         Used to test the character object
         stat modifiers unit tests are in world.rules.tests.TestRules.test_stat_modifiers
 
+        CommandTest.call arguments
+        call(cmdobj, args, msg=None, cmdset=None,
+            noansi=True, caller=None, receiver=None, cmdstring=None,
+            obj=None, inputs=None, raw_string=None,
+        ):
+
         Objects in EvenniaTest
-            self.obj1 self.obj2 self.char1 self.char2 self.exit
+            self.obj1 = obj
+            self.obj2 = "obj2"
+            self.char1 = "char"
+            self.char2 = "char2"
+            self.exit = "out"
         """
         #initialize stat modifier cache
         self.char1.at_init()
@@ -46,6 +56,55 @@ class TestRules(CommandTest):
         # make certain it returns false on fail
         fail_body_part = body.get_part(self.char1, 'no_part_name')
         self.assertFalse(fail_body_part)
+
+        # test Character skill ranks
+
+        # test dodge
+        command = developer_cmds.CmdMultiCmd
+        arg = "= dodge"
+        wanted_message = r"You will be busy for \d+ seconds.\nYou begin to sway warily."
+        cmd_result = self.call(command(), arg)
+        self.assertRegex(cmd_result, wanted_message)
+        command = developer_cmds.CmdCmdFuncTest
+        arg = "evade_roll, self, cmd_type:evasion, evade_mod_stat:AGI = AGI, False, True"
+        wanted_message = r"roll_max: 51"
+        cmd_result = self.call(command(), arg)
+        self.assertRegex(cmd_result, wanted_message)
+        # now give the Character ranks in evade.
+        self.char1.skills.evasion.dodge = 1
+        command = developer_cmds.CmdMultiCmd
+        arg = "= dodge"
+        wanted_message = r"You will be busy for \d+ seconds.\nYou begin to sway warily."
+        cmd_result = self.call(command(), arg)
+        self.assertRegex(cmd_result, wanted_message)
+        command = developer_cmds.CmdCmdFuncTest
+        arg = "evade_roll, self, cmd_type:evasion, evade_mod_stat:AGI = AGI, False, True"
+        wanted_message = r"roll_max: 52"
+        cmd_result = self.call(command(), arg)
+        self.assertRegex(cmd_result, wanted_message)
+        self.char1.skills.evasion.dodge = 10
+        command = developer_cmds.CmdMultiCmd
+        arg = "= dodge"
+        wanted_message = r"You will be busy for \d+ seconds.\nYou begin to sway warily."
+        cmd_result = self.call(command(), arg)
+        self.assertRegex(cmd_result, wanted_message)
+        command = developer_cmds.CmdCmdFuncTest
+        arg = "evade_roll, self, cmd_type:evasion, evade_mod_stat:AGI = AGI, False, True"
+        wanted_message = r"roll_max: 59"
+        cmd_result = self.call(command(), arg)
+        self.assertRegex(cmd_result, wanted_message)
+        self.char1.skills.evasion.dodge = 20
+        command = developer_cmds.CmdMultiCmd
+        arg = "= dodge"
+        wanted_message = r"You will be busy for \d+ seconds.\nYou begin to sway warily."
+        cmd_result = self.call(command(), arg)
+        self.assertRegex(cmd_result, wanted_message)
+        command = developer_cmds.CmdCmdFuncTest
+        arg = "evade_roll, self, cmd_type:evasion, evade_mod_stat:AGI = AGI, False, True"
+        wanted_message = r"roll_max: 67"
+        cmd_result = self.call(command(), arg)
+        self.assertRegex(cmd_result, wanted_message)
+
 
 
 class TestUtils(CommandTest):
