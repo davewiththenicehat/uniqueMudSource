@@ -118,9 +118,45 @@ def evd_max_mod(command):
     caller = command.caller
     evade_type = command.cmd_type
     evade_inst = getattr(caller.skills, evade_type)
-    skill_name = command.key
+    skill_name = command.skill_name
     # get ranks in skill or 0 if the skill is unknown
     skill_ranks = getattr(evade_inst, skill_name, 0)
     skill_ranks = int(skill_ranks)
     # return skill rank modifier after command difficulty modifier
     return cmd_diff_mod(command.comp_diff, skill_ranks)
+
+
+def act_max_mod(command):
+    """
+    Return the skill based action modifer for a Character's current action command.
+
+    Arguments:
+        command=Command, an instance of a command
+
+    Returns:
+        int, comand.caller skill based action modifier
+            (6 - command.comp_diff) * .2 * caller.skills.SET_NAME.SKILL_NAME
+            returns 0 if
+                character has no ranks in the skill
+
+    Notes:
+        MUST return a number. It will be directly used without further testing in equations.
+
+    Equation:
+        Action's roll max is modified by ranks in the skill.
+        Minus 20% for each step of the action's completion difficulty past 'very easy'
+            'very easy': 100% of skill ranks, rounded up
+            'easy': 80% of skill ranks, rounded up
+            'moderate', 60% of skill ranks, rounded up
+            'hard', 40% of skill ranks, rounded up
+            'daunting', 20% of skill ranks, rounded up
+    """
+    caller = command.caller
+    action_type = command.cmd_type
+    action_inst = getattr(caller.skills, action_type)
+    skill_name = command.skill_name
+    # get ranks in skill or 0 if the skill is unknown
+    skill_ranks = getattr(action_inst, skill_name, 0)
+    skill_ranks = int(skill_ranks)
+    result = cmd_diff_mod(command.comp_diff, skill_ranks)
+    return result

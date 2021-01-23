@@ -39,6 +39,15 @@ class TestRules(CommandTest):
         #initialize stat modifier cache
         self.char1.at_init()
         self.char2.at_init()
+        # make character names something easy to tell apart
+        self.char1.usdesc = 'Char'
+        self.char2.usdesc = 'Char2'
+        # make objects targetable for testing
+        self.obj1.targetable = True
+        self.obj2.targetable = True
+        self.obj3 = create_object(Object, key="Obj3")
+        self.obj3.targetable = True
+        self.obj3.location = self.char1.location
         # check that stats mods are at correct value for stats all being max 100
         command = developer_cmds.CmdViewObj
         arg = " =stat_cache"
@@ -70,7 +79,8 @@ class TestRules(CommandTest):
         wanted_message = r"roll_max: 51"
         cmd_result = self.call(command(), arg)
         self.assertRegex(cmd_result, wanted_message)
-        # now give the Character ranks in evade.
+
+        # Test Character ranks in an evade skill, action or command
         self.char1.skills.evasion.dodge = 1
         command = developer_cmds.CmdMultiCmd
         arg = "= dodge"
@@ -102,6 +112,41 @@ class TestRules(CommandTest):
         command = developer_cmds.CmdCmdFuncTest
         arg = "evade_roll, self, cmd_type:evasion, evade_mod_stat:AGI = AGI, False, True"
         wanted_message = r"roll_max: 67"
+        cmd_result = self.call(command(), arg)
+        self.assertRegex(cmd_result, wanted_message)
+
+        # test Character ranks in a standard skill, action or command
+        # defer a punch to use within rules.actions.action_roll
+        command = developer_cmds.CmdMultiCmd
+        arg = "= punch char2"
+        wanted_message = 'You will be busy for \\d+ seconds.\nFacing Char2 Char pulls theirs hand back preparing an attack.'
+        cmd_result = self.call(command(), arg)
+        self.assertRegex(cmd_result, wanted_message)
+        # test 1 skill rank
+        self.char1.skills.unarmed.punch = 1
+        command = developer_cmds.CmdCmdFuncTest
+        arg = "action_roll, self, cmd_type:unarmed, evade_mod_stat:OBS, skill_name:punch = False, True"
+        wanted_message = r"roll_max: 51"
+        cmd_result = self.call(command(), arg)
+        self.assertRegex(cmd_result, wanted_message)
+        # test 10 skill ranks
+        self.char1.skills.unarmed.punch = 10
+        command = developer_cmds.CmdCmdFuncTest
+        arg = "action_roll, self, cmd_type:unarmed, evade_mod_stat:OBS, skill_name:punch = False, True"
+        wanted_message = r"roll_max: 58"
+        cmd_result = self.call(command(), arg)
+        self.assertRegex(cmd_result, wanted_message)
+        # test 20 skill ranks
+        self.char1.skills.unarmed.punch = 20
+        command = developer_cmds.CmdCmdFuncTest
+        arg = "action_roll, self, cmd_type:unarmed, evade_mod_stat:OBS, skill_name:punch = False, True"
+        wanted_message = r"roll_max: 66"
+        cmd_result = self.call(command(), arg)
+        self.assertRegex(cmd_result, wanted_message)
+        # Complete the deffered punch
+        command = developer_cmds.CmdMultiCmd
+        arg = "= complete_cmd_early"
+        wanted_message = 'punch \\d+ VS evade \\d+: You punch at Char2.*'
         cmd_result = self.call(command(), arg)
         self.assertRegex(cmd_result, wanted_message)
 

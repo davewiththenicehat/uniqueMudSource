@@ -181,6 +181,8 @@ class Command(default_cmds.MuxCommand):
         comp_diff = 2  # How difficult the command is to complete
             1: 'very easy', 2: 'easy', 3: 'moderate', 4: 'hard', 5: 'daunting'
             difficulty rules in world.rules.skills
+        skill_name = self.key  # the skill name this command uses of rank modification
+            This is essential and is used during unit testing
 
     Methods:
         All methods are fully documented in their docstrings.
@@ -202,6 +204,8 @@ class Command(default_cmds.MuxCommand):
         cost(cost_level='low', cost_stat='END'), Calculate and remove the cost of this Command
         target_bad(target=object), returns True if object passed is not targetable by this command
         target_search(target_name=str), Search for an instance of a target.
+        evade_roll, used for unit testing
+        action_roll, used for unit testing
     """
 
     def __init__(self, **kwargs):
@@ -244,6 +248,7 @@ class Command(default_cmds.MuxCommand):
         self.log = False  # set to true to info logging should be enabled. Error and warning messages are always enabled.
         self.learn_diff = 1  # How difficult the command is to learn.
         self.comp_diff = 2  # How difficult the command is to complete
+        self.skill_name = self.key  # the skill name this command uses of rank modification
         self.at_init()
 
     def at_init(self):
@@ -933,6 +938,9 @@ class Command(default_cmds.MuxCommand):
 
     def evade_roll(self, evade_mod_stat='AGI', log=False, unit_test=False):
         """
+        This was created with the intent of using it during unit testing.
+        If called directly it likely will not work as you intend.
+
         Roll evasion for the command's target.
         This is wrapper for rules.actions.evade_roll
 
@@ -943,6 +951,25 @@ class Command(default_cmds.MuxCommand):
             evade_mod_stat, the stat required to evade the action evade_roll to evade
             log=False, if True log the variables used
             unit_test=False, if True evade_roll will display variables to screen
+
+        Usage:
+            Within a unit test:
+
+            self.char1.skills.evasion.dodge = 20
+            command = developer_cmds.CmdMultiCmd
+            arg = "= dodge"
+            wanted_message = r"You will be busy for \d+ seconds.\nYou begin to sway warily."
+            cmd_result = self.call(command(), arg)
+            self.assertRegex(cmd_result, wanted_message)
+            command = developer_cmds.CmdCmdFuncTest
+            arg = "evade_roll, self, cmd_type:evasion, evade_mod_stat:AGI = AGI, False, True"
+            wanted_message = r"roll_max: 67"
+            cmd_result = self.call(command(), arg)
+            self.assertRegex(cmd_result, wanted_message)
+
+        Notes:
+            This was created with the intent of using it during unit testing.
+            If called directly it likely will not work as you intend.
         """
         if not self.target:
             self.caller.msg('A target is required.')
@@ -952,3 +979,25 @@ class Command(default_cmds.MuxCommand):
         if self.evade_mod_stat:
             evade_mod_stat = self.evade_mod_stat
         return actions.evade_roll(target, evade_mod_stat, log, unit_test)
+
+    def action_roll(self, log=False, unit_test=False):
+        """
+        This was created with the intent of using it during unit testing.
+        If called directly it likely will not work as you intend.
+
+        Roll evasion for the command's target.
+        This is wrapper for rules.actions.action_roll
+
+        Returns:
+            int, the evasion roll the commands target rolled.
+
+        Arguments:
+            action_mod_stat, the stat required to action the action action_roll to action
+            log=False, if True log the variables used
+            unit_test=False, if True action_roll will display variables to screen
+
+        Notes:
+            This was created with the intent of using it during unit testing.
+            If called directly it likely will not work as you intend.
+        """
+        return actions.action_roll(self.target, log, unit_test)

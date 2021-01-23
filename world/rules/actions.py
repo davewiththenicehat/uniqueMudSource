@@ -75,15 +75,15 @@ def evade_roll(char, evade_mod_stat, log=False, unit_test=False):
         No lower than 5
 
     Equation:
-        Each evade action can have its own max action roll.
-            Default max is 50.
-        Each action can have its own stat used to modify the action roll.
         evade roll is a random number from 1 to the evade roll's max plus the
             Characters stat's evade modifier. (ushaully agility)
-        If no evade action is active the default max of 50 is used.
-        If an active evade action is active, that can dodge the attack action.
+        Each evade action can have its own max evade roll.
+            Default max is 50.
+        If no evade action is active the default max is used (ushaully 50).
+        If a Character has an evade action active, that can evade the received attack action.
             The evade command will be used for the max roll.
             All wielded items that can modify the max roll will.
+            Ranks in the evade action's skill will modifify the max roll.
         If a character is sitting or laying they will suffer a penalty.
             Sitting provides a 20 penalty
             Laying provides a 50 penalty
@@ -155,8 +155,8 @@ def evade_roll(char, evade_mod_stat, log=False, unit_test=False):
         char.msg(msg)
     return result
 
-
-def action_roll(char, log=False):
+#action_roll(target, log, unit_test)
+def action_roll(char, log=False, unit_test=False):
     """
     action roll is  a random roll between 1 and the action's max roll.
         Plus the action's stat modifier
@@ -183,21 +183,35 @@ def action_roll(char, log=False):
     action_cmd = char.nattributes.get('deffered_command')
     if action_cmd:  # if there is an active command
         if log:
-            log_info(f'Character ID: {char.id}: action_roll found a deffered command.')
+            msg = f'Character ID: {char.id}: action_roll found a deffered command.'
+            log_info(msg)
         # if exists use the roll_max from the command instead of default
+        # this has already been adjusted by wielded items
         roll_max = getattr(action_cmd, 'roll_max', roll_max)
+        # adjust the max roll by skill ranks
+        roll_max += skills.act_max_mod(action_cmd)
         # if exists use the stat modifier from the command instead of default
         action_mod_stat = getattr(action_cmd, 'action_mod_stat', action_mod_stat)
     action_mod_name = action_mod_stat+'_action_mod'  # assemble action modifer name
-    if hasattr(char, action_mod_name):  # if exists use the evade modifier on the Character
+    # if exists use the action modifier on the Character
+    if hasattr(char, action_mod_name):
         action_mod = getattr(char, action_mod_name, action_mod)
     else:
-        log_warn(f'Character ID: {char.id}: missing stat modifier cache: {action_mod_name}')
+        log_warn(f'Character ID: {char.id}: missing stat modifier cache: ' \
+                 f'{action_mod_name}')
     result = randint(1, roll_max) + action_mod
     if log:
-        log_info(f'actions.action_roll, Character ID: {char.id}: result ' \
-                 f'{result} | roll_max: {roll_max} | action_mod: {action_mod}| ' \
-                 f'action_mod_stat: {action_mod_stat} | evade_mod_name: {action_mod_name}')
+        msg = f'actions.action_roll, Character ID: {char.id}: result ' \
+              f'{result} | roll_max: {roll_max} | action_mod: {action_mod}| ' \
+              f'action_mod_stat: {action_mod_stat} | evade_mod_name: ' \
+              f'{action_mod_name}'
+        log_info(msg)
+    if unit_test:
+        msg = f'actions.action_roll, Character ID: {char.id}: result ' \
+              f'{result} | roll_max: {roll_max} | action_mod: {action_mod}| ' \
+              f'action_mod_stat: {action_mod_stat} | evade_mod_name: ' \
+              f'{action_mod_name}'
+        char.msg(msg)
     return result
 
 
