@@ -877,13 +877,11 @@ class UMRPSystemCmdSet(CmdSet):
     """
 
     def at_cmdset_creation(self):
-        self.add(rpsystem.CmdEmote())
-        self.add(rpsystem.CmdSay())
-        self.add(rpsystem.CmdRecog())
-        # commands that have been overridden locally
-        self.add(CmdSdesc())
-        self.add(CmdPose())
-        self.add(CmdMask())
+        self.add(CmdEmote)
+        self.add(CmdRecog)
+        self.add(CmdSdesc)
+        self.add(CmdPose)
+        self.add(CmdMask)
 
 
 class CmdPose(rpsystem.CmdPose):
@@ -902,3 +900,11 @@ class CmdMask(rpsystem.CmdMask):
     # rpsystem overriden CmdMask
     locks = "perm(Builder)"
     help_category = "Building"
+
+
+class CmdRecog(rpsystem.CmdRecog, Command):
+    pass
+
+
+class CmdEmote(rpsystem.CmdEmote, Command):
+    pass

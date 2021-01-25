@@ -59,7 +59,7 @@ class Weapon(Wieldable):
     act_roll_max_mod = 0  # an intiger to add to Command.roll_max.
         Can be a negative number
     evd_roll_max_mod = 0  # added to an evade commands roll_max in actions.evade_roll
-    evd_stats=()  # a list or tuple of stats this weapon can assist with evasion
+    evd_stats = tuple()  # a list or tuple of stats this weapon can assist with evasion
         To set item.evd_stats = ('AGI',)
             Forgetting the leading , will result in the string being the tuple.
             Using tuple('AGI',), will result in the string being the tuple.

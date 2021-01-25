@@ -149,7 +149,7 @@ class TestRules(CommandTest):
         wanted_message = 'punch \\d+ VS evade \\d+: You punch at Char2.*'
         cmd_result = self.call(command(), arg)
         self.assertRegex(cmd_result, wanted_message)
-
+        self.char1.skills.unarmed.punch = 0
 
 
 class TestUtils(CommandTest):
