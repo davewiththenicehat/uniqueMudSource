@@ -206,11 +206,17 @@ class TestCommands(CommandTest):
         wanted_message = 'You will be busy for \\d+ seconds.\nFacing Char2 Char raises a sword preparing an attack.\nstab \\d+ VS evade \\d+: You stab at Char2.*'
         cmd_result = self.call(command(), arg)
         self.assertRegex(cmd_result, wanted_message)
-
         arg = "= drop sword"
         wanted_message = "You drop a sword"
         cmd_result = self.call(command(), arg, caller=self.char1)
         self.assertRegex(cmd_result, wanted_message)
+
+    # test command.skill_ranks
+        # humanoids should have 1 rank in dodge, test this with command.skill_ranks
+        command = developer_cmds.CmdCmdFuncTest
+        arg = "/r skill_ranks, self, cmd_type:evasion, skill_name:dodge = False"
+        wanted_message = r"skill_ranks returned: 1"
+        self.call(command(), arg, wanted_message, caller=self.char1)
 
     # test clothing commands
         # test character with empty inventory

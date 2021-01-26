@@ -206,6 +206,7 @@ class Command(default_cmds.MuxCommand):
         target_search(target_name=str), Search for an instance of a target.
         evade_roll, used for unit testing
         action_roll, used for unit testing
+        skill_ranks(), Returns the number of ranks the caller has in this command's corrisponding Character skill
     """
 
     def __init__(self, **kwargs):
@@ -1001,3 +1002,35 @@ class Command(default_cmds.MuxCommand):
             If called directly it likely will not work as you intend.
         """
         return actions.action_roll(self.target, log, unit_test)
+
+    def skill_ranks(self, log=False):
+        """
+        Returns the number of ranks the caller has in the skill required to run this command.
+
+        Returns:
+            int, the number of ranks the caller has in this command's skill.
+                It is 0 if
+                    Caller has no ranks
+                    The command has no skill set
+
+        Usage:
+            # test if ranks exist
+            if self.skill_ranks():
+                # 1 or more ranks in this command's skill
+            else:
+                # no ranks in this command's skill
+
+            # test for 10 or more ranks in this skill
+            if self.skill_ranks() > 9:
+                # There are 10 or more ranks in this command's skill
+        """
+        caller = self.caller
+        skill_set = self.cmd_type
+        skil_set_inst = getattr(caller.skills, skill_set, False)
+        if skil_set_inst:
+            skill_name = self.skill_name
+            # get ranks in skill or 0 if the skill is unknown
+            skill_ranks = getattr(skil_set_inst, skill_name, 0)
+            skill_ranks = int(skill_ranks)
+            return skill_ranks
+        return 0
