@@ -10,6 +10,13 @@ class Humanoid(Character):
     BODY_PARTS = HUMANOID_BODY
     HANDS = HUMANOID_HANDS
 
+    def at_object_creation(self):
+        # all humanoid objects should have access to these basic attacks
+        self.skills.unarmed.punch = 1
+        self.skills.unarmed.kick = 1
+        self.skills.evasion.dodge = 1
+        return super().at_object_creation()
+
 
 class Human(Humanoid):
     """Class that represents humans."""

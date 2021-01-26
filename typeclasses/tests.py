@@ -221,18 +221,23 @@ class TestObjects(CommandTest):
 
         # test Character skills
         from world.rules import skills
-        self.assertEqual(char.skills.unarmed.punch, 0)
         for skill_set in skills.SKILLS.keys():
             skill_set_inst = getattr(char.skills, skill_set)
             for skill in skill_set_inst.el_list:
                 skill_inst = getattr(skill_set_inst, skill)
-                self.assertEqual(skill_inst, 0)
+                # humanoids have 1 rank in punch, kick and dodge
+                if skill in ('punch', 'kick', 'dodge'):
+                    self.assertEqual(skill_inst, 1)
+                else:
+                    self.assertEqual(skill_inst, 0)
         # verify it saves to database
+        char.skills.unarmed.punch = 0
         self.assertFalse(char.attributes.has('unarmed_punch'))
         char.skills.unarmed.punch = 3
         self.assertEqual(char.attributes.get('unarmed_punch'), 3)
         char.skills.unarmed.punch = 0
         self.assertFalse(char.attributes.has('unarmed_punch'))
+        char.skills.unarmed.punch = 1
 
 
         # test weapon dmg_types ListElement

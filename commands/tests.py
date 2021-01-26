@@ -557,7 +557,7 @@ class TestCommands(CommandTest):
         self.assertRegex(cmd_result, wanted_message)
         command = developer_cmds.CmdCmdFuncTest
         arg = "evade_roll, self, cmd_type:evasion, evade_mod_stat:AGI = AGI, False, True"
-        wanted_message = r"roll_max: 52"
+        wanted_message = r"roll_max: 53"
         cmd_result = self.call(command(), arg)
         self.assertRegex(cmd_result, wanted_message)
         del self.sword.evd_stats
