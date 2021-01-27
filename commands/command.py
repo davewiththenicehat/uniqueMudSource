@@ -154,6 +154,7 @@ class Command(default_cmds.MuxCommand):
             item types will match command set names in world.rules.skills.SKILLS
             The item.item_type attribute must match the command's Command.cmd_type
             Example: 'one_handed'
+        required_ranks = 0  # required ranks in the commands skill_name for this command to work.
         dmg_types = None  # dictionary of damage types this command can manipulate.
             Attack commands should ALWAYS have one or more dmg_type.
                 If an attack command has no dmg_types,
@@ -244,6 +245,7 @@ class Command(default_cmds.MuxCommand):
             # deferal commands still require ready to defer
         self.requires_conscious = True  # if true this command requires the caller to be conscious
         self.requires_wielding = None  # require a wielded item type for command to work.
+        self.required_ranks = 0  # required ranks in the commands skill_name for this command to work.
         self.cost_stat = 'END'  # stat this command will use for the action's cost
         self.cost_level = None  # level this action should cost. Acceptable levels: 'low', 'mid', 'high'
         self.log = False  # set to true to info logging should be enabled. Error and warning messages are always enabled.
@@ -300,6 +302,8 @@ class Command(default_cmds.MuxCommand):
 
         stops execution of a Command if a Character does not meet the commands status requirements.
             self.requires_ready and self.requires_conscious
+        stops the execution of a Command if Character does not meet the Command.required_ranks in the
+            Command.skill_name skill.
         finds and store a reference of the Object the command is targetting as self.target
             Also adds support for easy targeting of simular objects.
             "punch 2 droid", rather than "punch 2-droid full name"
@@ -333,6 +337,13 @@ class Command(default_cmds.MuxCommand):
                 return True
             elif caller.condition.dead:
                 caller.msg("You can not do that while dead.", force=True)
+                return True
+        # stop the command if ranks requirement are not met
+        required_ranks = self.required_ranks
+        if required_ranks:
+            if required_ranks > self.skill_ranks():
+                msg = f"You must have {required_ranks} or more ranks in {self.skill_name} to {self.key}."
+                caller.msg(msg)
                 return True
         # give an action description if none was provided
         if not self.desc:

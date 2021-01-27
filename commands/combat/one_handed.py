@@ -41,6 +41,7 @@ class OneHandedCommand(Command):
         self.cmd_type = 'one_handed'  # Should be a string of the cmd type. IE: 'evasion' for an evasion cmd
         self.requires_wielding = True  # require a wielded item type for command to work.
         self.cost_level = 'mid' #  level this action should cost. Acceptable levels: 'low', 'mid', 'high'
+        self.required_ranks = 1  # required ranks in the commands skill_name for this command to work.
 
 
 class CmdStab(OneHandedCommand):

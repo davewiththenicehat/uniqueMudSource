@@ -201,6 +201,7 @@ class TestCommands(CommandTest):
         cmd_result = self.call(command(), arg, caller=self.char1)
         self.assertRegex(cmd_result, wanted_message)
         # test the stab command
+        self.char1.skills.one_handed.stab = 1
         command = developer_cmds.CmdMultiCmd
         arg = "= stab char2, complete_cmd_early"
         wanted_message = 'You will be busy for \\d+ seconds.\nFacing Char2 Char raises a sword preparing an attack.\nstab \\d+ VS evade \\d+: You stab at Char2.*'
@@ -210,6 +211,7 @@ class TestCommands(CommandTest):
         wanted_message = "You drop a sword"
         cmd_result = self.call(command(), arg, caller=self.char1)
         self.assertRegex(cmd_result, wanted_message)
+        self.char1.skills.one_handed.stab = 0
 
     # test command.skill_ranks
         # humanoids should have 1 rank in dodge, test this with command.skill_ranks
@@ -913,4 +915,11 @@ class TestCommands(CommandTest):
         arg = 'to object and 2 object "test message'
         wanted_message = r'You say to object one and object two, "test message"'
         cmd_result = self.call(command(), arg, caller=self.char1)
+        self.assertRegex(cmd_result, wanted_message)
+
+        # test that commands required_ranks will stop the command.
+        command = developer_cmds.CmdMultiCmd
+        arg = "= stab char2, complete_cmd_early"
+        wanted_message = 'You must have 1 or more ranks in stab to stab.'
+        cmd_result = self.call(command(), arg)
         self.assertRegex(cmd_result, wanted_message)
