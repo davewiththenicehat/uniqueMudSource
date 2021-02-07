@@ -7,7 +7,7 @@ from typeclasses.rooms import Room
 from typeclasses.objects import Object
 from evennia.contrib import gendersub
 from evennia.utils.test_resources import EvenniaTest
-from world.rules import body, damage
+from world.rules import body, damage, actions
 from commands import developer_cmds
 from typeclasses.equipment.wieldable import Weapon
 
@@ -230,7 +230,7 @@ class TestObjects(CommandTest):
                     self.assertEqual(skill_inst, 1)
                 else:
                     self.assertEqual(skill_inst, 0)
-        # verify it saves to database
+        # verify skills save to database
         char.skills.unarmed.punch = 0
         self.assertFalse(char.attributes.has('unarmed_punch'))
         char.skills.unarmed.punch = 3
@@ -239,6 +239,50 @@ class TestObjects(CommandTest):
         self.assertFalse(char.attributes.has('unarmed_punch'))
         char.skills.unarmed.punch = 1
 
+        # test Character.evd_max
+        # test flat foot "no evasion command active"
+        command = developer_cmds.CmdCmdFuncTest
+        arg = "evade_roll, self, cmd_type:evasion, evade_mod_stat:AGI = AGI, False, True"
+        wanted_message = r"roll_max: 51"
+        cmd_result = self.call(command(), arg, caller=char)
+        self.assertRegex(cmd_result, wanted_message)
+        # test with an active evasion command
+        command = developer_cmds.CmdMultiCmd
+        arg = "= dodge"
+        wanted_message = r"You will be busy for \d+ seconds.\nYou begin to sway warily."
+        cmd_result = self.call(command(), arg, caller=char)
+        self.assertRegex(cmd_result, wanted_message)
+        command = developer_cmds.CmdCmdFuncTest
+        arg = "evade_roll, self, cmd_type:evasion, evade_mod_stat:AGI = AGI, False, True"
+        wanted_message = r"roll_max: 52"
+        cmd_result = self.call(command(), arg, caller=char)
+        self.assertRegex(cmd_result, wanted_message)
+        # change the evade max for dodge and test again
+        char.evd_max.AGI = 53
+        # flat footed
+        command = developer_cmds.CmdCmdFuncTest
+        arg = "evade_roll, self, cmd_type:evasion, evade_mod_stat:AGI = AGI, False, True"
+        wanted_message = r"roll_max: 53"
+        cmd_result = self.call(command(), arg, caller=char)
+        self.assertRegex(cmd_result, wanted_message)
+        # with dodge active
+        command = developer_cmds.CmdMultiCmd
+        arg = "= dodge"
+        wanted_message = r"You will be busy for \d+ seconds.\nYou begin to sway warily."
+        cmd_result = self.call(command(), arg, caller=char)
+        self.assertRegex(cmd_result, wanted_message)
+        command = developer_cmds.CmdCmdFuncTest
+        arg = "evade_roll, self, cmd_type:evasion, evade_mod_stat:AGI = AGI, False, True"
+        wanted_message = r"roll_max: 54"
+        cmd_result = self.call(command(), arg, caller=char)
+        self.assertRegex(cmd_result, wanted_message)
+        # set back to default
+        char.evd_max.AGI = actions.EVADE_MAX
+        command = developer_cmds.CmdCmdFuncTest
+        arg = "evade_roll, self, cmd_type:evasion, evade_mod_stat:AGI = AGI, False, True"
+        wanted_message = r"roll_max: 51"
+        cmd_result = self.call(command(), arg, caller=char)
+        self.assertRegex(cmd_result, wanted_message)
 
         # test weapon dmg_types ListElement
         self.assertFalse(self.sword.attributes.has('dmg_types_acd'))

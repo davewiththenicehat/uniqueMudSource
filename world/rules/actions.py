@@ -11,6 +11,7 @@ from world.rules import skills
 SITTING_EVADE_PENALTY = 20
 LAYING_EVADE_PENALTY = 50
 EVADE_MIN = 5
+EVADE_MAX = 51
 
 
 def targeted_action(caller, target, log=False):
@@ -54,7 +55,7 @@ def evade_roll(char, evade_mod_stat, log=False, unit_test=False):
     """
     evade roll is  a random roll between 1 and the evade's max roll.
         Plus the evade's stat modifier
-        Default max is 50
+        Default max is 51
     evade_roll will check if the evading Character's active command is an
         evasion command that is compatible with the action being used against
         the evader.
@@ -75,21 +76,27 @@ def evade_roll(char, evade_mod_stat, log=False, unit_test=False):
         No lower than 5
 
     Equation:
-        evade roll is a random number from 1 to the evade roll's max plus the
-            Characters stat's evade modifier. (ushaully agility)
-        Each evade action can have its own max evade roll.
-            Default max is 50.
-        If no evade action is active the default max is used (ushaully 50).
-        If a Character has an evade action active, that can evade the received attack action.
-            The evade command will be used for the max roll.
+        Evade Rolls:
+        Each attack action has a stat used to evade it.
+            Physical attack usually require Agility to evade.
+            Mental attacks usually require Wisdom to evade.
+            Most attacks are physical.
+        evade roll is a random number from 1 to the Characters evade roll max.
+            Plus the Character's evade stat modifier.
+        Each Character has an evade roll max for each stat.
+            Default evade roll max for each stat is 51.
+            Changing Character's evade roll max has a strong affect to combat.
+        If no evade action is active the Character's default roll max is used.
+        If a Character has an evade action active.
+            Ranks in the evade action's skill will modifify the roll max.
             All wielded items that can modify the max roll will.
-            Ranks in the evade action's skill will modifify the max roll.
         If a character is sitting or laying they will suffer a penalty.
             Sitting provides a 20 penalty
             Laying provides a 50 penalty
         An evade roll result can not be less than 5.
     """
-    roll_max = 50  # default max roll for evade rolls
+    # collected roll_max from character, use default if character does not have one.
+    roll_max = getattr(char.evd_max, evade_mod_stat, EVADE_MAX)
     evade_mod = 0
     # if the Character is unconscious they can not dodge.
     if char.condition.unconscious:
@@ -111,8 +118,6 @@ def evade_roll(char, evade_mod_stat, log=False, unit_test=False):
             if cmd_type == 'evasion' and evade_cmd.evade_mod_stat == evade_mod_stat:
                 if log:
                     log_info(f'Character ID: {char.id}: evade_roll found a deffered command.')
-                # if the evade command has a roll max use it instead of default
-                roll_max = getattr(evade_cmd, 'roll_max', roll_max)
                 # get Character's skill bonus modifier
                 roll_max += skills.evd_max_mod(evade_cmd)
                 # check if any wielded items will assist with this evasion

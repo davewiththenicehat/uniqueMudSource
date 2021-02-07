@@ -23,6 +23,18 @@ STAT_MAP_DICT = {
     'CHR':  'charisma'
 }
 
+# a tuple to loop through for stats
+STATS = (
+    'STR',
+    'CON',
+    'OBS',
+    'AGI',
+    'SPD',
+    'INT',
+    'WIS',
+    'CHR'
+)
+
 
 def get_stat(caller, stat_type, function_name='?'):
     """

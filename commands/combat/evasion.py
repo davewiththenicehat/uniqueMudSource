@@ -82,7 +82,6 @@ class CmdDodge(EvasionCommand):
         """
         super().at_init()  # uncomment when overridden
         self.defer_time = 10  # time is seconds for the command to wait before running action of command
-        self.roll_max = 51  # default max roll for evade rolls
 
     def start_message(self):
         """

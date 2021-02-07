@@ -13,7 +13,7 @@ from utils.element import Element, ListElement
 from utils import um_utils
 from world import status_functions
 from evennia import utils
-from world.rules import stats, body, damage, skills
+from world.rules import stats, body, damage, skills, actions
 from evennia.contrib.rpsystem import ContribRPCharacter
 from typeclasses.equipment.clothing import ClothedCharacter
 from evennia.contrib.rpsystem import RPSystemCmdSet
@@ -149,6 +149,18 @@ class Character(AllObjectsMixin, CharExAndObjMixin, ClothedCharacter, GenderChar
                 For example:
                     punch_ranks = skills.unarmed.punch
                     punch_ranks = getattr(skills.unarmed, 'punch')
+
+        evd_max=ListElement, determins the roll_max of each stat in evade_roll.
+            There is one for every stat in stats.STATS
+            Example: char.evd_max.AGI or char.evd_max.WIS
+            Usage:
+                This is used in world.rules.actions.evade_roll.
+                It determins the minimum evade roll for this Character in the
+                corrisponding stat.
+                For complete rules refer to world.rules.actions.evade_roll
+                Change with:
+                    char.evd_max.STAT_NAME = #
+                    Example: char.evd_max.AGI = 3
 
     Methods:
         All methods are fully documented in their docstrings.
@@ -309,6 +321,30 @@ class Character(AllObjectsMixin, CharExAndObjMixin, ClothedCharacter, GenderChar
     def usdesc(self, value):
         """Setter property for usdesc"""
         self.sdesc.add(value)
+
+    # define objects's evd_max
+    @property
+    def evd_max(self):
+        """
+        Adjusted the roll_max used in world.rules.actions.evade_roll.
+        """
+        try:
+            if self._evd_max:
+                pass
+        except AttributeError:
+            self._evd_max = ListElement(self, stats.STATS)
+            self._evd_max.verify()
+            for stat in stats.STATS:
+                setattr(self._evd_max, stat, actions.EVADE_MAX)
+        return self._evd_max
+
+    @evd_max.setter
+    def evd_max(self, value):
+        self._evd_max.set(value)
+
+    @evd_max.deleter
+    def evd_max(self):
+        self._evd_max.delete()
 
     # define a character's willpower
     @property
