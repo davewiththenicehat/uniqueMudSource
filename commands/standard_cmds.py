@@ -41,6 +41,7 @@ class StandardCmdsCmdSet(default_cmds.CharacterCmdSet):
         self.add(CmdWhisper)
         self.add(CmdStatus)
         self.add(UMCmdObjects)
+        self.add(CmdPut)
 
 
 class UMCmdObjects(CmdObjects):
@@ -533,6 +534,7 @@ class CmdDrop(Command):
             caller.msg(f"You must remove {obj.usdesc} to drop it.|/Try command {remove_help} to remove it.")
             return
         obj.move_to(caller.location, quiet=True)  # move the object from the Character to the room
+        # object being moved will remove itself from Character's hands in Object.at_after_move
         caller.msg(f"You drop {obj.usdesc}.")  # message the caller
         caller.location.msg_contents(f"{caller.usdesc} drops {obj.usdesc}.", exclude=caller)  # message the room
         obj.at_drop(caller)
@@ -550,9 +552,6 @@ class CmdGet(Command):
 
     Time:
       get, by default, requires 1 second to complete.
-
-    Picks up an object from your location and puts it in
-    your inventory.
     """
 
     key = "get"
@@ -638,6 +637,94 @@ class CmdGet(Command):
             # calling at_get hook method
             obj.at_get(caller)
 
+
+class CmdPut(Command):
+    """
+    Put an object in a container
+
+    Usage:
+      put <obj> in <container>
+
+    Example:
+      put book in bag
+
+    status:
+      put requires a Character to be in the ready status to use.
+
+    Time:
+      put, by default, requires 1 second to complete.
+    """
+    key = "put"
+    aliases = "stow"
+    locks = "cmd:all()"
+    arg_regex = r"\s|$"
+    rhs_split = ('=', ' in ')
+
+    def at_init(self):
+        """
+        Called when the Command object is initialized.
+        Created to bulk set local none class attributes.
+        This allows for adjusting attributes on the object instances and not having those changes
+        shared among all instances of the Command.
+        """
+        self.defer_time = 1  # time is seconds for the command to wait before running action of command
+        self.target_required = True  # if True and the command has no target, Command.func will stop execution and message the player
+        self.can_not_target_self = True  # if True this command will end with a message if the Character targets themself
+        self.search_caller_only = True  # if True the command will only search the caller for targets
+
+    def start_message(self):
+        """
+        Display a message after a command has been successfully deffered.
+
+        Automatically called at the end of Command.func
+        """
+        caller = self.caller
+        target = self.target
+        if self.rhs:
+            # Command.parse used rhs_split = ('=', ' in ') to collect the containers name in Command.rhs
+            container_name = self.rhs.replace(" in ", '', 1)  # get the name of the container
+            # find a reference of the container
+            container = caller.search(container_name, quiet=True, candidates=caller.contents)
+            if container:  # a possible container object was found
+                container = container[0]  # get the correct target number
+                self.container = container
+                caller_message = f"You begin to put {target.usdesc} in {container.usdesc}."
+                caller.msg(caller_message)
+                room_message = f"{caller.usdesc.capitalize()} begins to put {target.usdesc} in {container.usdesc}."
+                caller.location.msg_contents(room_message, exclude=(caller,))
+            else:  # no object of name container_name was found
+                stop_message = f"You did not find {container_name} among your held or worn possesions."
+                self.stop_forced(stop_message=stop_message)
+                return
+        else:
+            cmd_help = highlighter('help put', click_cmd=f"help put", up=True)
+            stop_message = f"You must specify a container to place {target.usdesc} into.|/" \
+                           f"For a full help use: {cmd_help}"
+            # find a container on the Character put it's name into the stop message
+            self.stop_forced(stop_message=stop_message)
+            return
+
+    def deferred_action(self):
+        caller = self.caller
+        target = self.target
+        container = self.container  # was collected in self.start_message
+        if not target.at_before_get(container):
+            return
+        success = target.move_to(container, quiet=True)
+        if success:
+            # object being moved will remove itself from Character's hands in Object.at_after_move
+            # message player(s)
+            caller.msg(f"You put {target.usdesc} into {container.usdesc}.")
+            room_msg = f"{caller.usdesc} puts a {target.usdesc} into {container.usdesc}."
+            caller.location.msg_contents(room_msg, exclude=caller)
+            # calling at_get hook method
+            target.at_get(container)
+        else:
+            caller.msg(f"{target.usdesc.capitalize()} can not be put into {container.usdesc}.")
+        # Unit test has to
+        #   verify movement.
+        #   verify hand state after movement
+        #   verify help messages on failures
 
 class CmdInventory(Command):
     """
