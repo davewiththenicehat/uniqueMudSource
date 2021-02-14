@@ -219,6 +219,8 @@ class Command(default_cmds.MuxCommand):
         cost(cost_level='low', cost_stat='END'), Calculate and remove the cost of this Command
         target_bad(target=object), returns True if object passed is not targetable by this command
         target_search(target_name=str), Search for an instance of a target.
+        split_target_name(target_name=str), accepts command target string.
+            Returns the target_name and location_name
         evade_roll, used for unit testing
         action_roll, used for unit testing
         skill_ranks(), Returns the number of ranks the caller has in this command's corrisponding Character skill
@@ -409,22 +411,37 @@ class Command(default_cmds.MuxCommand):
             self.target = target  # target is good, collect an instance of it in Command
         else:  # no target was found
             if self.target_required:
-                if len(target_name) == 0:
+                if len(target_name) == 0:  # caller provided no target name
                     caller.msg(f"What would you like to {self.key}?")
                     cmd_suggestion = f"help {self.key}"
                     caller.msg(f"If you need help try |lc{cmd_suggestion}|lt{cmd_suggestion}|le.")
                     return True
-                else:
+                else:  # caller provided a target name
                     if self.search_caller_only:
-                        not_found_msg = f'{target_name} is not here.'
+                        not_found_msg = f'{target_name} is not among your possesions.'
                         target = caller.search(target_name, nofound_string=not_found_msg)
                         if target:
                             cmd_suggestion = f"get {target_name}"
                             caller.msg(f"Try picking it up first with |lc{cmd_suggestion}|lt{cmd_suggestion}|le.")
-                            return True
-                    else:
-                        caller.msg(f'{target_name} is not here.')
                         return True
+                    else:
+                        target_name, location_name = self.split_target_name(target_name)
+                        if location_name:  # caller provided a search location
+                            # find a reference of the search_location
+                            search_location = self.target_search(location_name)
+                            if search_location:  # useable location provided
+                                msg = f"You could not find {target_name} " \
+                                      f"in {search_location.usdesc}."
+                                caller.msg(msg)
+                                return True
+                            else:  # caller did not provide a useable location
+                                msg = f"You could not find {location_name} " \
+                                      f"to search for {target_name}."
+                                caller.msg(msg)
+                                return True
+                        else:
+                            caller.msg(f'You can not find {target_name}.')
+                            return True
         # check if required wielded weapon is being wielded.
         if self.requires_wielding:
             wielded_items = caller.wielding()
@@ -959,23 +976,39 @@ class Command(default_cmds.MuxCommand):
             target = caller.search(target_name, quiet=True, candidates=caller.contents)
         else:  # search somewhere other than caller
             standard_search = True  # a stanard search is needed
-            for split_text in self.sl_split:  # Search Location Split list
-                if split_text in target_name:  # Caller spcified a search location
-                    standard_search = False  # a stanard search is not needed
-                    # separate target and location names
-                    target_name, location_name = target_name.split(split_text, 1)
-                    location_name.replace(split_text, "", 1)
-                    # find a reference of the search_location
-                    search_location = self.target_search(location_name)
-                    # search for the target
-                    if search_location:  # caller provided useable search location
-                        target = caller.search(target_name, quiet=True, candidates=search_location.contents)
-                    break  # do not need to check for other splitters
+            target_name, location_name = self.split_target_name(target_name)
+            if target_name and location_name:
+                standard_search = False  # a stanard search is not needed
+                # find a reference of the search_location
+                search_location = self.target_search(location_name)
+                # search for the target
+                if search_location:  # caller provided useable search location
+                    target = caller.search(target_name, quiet=True, candidates=search_location.contents)
             if standard_search:  # a standard search is required.
                 target = caller.search(target_name, quiet=True)
         if target:  # a target(s) was found
             target = target[target_number]  # get the correct target number
             return target
+
+    def split_target_name(self, target_name):
+        """
+        Accepts a full target name with a 'from location_name' in it.
+        Splits the location name out a returns both.
+
+        Returns:
+            target_name=str, target name caller provided.
+                With any '<sl_split>' and <location_name> strings removed
+            location_name=str, with no '<sl_split>' in it
+                Returns False if no '<sl_split>' was found in the passed str
+        """
+        for split_text in self.sl_split:  # Search Location Split list
+            if split_text in target_name:  # Caller spcified a search location
+                # separate target and location names
+                target_name, location_name = target_name.split(split_text, 1)
+                location_name.replace(split_text, "", 1)
+                # find a reference of the search_location
+                return target_name, location_name
+        return target_name, False
 
     def evade_roll(self, evade_mod_stat='AGI', log=False, unit_test=False):
         """

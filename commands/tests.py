@@ -302,7 +302,32 @@ class TestCommands(CommandTest):
         wanted_message = "Char drops Obj2\."
         cmd_result = self.call(command(), arg, caller=self.char1, receiver=self.char2)
         self.assertRegex(cmd_result, wanted_message)
-    # test messages for failure to find target in user specified search location
+    # test get command failures
+        # get an object from a location that does not exist
+        # test target_required when sl_split found
+        arg = "= get Obj from fake location"
+        wanted_message = "You could not find fake location to search for Obj."
+        self.call(command(), arg, wanted_message, caller=self.char1)
+        # test getting fake object from a location that exists.
+        # test target_required when sl_split found
+        arg = "= get fake item from Obj"
+        wanted_message = "You could not find fake item in Obj."
+        self.call(command(), arg, wanted_message, caller=self.char1)
+        # test getting an object that does not exist
+        # test target_required
+        arg = "= get fake item"
+        wanted_message = "You can not find fake item."
+        self.call(command(), arg, wanted_message, caller=self.char1)
+    # test drop command failures
+        # drop an object already on the ground
+        arg = "= drop Obj"
+        wanted_message = "Try picking it up first with get Obj."
+        self.call(command(), arg, wanted_message, caller=self.char1)
+        # drop an object that does not exist
+        # test target_required search_caller_only
+        arg = "= drop fake item"
+        wanted_message = "fake item is not among your possesions."
+        self.call(command(), arg, wanted_message, caller=self.char1)
 
     # test clothing commands
         # test character with empty inventory

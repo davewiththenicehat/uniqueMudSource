@@ -684,7 +684,9 @@ class CmdPut(Command):
         self.defer_time = 1  # time is seconds for the command to wait before running action of command
         self.target_required = True  # if True and the command has no target, Command.func will stop execution and message the player
         self.can_not_target_self = True  # if True this command will end with a message if the Character targets themself
-        self.search_caller_only = True  # if True the command will only search the caller for targets
+        # self.search_caller_only = True  # if True the command will only search the caller for targets
+        self.target_in_hand = False  # if True the target of the command must be in the Characters hand to complete successfully
+        self.requires_ready = True  # if true this command requires the ready status before it can do anything.
 
     def start_message(self):
         """
