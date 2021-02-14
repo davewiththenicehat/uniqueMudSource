@@ -588,10 +588,16 @@ class CmdGet(Command):
         if target.location == caller:
             self.stop_forced(stop_message=f"You are already carrying {target.usdesc}.")
             return
-        caller_message = f"You reach for {target.usdesc}."
-        caller.msg(caller_message)
-        room_message = f"{caller.usdesc.capitalize()} reaches for {target.usdesc}."
-        caller.location.msg_contents(room_message, exclude=(caller,))
+        if target.location == caller.location:  # get target in in caller's room
+            caller_message = f"You reach for {target.usdesc}."
+            caller.msg(caller_message)
+            room_message = f"{caller.usdesc.capitalize()} reaches for {target.usdesc}."
+            caller.location.msg_contents(room_message, exclude=(caller,))
+        else:  # object being gotten is not in callers room
+            caller_message = f"You reach into {target.location.usdesc}."
+            caller.msg(caller_message)
+            room_message = f"{caller.usdesc.capitalize()} reaches into {target.location.usdesc}."
+            caller.location.msg_contents(room_message, exclude=(caller,))
 
     def deferred_action(self):
         """implements the command."""
@@ -619,11 +625,13 @@ class CmdGet(Command):
             return
         else:
             open_hand = open_hands[0]  # hand of the first open hand
-
+        targ_old_location = obj.location  # used to choose message text
         success = obj.move_to(caller, quiet=True)
         if not success:
             caller.msg(f"{obj.usdesc.capitalize()} can not be picked up.")
         else:
+            # calling at_get hook method
+            obj.at_get(caller)
             # occupy the hand used to get the object
             if open_hand:
                 # occupy with dbref to make it very easy to search for items in hand
@@ -632,10 +640,16 @@ class CmdGet(Command):
                 err_msg = f"CmdGet, failed for find an instance of the {open_hand} body part."
                 error_report(err_msg, caller)
             # message player(s)
-            caller.msg(f"You pick up {obj.usdesc}.")
-            caller.location.msg_contents(f"{caller.usdesc} picks up {obj.usdesc}.", exclude=caller)
-            # calling at_get hook method
-            obj.at_get(caller)
+            if targ_old_location == caller.location:  # get target is in caller's room
+                caller_msg = f"You pick up {obj.usdesc}."
+                location_msg = f"{caller.usdesc} picks up {obj.usdesc}."
+                caller.location.msg_contents(location_msg, exclude=caller)
+            else:  # caller is getting target from container
+                caller_msg = f"You get {obj.usdesc} from {targ_old_location.usdesc}."
+                location_msg = f"{caller.usdesc.capitalize()} gets {obj.usdesc} " \
+                               f"from {targ_old_location.usdesc}."
+            caller.msg(caller_msg)
+            caller.location.msg_contents(location_msg, exclude=caller)
 
 
 class CmdPut(Command):
@@ -688,12 +702,15 @@ class CmdPut(Command):
             if container:  # a possible container object was found
                 container = container[0]  # get the correct target number
                 self.container = container
-                caller_message = f"You begin to put {target.usdesc} in {container.usdesc}."
+                caller_message = f"You begin to put {target.usdesc} into " \
+                                 f"{container.usdesc}."
                 caller.msg(caller_message)
-                room_message = f"{caller.usdesc.capitalize()} begins to put {target.usdesc} in {container.usdesc}."
+                room_message = f"{caller.usdesc.capitalize()} begins to put " \
+                               f"{target.usdesc} into {container.usdesc}."
                 caller.location.msg_contents(room_message, exclude=(caller,))
             else:  # no object of name container_name was found
-                stop_message = f"You did not find {container_name} among your held or worn possesions."
+                stop_message = f"You did not find {container_name} among your " \
+                               "held or worn possesions."
                 self.stop_forced(stop_message=stop_message)
                 return
         else:
@@ -712,10 +729,11 @@ class CmdPut(Command):
             return
         success = target.move_to(container, quiet=True)
         if success:
+            target.at_get(container)
             # object being moved will remove itself from Character's hands in Object.at_after_move
             # message player(s)
             caller.msg(f"You put {target.usdesc} into {container.usdesc}.")
-            room_msg = f"{caller.usdesc} puts a {target.usdesc} into {container.usdesc}."
+            room_msg = f"{caller.usdesc} puts {target.usdesc} into {container.usdesc}."
             caller.location.msg_contents(room_msg, exclude=caller)
             # calling at_get hook method
             target.at_get(container)

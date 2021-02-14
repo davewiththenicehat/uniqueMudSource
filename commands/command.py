@@ -144,6 +144,20 @@ class Command(default_cmds.MuxCommand):
         target_in_hand = False  # if True the target of the command must be in the Characters hand to complete successfully
         search_caller_only = False  # if True the command will only search the caller for targets
             Failure message is handled automatically.
+        sl_split = (' from ', ' in ')  # Search Location split list
+            A list of words to used to split the name of the object from it's location
+            Locations specified must exist in caller.search()
+            Examples:
+                get <object> from <container>
+                    Get will automatically look for <object> in <container>
+                    No additional code in get required
+                say to person, 2 person and monster in a cage "Hello"
+                    Will say "Hello" to a monster in a container named 'a cage'.
+                    The message still sends to other targets also.
+                    No additional code in say required
+            To avoid this:
+                make self.sl_split = None
+                Use rh_split to separate targets from commands. As is done in CmdSay.
         requires_ready = True  # if true this command requires the ready status before it can be used.
             deferal commands still require ready to defer, even is requires_ready is false.
             Failure message is handled automatically.
@@ -252,6 +266,7 @@ class Command(default_cmds.MuxCommand):
         self.learn_diff = 1  # How difficult the command is to learn.
         self.comp_diff = 2  # How difficult the command is to complete
         self.skill_name = self.key  # the skill name this command uses of rank modification
+        self.sl_split = (' from ', ' in ')  # list of words to split names from locations in commands
         self.at_init()
 
     def at_init(self):
@@ -942,8 +957,22 @@ class Command(default_cmds.MuxCommand):
         # if set search the caller only, if not search the room
         if self.search_caller_only:
             target = caller.search(target_name, quiet=True, candidates=caller.contents)
-        else:
-            target = caller.search(target_name, quiet=True)
+        else:  # search somewhere other than caller
+            standard_search = True  # a stanard search is needed
+            for split_text in self.sl_split:  # Search Location Split list
+                if split_text in target_name:  # Caller spcified a search location
+                    standard_search = False  # a stanard search is not needed
+                    # separate target and location names
+                    target_name, location_name = target_name.split(split_text, 1)
+                    location_name.replace(split_text, "", 1)
+                    # find a reference of the search_location
+                    search_location = self.target_search(location_name)
+                    # search for the target
+                    if search_location:  # caller provided useable search location
+                        target = caller.search(target_name, quiet=True, candidates=search_location.contents)
+                    break  # do not need to check for other splitters
+            if standard_search:  # a standard search is required.
+                target = caller.search(target_name, quiet=True)
         if target:  # a target(s) was found
             target = target[target_number]  # get the correct target number
             return target

@@ -220,6 +220,90 @@ class TestCommands(CommandTest):
         wanted_message = r"skill_ranks returned: 1"
         self.call(command(), arg, wanted_message, caller=self.char1)
 
+    # test caller specified target location searching
+    # test get command
+    # test put command
+    # test drop command
+        command = developer_cmds.CmdMultiCmd
+        # get an object
+        arg = "= get Obj, complete_cmd_early"
+        wanted_message = "You pick up Obj\."
+        cmd_result = self.call(command(), arg, caller=self.char1)
+        self.assertRegex(cmd_result, wanted_message)
+        self.assertTrue(self.char1.is_holding(self.obj1))
+        # get a second object
+        command = developer_cmds.CmdMultiCmd
+        arg = "= get Obj2, complete_cmd_early"
+        wanted_message = "You pick up Obj2\."
+        cmd_result = self.call(command(), arg, caller=self.char1)
+        # put object 2 in object 1
+        arg = "= put Obj2 in Obj, complete_cmd_early"
+        wanted_message = "You put Obj2 into Obj\."
+        cmd_result = self.call(command(), arg, caller=self.char1)
+        self.assertRegex(cmd_result, wanted_message)
+        self.assertFalse(self.char1.is_holding(self.obj2))
+        # make certrain caller specified locations works with multi target cmds
+        arg = '= say to Char2 and Obj2 in Obj "Hello'
+        wanted_message = 'You say to Char2 and Obj2, "Hello"'
+        self.call(command(), arg, caller=self.char1)
+        # now get object 2 from object 1
+        arg = "= get Obj2 from Obj, complete_cmd_early"
+        cmd_result = self.call(command(), arg, caller=self.char1)
+        wanted_message = r"You reach into Obj\."
+        self.assertRegex(cmd_result, wanted_message)
+        wanted_message = r"You get Obj2 from Obj\."
+        self.assertRegex(cmd_result, wanted_message)
+        self.assertTrue(self.char1.is_holding(self.obj2))
+        # drop the second object
+        arg = "= drop Obj2"
+        wanted_message = "You drop Obj2"
+        cmd_result = self.call(command(), arg, caller=self.char1)
+        self.assertRegex(cmd_result, wanted_message)
+        self.assertFalse(self.char1.is_holding(self.obj2))
+        # drop the first object
+        arg = "= drop Obj"
+        wanted_message = "You drop Obj."
+        cmd_result = self.call(command(), arg, caller=self.char1)
+        self.assertRegex(cmd_result, wanted_message)
+        self.assertFalse(self.char1.is_holding(self.obj1))
+    # make certain room message is correct
+        command = developer_cmds.CmdMultiCmd
+        arg = "= get Obj, complete_cmd_early"
+        wanted_message = "Char picks up Obj\."
+        cmd_result = self.call(command(), arg, caller=self.char1, receiver=self.char2)
+        self.assertRegex(cmd_result, wanted_message)
+        # get second object
+        command = developer_cmds.CmdMultiCmd
+        arg = "= get Obj2, complete_cmd_early"
+        wanted_message = "Char picks up Obj2\."
+        cmd_result = self.call(command(), arg, caller=self.char1, receiver=self.char2)
+        self.assertRegex(cmd_result, wanted_message)
+        # put object 2 in object 1
+        arg = "= put Obj2 in Obj, complete_cmd_early"
+        cmd_result = self.call(command(), arg, caller=self.char1, receiver=self.char2)
+        wanted_message = "Char begins to put Obj2 into Obj\."
+        self.assertRegex(cmd_result, wanted_message)
+        wanted_message = "Char puts Obj2 into Obj\."
+        self.assertRegex(cmd_result, wanted_message)
+        # get object 2 from object 1
+        arg = "= get Obj2 from Obj, complete_cmd_early"
+        cmd_result = self.call(command(), arg, caller=self.char1, receiver=self.char2)
+        wanted_message = "Char gets Obj2 from Obj\."
+        self.assertRegex(cmd_result, wanted_message)
+        wanted_message = "Char reaches into Obj\."
+        self.assertRegex(cmd_result, wanted_message)
+        # drop object 1
+        arg = "= drop Obj, complete_cmd_early"
+        wanted_message = "Char drops Obj\."
+        cmd_result = self.call(command(), arg, caller=self.char1, receiver=self.char2)
+        self.assertRegex(cmd_result, wanted_message)
+        # drop object 2
+        arg = "= drop Obj2, complete_cmd_early"
+        wanted_message = "Char drops Obj2\."
+        cmd_result = self.call(command(), arg, caller=self.char1, receiver=self.char2)
+        self.assertRegex(cmd_result, wanted_message)
+    # test messages for failure to find target in user specified search location
+
     # test clothing commands
         # test character with empty inventory
         command = developer_cmds.CmdMultiCmd
