@@ -171,7 +171,8 @@ class Object(ExObjAndRoomMixin, AllObjectsMixin, CharExAndObjMixin, ContribRPObj
 
         Attributes:
             inheirited from AllObjectsMixin
-                targetable = False  # can this exit be targeted with an action
+                targetable = False  # can this object be targeted with an action
+                container = False  # Can the object contain other objects
             inheirited from ExObjAndRoomMixin
                 usdesc = self.key  # a property to easy get and set the short description on an object.
                     Use as if it were a stanard attribute.

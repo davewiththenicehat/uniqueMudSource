@@ -226,8 +226,10 @@ class AllObjectsMixin:
         Rooms, Objects, Characters and Exits
 
     Attributes:
-        targetable = False  # if the target is targetable.
-            Is a property that references self.db automatically
+        These attributes automatically manage self.attributes.attr_type in the database.
+        
+        targetable = False  # is the object targetable.
+        container = False  # Can the object contain other objects
     """
 
     @property
@@ -263,6 +265,40 @@ class AllObjectsMixin:
         """Delete method for targetable"""
         self.attributes.remove('targetable')
 
+    @property
+    def container(self):
+        """
+        Is used to allow objects to be stored in this object.
+        Created for containers like backpacks. Can be used for things like hooks on a door.
+
+        Usage:
+            object.container = True  # make an object container.
+            if object.container:  # check if an object is container.
+        """
+        if self.attributes.has('container'):
+            return self.db.container
+        else:
+            return False
+
+    @container.setter
+    def container(self, value):
+        """
+        Setter property for container
+
+        Usage:
+            if truthy True will be saved to the database.
+                truth means is value is anything other than false, None or 0
+        """
+        if value:
+            self.db.container = True
+        else:
+            self.attributes.remove('container')
+
+    @container.deleter
+    def container(self):
+        """Delete method for container"""
+        self.attributes.remove('container')
+
 
 class ExObjAndRoomMixin:
     """
@@ -297,3 +333,4 @@ class ExObjAndRoomMixin:
     def usdesc(self, value):
         """Setter property for usdesc"""
         self.key = value
+        self.attributes.usdesc = value

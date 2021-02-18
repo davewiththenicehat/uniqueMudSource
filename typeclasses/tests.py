@@ -17,8 +17,17 @@ class TestObjects(CommandTest):
     Used to test the character object
     stat modifiers unit tests are in world.rules.tests.TestRules.test_stat_modifiers
 
+    CommandTest.call arguments
+        cmdobj, args, msg=None, cmdset=None,
+        noansi=True, caller=None, receiver=None, cmdstring=None,
+        obj=None, inputs=None, raw_string=None,
     Objects in EvenniaTest
-        self.obj1 self.obj2 self.char1 self.char2 self.exit
+        self.obj1 = obj
+        self.obj2 = "obj2"
+        self.char1 = "char"
+        self.char2 = "char2"
+        self.exit = "out"
+        self.room1 = "Room"
     """
     # account_typeclass = DefaultAccount
     object_typeclass = Object
@@ -70,6 +79,23 @@ class TestObjects(CommandTest):
             stat.set(99)
             char.restore_stat(stat)
             self.assertTrue(stat == 100)
+
+        # test basic attributes shared among all object types
+        for attr_type in ('container', 'targetable'):
+            for obj in (self.obj1, self.char1, self.exit, self.room1):
+                # verify default values are in database if they should be
+                def_attr_val = getattr(obj, attr_type)
+                self.assertEqual(getattr(obj, attr_type), def_attr_val)
+                self.assertEqual(obj.attributes.get(attr_type, False), def_attr_val)
+                # set the test value and make certain in is recorded to the database
+                test_attr_val = False if def_attr_val else True
+                setattr(obj, attr_type, test_attr_val)
+                self.assertEqual(getattr(obj, attr_type, False), test_attr_val)
+                self.assertEqual(obj.attributes.get(attr_type, False), test_attr_val)
+                # set the attribute back to default
+                setattr(obj, attr_type, def_attr_val)
+                self.assertEqual(getattr(obj, attr_type), def_attr_val)
+                self.assertEqual(obj.attributes.get(attr_type, False), def_attr_val)
 
         # test hp restoration
         self.assertFalse(char.condition.dead)

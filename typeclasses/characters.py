@@ -112,7 +112,8 @@ class Character(AllObjectsMixin, CharExAndObjMixin, ClothedCharacter, GenderChar
             There are several methods inherited also.
 
         inheirited from AllObjectsMixin
-            targetable = True  # can this exit be targeted with an action
+            targetable = True  # can this object be targeted with an action
+            container = False  # Can the object contain other objects
 
         usdesc = self.sdesc.get()  # a property to easy get and set the short description on an object.
             Use as if it were a stanard attribute.

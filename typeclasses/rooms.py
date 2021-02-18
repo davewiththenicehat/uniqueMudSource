@@ -35,7 +35,11 @@ class Room(AllObjectsMixin, ExObjAndRoomMixin, ContribRPRoom):
                     usdesc = 'a happy tree'  # this will change the key of this object
                     caller.msg(f'You attack {target.usdesc}.')
             inheirited from AllObjectsMixin
-                targetable = False  # can this exit be targeted with an action
+                targetable = False  # can this object be targeted with an action
+                container = True  # Can the object contain other objects
     """
 
-    pass
+    def at_object_creation(self):
+        """Runs when Character is created."""
+        self.container = True
+        super().at_object_creation()
