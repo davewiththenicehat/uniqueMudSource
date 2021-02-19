@@ -216,3 +216,33 @@ class Object(ExObjAndRoomMixin, AllObjectsMixin, CharExAndObjMixin, ContribRPObj
 
         # here to support possible future upgrades to parent classes.
         return at_after_move_return
+
+    def at_before_move(self, destination, **kwargs):
+        """
+        Called just before starting to move this object to
+        destination.
+
+        Args:
+            destination (Object): The object we are moving to
+            **kwargs (dict): Arbitrary, optional arguments for users
+                overriding the call (unused by default).
+
+        Returns:
+            shouldmove (bool): If we should move or not.
+
+        Notes:
+            If this method returns False/None, the move is cancelled
+            before it is even started.
+
+        """
+        # return has_perm(self, destination, "can_move")
+
+        # adding support for possible future updates to evennia.
+        move_allowed = super().at_before_move(destination, **kwargs)
+        if not move_allowed:  # inherited object found reason to not move.
+            return False
+        # only allow movement if this object is moving into a container
+        if destination.container:
+            return True
+        else:
+            return False

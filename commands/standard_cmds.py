@@ -703,6 +703,12 @@ class CmdPut(Command):
             container = caller.search(container_name, quiet=True, candidates=caller.contents)
             if container:  # a possible container object was found
                 container = container[0]  # get the correct target number
+                # stop the command if the target can not move to the container
+                if not target.at_before_move(container):
+                    stop_msg = f"{container.usdesc.capitalize()} is not a container."
+                    self.stop_forced(stop_message=stop_msg)
+                    return
+                # target can be moved to container, notify caller and location
                 self.container = container
                 caller_message = f"You begin to put {target.usdesc} into " \
                                  f"{container.usdesc}."

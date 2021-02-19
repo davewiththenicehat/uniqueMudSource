@@ -237,11 +237,13 @@ class TestCommands(CommandTest):
         wanted_message = "You pick up Obj2\."
         cmd_result = self.call(command(), arg, caller=self.char1)
         # put object 2 in object 1
+        self.obj1.container = True
         arg = "= put Obj2 in Obj, complete_cmd_early"
         wanted_message = "You put Obj2 into Obj\."
         cmd_result = self.call(command(), arg, caller=self.char1)
         self.assertRegex(cmd_result, wanted_message)
         self.assertFalse(self.char1.is_holding(self.obj2))
+        self.obj1.container = False
         # make certrain caller specified locations works with multi target cmds
         arg = '= say to Char2 and Obj2 in Obj "Hello'
         wanted_message = 'You say to Char2 and Obj2, "Hello"'
@@ -254,18 +256,33 @@ class TestCommands(CommandTest):
         wanted_message = r"You get Obj2 from Obj\."
         self.assertRegex(cmd_result, wanted_message)
         self.assertTrue(self.char1.is_holding(self.obj2))
-        # drop the second object
-        arg = "= drop Obj2"
-        wanted_message = "You drop Obj2"
+        # test putting an object into a non container object.
+        arg = "= put Obj2 in Obj"
+        wanted_message = "Obj is not a container\."
         cmd_result = self.call(command(), arg, caller=self.char1)
         self.assertRegex(cmd_result, wanted_message)
-        self.assertFalse(self.char1.is_holding(self.obj2))
+        self.assertTrue(self.char1.is_holding(self.obj2))
         # drop the first object
         arg = "= drop Obj"
         wanted_message = "You drop Obj."
         cmd_result = self.call(command(), arg, caller=self.char1)
         self.assertRegex(cmd_result, wanted_message)
         self.assertFalse(self.char1.is_holding(self.obj1))
+        # put obj2 in obj1 while obj1 is on the ground
+#        self.obj1.container = True
+#        arg = "= put Obj2 in Obj, complete_cmd_early"
+#        wanted_message = "You put Obj2 into Obj\."
+#        cmd_result = self.call(command(), arg, caller=self.char1)
+#        self.assertRegex(cmd_result, wanted_message)
+#        self.assertFalse(self.char1.is_holding(self.obj2))
+#        self.obj1.container = False
+        # get object 2 from object 1
+        # drop the second object
+        arg = "= drop Obj2"
+        wanted_message = "You drop Obj2"
+        cmd_result = self.call(command(), arg, caller=self.char1)
+        self.assertRegex(cmd_result, wanted_message)
+        self.assertFalse(self.char1.is_holding(self.obj2))
     # make certain room message is correct
         command = developer_cmds.CmdMultiCmd
         arg = "= get Obj, complete_cmd_early"
@@ -279,12 +296,14 @@ class TestCommands(CommandTest):
         cmd_result = self.call(command(), arg, caller=self.char1, receiver=self.char2)
         self.assertRegex(cmd_result, wanted_message)
         # put object 2 in object 1
+        self.obj1.container = True
         arg = "= put Obj2 in Obj, complete_cmd_early"
         cmd_result = self.call(command(), arg, caller=self.char1, receiver=self.char2)
         wanted_message = "Char begins to put Obj2 into Obj\."
         self.assertRegex(cmd_result, wanted_message)
         wanted_message = "Char puts Obj2 into Obj\."
         self.assertRegex(cmd_result, wanted_message)
+        self.obj1.container = False
         # get object 2 from object 1
         arg = "= get Obj2 from Obj, complete_cmd_early"
         cmd_result = self.call(command(), arg, caller=self.char1, receiver=self.char2)

@@ -41,5 +41,5 @@ class Room(AllObjectsMixin, ExObjAndRoomMixin, ContribRPRoom):
 
     def at_object_creation(self):
         """Runs when Character is created."""
-        self.container = True
+        self.container = True  # Can the object contain other objects
         super().at_object_creation()

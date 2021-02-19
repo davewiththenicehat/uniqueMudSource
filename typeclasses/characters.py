@@ -220,6 +220,7 @@ class Character(AllObjectsMixin, CharExAndObjMixin, ClothedCharacter, GenderChar
         """Runs when Character is created."""
         self.at_init()  # initialize self.
         self.targetable = True  # Characters can be targeted with commands
+        self.container = True  # Can the object contain other objects
         self.position = 'standing'  # Default position is standing
         # if it does not already exist, create a healing script
         if "Natural_Healing" not in str(self.scripts):
