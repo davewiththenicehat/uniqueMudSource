@@ -203,6 +203,7 @@ class Command(default_cmds.MuxCommand):
         All methods are fully documented in their docstrings.
         at_init, Called when the Command object is initialized.
         func, To more seamlessly support UniqueMud's deffered command system, evennia's Command.func has been overridden.
+        custom_req_met(), Verifies commands custom requirements are met. Stops the command if they are not.
         defer(int or float), defer the action of a command by calling Command.deferred_action after the number of seconds passed to defer
         deferred_action(), override to commit the action of a command to a later time.
         start_message(), Displays a message after a command has been successfully deffered.
@@ -455,7 +456,6 @@ class Command(default_cmds.MuxCommand):
                     self.caller_weapon = item
                     self.weapon_desc = item.usdesc
                     self.dmg_max = item.dmg_max
-                    requires_wielding_unfound = False
                     if item.act_roll_max_mod:  # the item has a meaningful roll_max modifier add it
                         self.roll_max += item.act_roll_max_mod
                     break
@@ -463,7 +463,29 @@ class Command(default_cmds.MuxCommand):
                 required_item_type = self.cmd_type.replace('_', ' ')
                 caller.msg(f'You must be wielding a {required_item_type} item to {self.key}.')
                 return True
+        # stop the command if custom command requirements are not met
+        if not self.custom_req_met():
+            return True
         return super().at_pre_cmd()
+
+    def custom_req_met(self):
+        """
+        Verifies commands custom requirements are met.
+        If this method returns False the command will end.
+        This command must message the caller.
+
+        self.target and self.targets will be available in this method.
+
+        This method is intended to be overwritten.
+
+        Automatically called in at the self.at_pre_cmd.
+
+        Returns:
+            requirements_met=boolean
+            False: will stop the command
+            True: the command will continue
+        """
+        return True
 
     def start_message(self):
         """
