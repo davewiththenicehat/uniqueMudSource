@@ -221,6 +221,8 @@ class TestCommands(CommandTest):
         self.call(command(), arg, wanted_message, caller=self.char1)
 
     # test caller specified target location searching
+    #    example put obj in container, container is the caller
+    #    specified location
     # test get command
     # test put command
     # test drop command
@@ -239,10 +241,13 @@ class TestCommands(CommandTest):
         # put object 2 in object 1
         self.obj1.container = True
         arg = "= put Obj2 in Obj, complete_cmd_early"
-        wanted_message = "You put Obj2 into Obj\."
         cmd_result = self.call(command(), arg, caller=self.char1)
+        wanted_message = "You put Obj2 into Obj\."
+        self.assertRegex(cmd_result, wanted_message)
+        wanted_message = r"You begin to put Obj2 into Obj\."
         self.assertRegex(cmd_result, wanted_message)
         self.assertFalse(self.char1.is_holding(self.obj2))
+        self.assertEqual(self.obj2.location, self.obj1)
         self.obj1.container = False
         # make certrain caller specified locations works with multi target cmds
         arg = '= say to Char2 and Obj2 in Obj "Hello'
@@ -262,21 +267,53 @@ class TestCommands(CommandTest):
         cmd_result = self.call(command(), arg, caller=self.char1)
         self.assertRegex(cmd_result, wanted_message)
         self.assertTrue(self.char1.is_holding(self.obj2))
+        # test CmdPut the error catching in deffered action
+        self.obj1.container = True
+        arg = "= put Obj2 in Obj"
+        wanted_message = "You begin to put Obj2 into Obj\."
+        cmd_result = self.call(command(), arg, caller=self.char1)
+        self.assertRegex(cmd_result, wanted_message)
+        self.assertTrue(self.char1.is_holding(self.obj2))
+        self.obj1.container = False
+        arg = "= complete_cmd_early"
+        cmd_result = self.call(command(), arg, caller=self.char1)
+        wanted_message = "Obj2 can not be put into Obj\.\nError message: CmdPut: caller: #6\, target: #5 container: #4\. target\.move_to returned false in Command\.deffered_action\.\r\nThis has NOT been logged\. System detects you are a developer\.\nYou are no longer busy\."
+        self.assertRegex(cmd_result, wanted_message)
+        self.assertTrue(self.char1.is_holding(self.obj2))
         # drop the first object
         arg = "= drop Obj"
         wanted_message = "You drop Obj."
         cmd_result = self.call(command(), arg, caller=self.char1)
         self.assertRegex(cmd_result, wanted_message)
         self.assertFalse(self.char1.is_holding(self.obj1))
+        # try putting obj2 into a container that does not exist
+        arg = "= put Obj2 in fake container"
+        wanted_message = "You did not find fake container among your possesions or near by\."
+        cmd_result = self.call(command(), arg, caller=self.char1)
+        self.assertRegex(cmd_result, wanted_message)
+        self.assertTrue(self.char1.is_holding(self.obj2))
+        # test help message for put when no container is supplied.
+        arg = "= put Obj2"
+        wanted_message = r"You must specify a container to place Obj2 into.\r\nFor a full help use: Help put"
+        cmd_result = self.call(command(), arg, caller=self.char1)
+        self.assertRegex(cmd_result, wanted_message)
+        self.assertTrue(self.char1.is_holding(self.obj2))
         # put obj2 in obj1 while obj1 is on the ground
-#        self.obj1.container = True
-#        arg = "= put Obj2 in Obj, complete_cmd_early"
-#        wanted_message = "You put Obj2 into Obj\."
-#        cmd_result = self.call(command(), arg, caller=self.char1)
-#        self.assertRegex(cmd_result, wanted_message)
-#        self.assertFalse(self.char1.is_holding(self.obj2))
-#        self.obj1.container = False
-        # get object 2 from object 1
+        self.obj1.container = True
+        arg = "= put Obj2 in Obj, complete_cmd_early"
+        wanted_message = "You put Obj2 into Obj\."
+        cmd_result = self.call(command(), arg, caller=self.char1)
+        self.assertRegex(cmd_result, wanted_message)
+        self.assertFalse(self.char1.is_holding(self.obj2))
+        self.obj1.container = False
+        # get obj2 from obj1 while obj1 is on the ground
+        arg = "= get Obj2 from Obj, complete_cmd_early"
+        cmd_result = self.call(command(), arg, caller=self.char1)
+        wanted_message = r"You reach into Obj\."
+        self.assertRegex(cmd_result, wanted_message)
+        wanted_message = r"You get Obj2 from Obj\."
+        self.assertRegex(cmd_result, wanted_message)
+        self.assertTrue(self.char1.is_holding(self.obj2))
         # drop the second object
         arg = "= drop Obj2"
         wanted_message = "You drop Obj2"
@@ -347,6 +384,7 @@ class TestCommands(CommandTest):
         arg = "= drop fake item"
         wanted_message = "fake item is not among your possesions."
         self.call(command(), arg, wanted_message, caller=self.char1)
+
 
     # test clothing commands
         # test character with empty inventory
@@ -983,7 +1021,8 @@ class TestCommands(CommandTest):
         command = developer_cmds.CmdMultiCmd
         req_ready_commands = ('punch', 'inv', 'out', 'sit', 'stand', 'lay',
                               'get', 'wear', 'remove', 'whisper', 'kick',
-                              'dodge')
+                              'dodge', 'put', 'stab', 'kick', 'wield',
+                              'unwield', 'emote')
         for ready_cmd in req_ready_commands:
             arg = f"= {ready_cmd}"
             cmd_result = self.call(command(), arg, caller=self.char1)

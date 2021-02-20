@@ -684,7 +684,6 @@ class CmdPut(Command):
         self.defer_time = 1  # time is seconds for the command to wait before running action of command
         self.target_required = True  # if True and the command has no target, Command.func will stop execution and message the player
         self.can_not_target_self = True  # if True this command will end with a message if the Character targets themself
-        # self.search_caller_only = True  # if True the command will only search the caller for targets
         self.target_in_hand = False  # if True the target of the command must be in the Characters hand to complete successfully
         self.requires_ready = True  # if true this command requires the ready status before it can do anything.
 
@@ -700,7 +699,7 @@ class CmdPut(Command):
             # Command.parse used rhs_split = ('=', ' in ') to collect the containers name in Command.rhs
             container_name = self.rhs.replace(" in ", '', 1)  # get the name of the container
             # find a reference of the container
-            container = caller.search(container_name, quiet=True, candidates=caller.contents)
+            container = caller.search(container_name, quiet=True)
             if container:  # a possible container object was found
                 container = container[0]  # get the correct target number
                 # stop the command if the target can not move to the container
@@ -718,7 +717,7 @@ class CmdPut(Command):
                 caller.location.msg_contents(room_message, exclude=(caller,))
             else:  # no object of name container_name was found
                 stop_message = f"You did not find {container_name} among your " \
-                               "held or worn possesions."
+                               "possesions or near by."
                 self.stop_forced(stop_message=stop_message)
                 return
         else:
@@ -746,11 +745,12 @@ class CmdPut(Command):
             # calling at_get hook method
             target.at_get(container)
         else:
-            caller.msg(f"{target.usdesc.capitalize()} can not be put into {container.usdesc}.")
-        # Unit test has to
-        #   verify movement.
-        #   verify hand state after movement
-        #   verify help messages on failures
+            caller.msg(f"{target.usdesc.capitalize()} can not be put into " \
+                       f"{container.usdesc}.")
+            err_msg = f"CmdPut: caller: {caller.dbref}, target: {target.dbref} " \
+                      f"container: {container.dbref}. target.move_to returned " \
+                      f"false in Command.deffered_action."
+            error_report(err_msg, caller)
 
 class CmdInventory(Command):
     """

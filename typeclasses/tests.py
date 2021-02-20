@@ -227,7 +227,7 @@ class TestObjects(CommandTest):
                                 'out', 'inv', 'sit', 'stand', 'lay', 'get',
                                 'wear', 'remove', 'say', 'drop', 'look', 'stab',
                                 'wield', 'whisper', 'dodge', 'unwield', 'recog',
-                                'emote')
+                                'emote', 'put')
         for uncon_cmd in unconscious_commands:
             arg = f"= {uncon_cmd}"
             wanted_message = r"You can not do that while unconscious."
