@@ -7,7 +7,7 @@ from typeclasses.objects import Object
 from evennia import create_object
 from typeclasses.equipment import clothing
 from commands import standard_cmds
-from typeclasses.equipment.wieldable import OneHandedWeapon
+from typeclasses.equipment.wield_equ import OneHandedWeapon
 
 
 class TestCommands(CommandTest):

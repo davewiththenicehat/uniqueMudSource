@@ -22,7 +22,7 @@ from commands.combat.evasion import EvasionCmdSet
 from commands.combat.one_handed import OneHandedCmdSet
 from typeclasses.equipment.clothing import ClothedCharacterCmdSet
 from commands.standard_cmds import StandardCmdsCmdSet, UMRPSystemCmdSet
-from typeclasses.equipment.wieldable import WieldableCmdSet
+from typeclasses.equipment.wield_equ import WieldableCmdSet
 
 
 class CharacterCmdSet(default_cmds.CharacterCmdSet):

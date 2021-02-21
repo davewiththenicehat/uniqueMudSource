@@ -164,7 +164,7 @@ class Command(default_cmds.MuxCommand):
         requires_conscious = True  # if true this command requires the caller to be conscious before it can be used
             Failure message is handled automatically.
         requires_wielding = None  # If True this command will require a wielded item that matches Command.cmd_type
-            item types can be found in typeclasses.equipment.wieldable
+            item types can be found in typeclasses.equipment.wield_equ
             item types will match command set names in world.rules.skills.SKILLS
             The item.item_type attribute must match the command's Command.cmd_type
             Example: 'one_handed'

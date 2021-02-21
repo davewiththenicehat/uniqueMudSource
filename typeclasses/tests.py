@@ -9,7 +9,7 @@ from evennia.contrib import gendersub
 from evennia.utils.test_resources import EvenniaTest
 from world.rules import body, damage, actions
 from commands import developer_cmds
-from typeclasses.equipment.wieldable import Weapon
+from typeclasses.equipment.wield_equ import Weapon
 
 
 class TestObjects(CommandTest):

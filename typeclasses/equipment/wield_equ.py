@@ -7,11 +7,11 @@ from utils.element import ListElement
 
 
 # used in wield and unwield commands to require an item type for those commands.
-WIELDABLE_OBJECT_CLASS = "typeclasses.equipment.wieldable.Wieldable"
+WIELDABLE_OBJECT_CLASS = "typeclasses.equipment.wield_equ.Wieldable"
 
 
 class Wieldable(Object):
-    """
+    """``
     Used to represent an object that can be equipped or wielded
 
     Attributes:
@@ -48,7 +48,7 @@ class Wieldable(Object):
 class Weapon(Wieldable):
     """
     Object that can be used to add to attack action's damage.
-    Inherits typeclasses.equipment.wieldable.Wieldable
+    Inherits typeclasses.equipment.wield_equ.Wieldable
 
     Attributes:
     dmg_types = ListElement  # ListElement of damage types this weapon can manipulate.
@@ -207,7 +207,7 @@ class OneHandedWeapon(Weapon):
     """
     Objects used for the one_handed skill and command sets.
 
-    Inherits typeclasses.equipment.wieldable.Weapon
+    Inherits typeclasses.equipment.wield_equ.Weapon
     """
 
     def at_object_creation(self):
