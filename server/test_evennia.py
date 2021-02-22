@@ -1,4 +1,5 @@
 from evennia.accounts.tests import *
+from evennia.commands.tests import *
 
 
 class TestDefaultAccountEv(TestDefaultAccountEv):
