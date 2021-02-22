@@ -6,6 +6,12 @@ from evennia.commands.default import system, help, building, admin
 from evennia.commands.default.cmdset_character import CharacterCmdSet
 from django.conf import settings
 
+from typeclasses.races import Human
+from typeclasses.exits import Exit
+from typeclasses.rooms import Room
+from typeclasses.objects import Object
+from commands.standard_cmds import CmdHelp, StandardCmdsCmdSet
+
 
 class TestDefaultAccountEv(TestDefaultAccountEv):
     def test_puppet_success(self):
@@ -16,35 +22,36 @@ class TestDefaultAccountEv(TestDefaultAccountEv):
             self.account.msg.assert_called_with("You are already puppeting this object.")
 
 
-class TestHelp(CommandTest):
+class TestHelp(TestHelp):
+    object_typeclass = Object
+    character_typeclass = Human
+    exit_typeclass = Exit
+    room_typeclass = Room
     def test_help(self):
-        pass
-#        self.call(help.CmdHelp(), "", "Command help entries")
+        self.account.puppet_object(self.session, self.char1)
+        self.call(help.CmdHelp(), "", "Command help entries", cmdset=StandardCmdsCmdSet())
 
     def test_set_help(self):
+        self.account.puppet_object(self.session, self.char1)
         self.call(
             help.CmdSetHelp(),
             "testhelp, General = This is a test",
             "Topic 'testhelp' was successfully created.",
         )
-        #self.call(help.CmdHelp(), "testhelp", "Help for testhelp", cmdset=CharacterCmdSet())
+        self.call(help.CmdHelp(), "testhelp", "Help for testhelp", cmdset=CharacterCmdSet())
 
 
 class TestSystem(TestSystem):
     def test_py(self):
-        pass
+        self.account.puppet_object(self.session, self.char1)
         # we are not testing CmdReload, CmdReset and CmdShutdown, CmdService or CmdTime
         # since the server is not running during these tests.
-        #self.call(system.CmdPy(), " 1+2", ">>> 1+2|3")
-        #self.call(system.CmdPy(), "/clientraw 1+2", ">>> 1+2|3")
-        #command = developer_cmds.CmdMultiCmd
-        #arg = "= py 1+2"
-        #wanted_message = "3"
-        #self.call(command(), arg, wanted_message)
+        self.call(system.CmdPy(), " 1+2", ">>> 1+2|3")
+        self.call(system.CmdPy(), "/clientraw 1+2", ">>> 1+2|3")
 
     def test_scripts(self):
-        #self.call(system.CmdScripts(), "", "dbref ")
-        self.call(system.CmdScripts(), "", "Exited more pager.")
+        self.account.puppet_object(self.session, self.char1)
+        self.call(system.CmdScripts(), "", "dbref ")
 
     def test_objects(self):
         self.call(system.CmdObjects(), "", "Object subtype totals")
@@ -58,35 +65,41 @@ class TestSystem(TestSystem):
 
 class TestAccount(TestAccount):
     def test_ooc_look(self):
+        self.account.puppet_object(self.session, self.char1)
         if settings.MULTISESSION_MODE < 2:
             self.call(
                 account.CmdOOCLook(), "", "You are out-of-character (OOC).", caller=self.account
             )
         if settings.MULTISESSION_MODE == 2:
-            pass
-#            self.call(
-#                account.CmdOOCLook(),
-#                "",
-#                "Account TestAccount (you are OutofCharacter)",
-#                caller=self.account,
-#            )
+            self.call(
+                account.CmdOOCLook(),
+                "",
+                "Account TestAccount (you are Out-of-Character)",
+                caller=self.account,
+            )
 
     def test_quell(self):
-        pass
-#        self.call(
-#            account.CmdQuell(),
-#            "",
-#            "Quelling to current puppet's permissions (developer).",
-#            caller=self.account,
-#        )
+        self.account.puppet_object(self.session, self.char1)
+        self.call(
+            account.CmdQuell(),
+            "",
+            "Quelling to current puppet's permissions (developer).",
+            caller=self.account,
+        )
     def test_ooc(self):
-        pass
-#        self.call(account.CmdOOC(), "", "You go OOC.", caller=self.account)
+        self.account.puppet_object(self.session, self.char1)
+        self.call(account.CmdOOC(), "", "You go OOC.", caller=self.account)
 
 
 class TestAdmin(TestAdmin):
+    object_typeclass = Object
+    character_typeclass = Human
+    exit_typeclass = Exit
+    room_typeclass = Room
     def test_force(self):
-        cid = self.char2.id
+        pass
+#        self.account.puppet_object(self.session, self.char1)
+#        cid = self.char2.id
 #        self.call(
 #            admin.CmdForce(),
 #            "Char2=say test",
@@ -96,6 +109,7 @@ class TestAdmin(TestAdmin):
 
 class TestBuilding(TestBuilding):
     def test_typeclass(self):
+        self.account.puppet_object(self.session, self.char1)
         self.call(building.CmdTypeclass(), "", "Usage: ")
         self.call(
             building.CmdTypeclass(),
@@ -110,7 +124,7 @@ class TestBuilding(TestBuilding):
             "to evennia.objects.objects.DefaultExit.",
             cmdstring="swap",
         )
-#        self.call(building.CmdTypeclass(), "/list Obj", "Core typeclasses")
+        self.call(building.CmdTypeclass(), "/list Obj", "Core typeclasses")
         self.call(
             building.CmdTypeclass(),
             "/show Obj",
@@ -147,41 +161,43 @@ class TestBuilding(TestBuilding):
         )
 
     def test_script(self):
-#        self.call(building.CmdScript(), "Obj = ", "No scripts defined on Obj")
-#        self.call(
-#            building.CmdScript(), "Obj = scripts.Script", "Script scripts.Script successfully added"
-#        )
+        self.account.puppet_object(self.session, self.char1)
+        self.call(building.CmdScript(), "Obj = ", "No scripts defined on Obj")
+        self.call(
+            building.CmdScript(), "Obj = scripts.Script", "Script scripts.Script successfully added"
+        )
         self.call(building.CmdScript(), "", "Usage: ")
         self.call(
             building.CmdScript(),
             "= Obj",
             "To create a global script you need scripts/add <typeclass>.",
         )
-#        self.call(building.CmdScript(), "Obj ", "dbref ")
+        self.call(building.CmdScript(), "Obj ", "dbref ")
 
-#        self.call(
-#            building.CmdScript(), "/start Obj", "0 scripts started on Obj"
-#        )  # because it's already started
- #       self.call(building.CmdScript(), "/stop Obj", "Stopping script")
+        self.call(
+            building.CmdScript(), "/start Obj", "0 scripts started on Obj"
+        )  # because it's already started
+        self.call(building.CmdScript(), "/stop Obj", "Stopping script")
 
-#        self.call(
-#            building.CmdScript(), "Obj = scripts.Script", "Script scripts.Script successfully added"
-#        )
-#        self.call(
-#            building.CmdScript(),
-#            "/start Obj = scripts.Script",
-#            "Script scripts.Script could not be (re)started.",
-#        )
-#        self.call(
-#            building.CmdScript(),
-#            "/stop Obj = scripts.Script",
-#            "Script stopped and removed from object.",
-#        )
+        self.call(
+            building.CmdScript(), "Obj = scripts.Script", "Script scripts.Script successfully added"
+        )
+        self.call(
+            building.CmdScript(),
+            "/start Obj = scripts.Script",
+            "Script scripts.Script could not be (re)started.",
+        )
+        self.call(
+            building.CmdScript(),
+            "/stop Obj = scripts.Script",
+            "Script stopped and removed from object.",
+        )
 
     def test_teleport(self):
         oid = self.obj1.id
         rid = self.room1.id
         rid2 = self.room2.id
+        self.account.puppet_object(self.session, self.char1)
         self.call(building.CmdTeleport(), "", "Usage: ")
         self.call(building.CmdTeleport(), "Obj = Room", "Obj is already at Room.")
         self.call(
@@ -203,11 +219,11 @@ class TestBuilding(TestBuilding):
 
         self.call(building.CmdTeleport(), "/tonone Obj2", "Teleported Obj2 -> None-location.")
         self.call(building.CmdTeleport(), "/quiet Room2", "Room2(#{})".format(rid2))
-#        self.call(
-#            building.CmdTeleport(),
-#            "/t",  # /t switch is abbreviated form of /tonone
-#            "Cannot teleport a puppeted object (Char, puppeted by TestAccount",
-#        )
+        self.call(
+            building.CmdTeleport(),
+            "/t",  # /t switch is abbreviated form of /tonone
+            "Cannot teleport a puppeted object (Char, puppeted by TestAccount",
+        )
         self.call(
             building.CmdTeleport(),
             "/l Room2",  # /l switch is abbreviated form of /loc
@@ -239,6 +255,8 @@ class TestBuilding(TestBuilding):
             commandTest.assertIsNotNone(obj)
             return obj
 
+        self.account.puppet_object(self.session, self.char1)
+
         # Tests "spawn" without any arguments.
         self.call(building.CmdSpawn(), " ", "Usage: spawn")
 
@@ -260,7 +278,7 @@ class TestBuilding(TestBuilding):
             inputs=["y"],
         )
 
-#        self.call(building.CmdSpawn(), "/search ", "Key ")
+        self.call(building.CmdSpawn(), "/search ", "Key ")
         self.call(building.CmdSpawn(), "/search test;test2", "No prototypes found.")
 
         self.call(
@@ -270,7 +288,7 @@ class TestBuilding(TestBuilding):
             "a key 'prototype_key' inside the prototype structure.",
         )
 
-#        self.call(building.CmdSpawn(), "/list", "Key ")
+        self.call(building.CmdSpawn(), "/list", "Key ")
         self.call(building.CmdSpawn(), "testprot", "Spawned Test Char")
 
         # Tests that the spawned object's location is the same as the character's location, since
@@ -348,7 +366,7 @@ class TestBuilding(TestBuilding):
         self.call(building.CmdSpawn(), "'NO_EXIST'", "No prototype named 'NO_EXIST' was found.")
 
         # Test listing commands
-#        self.call(building.CmdSpawn(), "/list", "Key ")
+        self.call(building.CmdSpawn(), "/list", "Key ")
 
         # spawn/edit (missing prototype)
         # brings up olc menu
