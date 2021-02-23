@@ -6,9 +6,13 @@ from evennia.locks.tests import *
 from evennia.objects.tests import *
 from evennia.prototypes.tests import *
 from evennia.scripts.tests import *
+from evennia.server.portal.tests import *
+from evennia.server.profiling.tests import *
+#from evennia.server.tests.test_amp_connection import *
 from evennia.server.tests.test_initial_setup import *
 from evennia.server.tests.test_launcher import *
 from evennia.server.tests.test_misc import *
+#from evennia.server.tests.test_server import *
 
 from evennia.commands.default import system, help, building, admin
 from evennia.commands.default.cmdset_character import CharacterCmdSet
