@@ -1,6 +1,7 @@
 from evennia.accounts.tests import *
 from evennia.commands.tests import *
 from evennia.commands.default.tests import *
+from evennia.comms.tests import *
 
 from evennia.commands.default import system, help, building, admin
 from evennia.commands.default.cmdset_character import CharacterCmdSet
