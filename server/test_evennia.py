@@ -5,6 +5,7 @@ from evennia.comms.tests import *
 from evennia.locks.tests import *
 from evennia.objects.tests import *
 from evennia.prototypes.tests import *
+from evennia.scripts.tests import *
 
 from evennia.commands.default import system, help, building, admin
 from evennia.commands.default.cmdset_character import CharacterCmdSet
