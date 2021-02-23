@@ -2,6 +2,7 @@ from evennia.accounts.tests import *
 from evennia.commands.tests import *
 from evennia.commands.default.tests import *
 from evennia.comms.tests import *
+from evennia.locks.tests import *
 
 from evennia.commands.default import system, help, building, admin
 from evennia.commands.default.cmdset_character import CharacterCmdSet
@@ -12,6 +13,13 @@ from typeclasses.exits import Exit
 from typeclasses.rooms import Room
 from typeclasses.objects import Object
 from commands.standard_cmds import StandardCmdsCmdSet
+
+
+class TestLockfuncs(TestLockfuncs):
+    def test_has_account(self):
+        self.account.puppet_object(self.session, self.char1)
+        self.assertEqual(True, lockfuncs.has_account(self.char1, None))
+        self.assertEqual(False, lockfuncs.has_account(self.obj1, None))
 
 
 class TestDefaultAccountEv(TestDefaultAccountEv):
