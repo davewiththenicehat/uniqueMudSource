@@ -14,6 +14,18 @@ from evennia.server.tests.test_launcher import *
 from evennia.server.tests.test_misc import *
 #from evennia.server.tests.test_server import *
 from evennia.typeclasses.tests import *
+from evennia.utils.tests.test_batchprocessors import *
+from evennia.utils.tests.test_create_functions import *
+from evennia.utils.tests.test_dbserialize import *
+from evennia.utils.tests.test_eveditor import *
+from evennia.utils.tests.test_evform import *
+from evennia.utils.tests.test_evmenu import *
+from evennia.utils.tests.test_gametime import *
+from evennia.utils.tests.test_tagparsing import *
+from evennia.utils.tests.test_text2html import *
+from evennia.utils.tests.test_utils import *
+from evennia.utils.tests.test_validatorfuncs import *
+# from evennia.utils.test_resources import *  # this is a test resource no unit tests within
 
 from evennia.commands.default import system, help, building, admin
 from evennia.commands.default.cmdset_character import CharacterCmdSet
