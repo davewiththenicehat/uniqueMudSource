@@ -26,6 +26,8 @@ from evennia.utils.tests.test_text2html import *
 from evennia.utils.tests.test_utils import *
 from evennia.utils.tests.test_validatorfuncs import *
 # from evennia.utils.test_resources import *  # this is a test resource no unit tests within
+from evennia.web.utils.tests import *
+from evennia.web.website.tests import *
 
 from evennia.commands.default import system, help, building, admin
 from evennia.commands.default.cmdset_character import CharacterCmdSet
