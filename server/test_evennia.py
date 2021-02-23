@@ -8,6 +8,7 @@ from evennia.prototypes.tests import *
 from evennia.scripts.tests import *
 from evennia.server.tests.test_initial_setup import *
 from evennia.server.tests.test_launcher import *
+from evennia.server.tests.test_misc import *
 
 from evennia.commands.default import system, help, building, admin
 from evennia.commands.default.cmdset_character import CharacterCmdSet
