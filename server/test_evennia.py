@@ -10,7 +10,7 @@ from typeclasses.races import Human
 from typeclasses.exits import Exit
 from typeclasses.rooms import Room
 from typeclasses.objects import Object
-from commands.standard_cmds import CmdHelp, StandardCmdsCmdSet
+from commands.standard_cmds import StandardCmdsCmdSet
 
 
 class TestDefaultAccountEv(TestDefaultAccountEv):
@@ -97,14 +97,15 @@ class TestAdmin(TestAdmin):
     exit_typeclass = Exit
     room_typeclass = Room
     def test_force(self):
-        pass
-#        self.account.puppet_object(self.session, self.char1)
-#        cid = self.char2.id
-#        self.call(
-#            admin.CmdForce(),
-#            "Char2=say test",
-#            'Char2(#{}) says, "test"|You have forced Char2 to: say test'.format(cid),
-#        )
+        self.account.puppet_object(self.session, self.char1)
+        self.char1.usdesc = 'Char'
+        self.char2.usdesc = 'Char2'
+        cid = self.char2.id
+        self.call(
+            admin.CmdForce(),
+            "Char2=say test",
+            f'Char2(#{cid}) says, "test"|You have forced Char2 to: say test'
+        )
 
 
 class TestBuilding(TestBuilding):
@@ -240,7 +241,7 @@ class TestBuilding(TestBuilding):
         self.call(building.CmdTunnel(), "", "Usage: ")
         self.call(building.CmdTunnel(), "foo = TestRoom2;test2", "tunnel can only understand the")
         self.call(building.CmdTunnel(), "/tel e = TestRoom3;test3", "Created room TestRoom3")
-#        DefaultRoom.objects.get_family(db_key="TestRoom3")
+        Room.objects.get_family(db_key="TestRoom3")
         exits = DefaultExit.objects.filter_family(db_key__in=("east", "west"))
         self.assertEqual(len(exits), 2)
 
