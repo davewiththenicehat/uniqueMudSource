@@ -12,7 +12,6 @@ from world.rules import stats
 from utils.um_utils import highlighter, error_report, objs_sdesc_str
 
 
-
 class StandardCmdsCmdSet(default_cmds.CharacterCmdSet):
     """
     Collection of very basic game command.
@@ -687,11 +686,22 @@ class CmdPut(Command):
         self.target_in_hand = False  # if True the target of the command must be in the Characters hand to complete successfully
         self.requires_ready = True  # if true this command requires the ready status before it can do anything.
 
-    def start_message(self):
+    def custom_req_met(self):
         """
-        Display a message after a command has been successfully deffered.
+        Verifies commands custom requirements are met.
+        If this method returns False the command will end.
+        This command must message the caller.
 
-        Automatically called at the end of Command.func
+        self.target and self.targets will be available in this method.
+
+        This method is intended to be overwritten.
+
+        Automatically called in at the self.at_pre_cmd.
+
+        Returns:
+            requirements_met=boolean
+            False: will stop the command
+            True: the command will continue
         """
         caller = self.caller
         target = self.target
@@ -704,29 +714,40 @@ class CmdPut(Command):
                 container = container[0]  # get the correct target number
                 # stop the command if the target can not move to the container
                 if not target.at_before_move(container):
-                    stop_msg = f"{container.usdesc.capitalize()} is not a container."
-                    self.stop_forced(stop_message=stop_msg)
-                    return
+                    stop_message = f"{container.usdesc.capitalize()} is not a container."
+                    caller.msg(stop_message)
+                    return False  # Stop the command from running
                 # target can be moved to container, notify caller and location
                 self.container = container
-                caller_message = f"You begin to put {target.usdesc} into " \
-                                 f"{container.usdesc}."
-                caller.msg(caller_message)
-                room_message = f"{caller.usdesc.capitalize()} begins to put " \
-                               f"{target.usdesc} into {container.usdesc}."
-                caller.location.msg_contents(room_message, exclude=(caller,))
+                return True  # all custom requirements met, command can run
             else:  # no object of name container_name was found
                 stop_message = f"You did not find {container_name} among your " \
                                "possesions or near by."
-                self.stop_forced(stop_message=stop_message)
-                return
+                caller.msg(stop_message)
+                return False  # Stop the command from running
         else:
             cmd_help = highlighter('help put', click_cmd=f"help put", up=True)
             stop_message = f"You must specify a container to place {target.usdesc} into.|/" \
                            f"For a full help use: {cmd_help}"
-            # find a container on the Character put it's name into the stop message
-            self.stop_forced(stop_message=stop_message)
-            return
+            caller.msg(stop_message)
+            return False  # stop the command from running
+
+    def start_message(self):
+        """
+        Display a message after a command has been successfully deffered.
+
+        Automatically called at the end of Command.func
+        """
+        caller = self.caller
+        target = self.target
+        container = self.container  # collected in self.custom_req_met
+        # message caller and Characters in the room
+        caller_message = f"You begin to put {target.usdesc} into " \
+                         f"{container.usdesc}."
+        caller.msg(caller_message)
+        room_message = f"{caller.usdesc.capitalize()} begins to put " \
+                       f"{target.usdesc} into {container.usdesc}."
+        caller.location.msg_contents(room_message, exclude=(caller,))
 
     def deferred_action(self):
         caller = self.caller

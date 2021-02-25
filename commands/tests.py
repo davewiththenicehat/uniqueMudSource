@@ -263,7 +263,7 @@ class TestCommands(CommandTest):
         self.assertTrue(self.char1.is_holding(self.obj2))
         # test putting an object into a non container object.
         arg = "= put Obj2 in Obj"
-        wanted_message = "Obj is not a container\."
+        wanted_message = '^Obj is not a container\.$'
         cmd_result = self.call(command(), arg, caller=self.char1)
         self.assertRegex(cmd_result, wanted_message)
         self.assertTrue(self.char1.is_holding(self.obj2))
@@ -288,13 +288,13 @@ class TestCommands(CommandTest):
         self.assertFalse(self.char1.is_holding(self.obj1))
         # try putting obj2 into a container that does not exist
         arg = "= put Obj2 in fake container"
-        wanted_message = "You did not find fake container among your possesions or near by\."
+        wanted_message = "^You did not find fake container among your possesions or near by\.$"
         cmd_result = self.call(command(), arg, caller=self.char1)
         self.assertRegex(cmd_result, wanted_message)
         self.assertTrue(self.char1.is_holding(self.obj2))
         # test help message for put when no container is supplied.
         arg = "= put Obj2"
-        wanted_message = r"You must specify a container to place Obj2 into.\r\nFor a full help use: Help put"
+        wanted_message = r"^You must specify a container to place Obj2 into.\r\nFor a full help use: Help put$"
         cmd_result = self.call(command(), arg, caller=self.char1)
         self.assertRegex(cmd_result, wanted_message)
         self.assertTrue(self.char1.is_holding(self.obj2))
