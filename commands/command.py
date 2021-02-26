@@ -472,20 +472,20 @@ class Command(default_cmds.MuxCommand):
         """
         Verifies commands custom requirements are met.
         If this method returns False the command will end.
-        This command must message the caller.
+        This method must message the caller why the command failed.
 
         self.target and self.targets will be available in this method.
 
         This method is intended to be overwritten.
 
-        Automatically called in at the self.at_pre_cmd.
+        Automatically called at the end of self.at_pre_cmd.
 
         Returns:
             requirements_met=boolean
             False: will stop the command
             True: the command will continue
         """
-        return True
+        return True  # custom requirements met, allow command to run
 
     def start_message(self):
         """

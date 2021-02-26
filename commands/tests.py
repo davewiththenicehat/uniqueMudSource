@@ -453,7 +453,7 @@ class TestCommands(CommandTest):
         # test getting an object already in possession
         command = developer_cmds.CmdMultiCmd
         arg = "= get Obj"
-        wanted_message = "You are already carrying Obj."
+        wanted_message = "^You are already carrying Obj\.$"
         cmd_result = self.call(command(), arg, caller=self.char1)
         self.assertRegex(cmd_result, wanted_message)
         # test getting an object when hands are already full
@@ -462,8 +462,8 @@ class TestCommands(CommandTest):
         wanted_message = "You pick up Obj2"
         cmd_result = self.call(command(), arg, caller=self.char1)
         self.assertRegex(cmd_result, wanted_message)
-        arg = "= get Obj3, complete_cmd_early"
-        wanted_message = "Your hands are full."
+        arg = "= get Obj3"
+        wanted_message = "^Your hands are full\.$"
         cmd_result = self.call(command(), arg, caller=self.char1)
         self.assertRegex(cmd_result, wanted_message)
         arg = "= drop Obj2"

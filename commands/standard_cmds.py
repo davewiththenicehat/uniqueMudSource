@@ -388,9 +388,9 @@ class CmdWhisper(Command):
     Speak privately as your character to another
 
     Usage:
-      whisper <message>
-      whisper to <target>, <target> "<message>"
-          the first " is required when a target(s) is supplied.
+      whisper <target> "<message>
+      whisper to <target1>, <target2> "<message>"
+          the first " is required.
           the " could also be =, to retain mux command support.
           each target must have a , between the names.
 
@@ -569,6 +569,39 @@ class CmdGet(Command):
         self.target_required = True  # if True and the command has no target, Command.func will stop execution and message the player
         self.can_not_target_self = True  # if True this command will end with a message if the Character targets themself
 
+    def custom_req_met(self):
+        """
+        Verifies commands custom requirements are met.
+        If this method returns False the command will end.
+        This method must message the caller why the command failed.
+
+        self.target and self.targets will be available in this method.
+
+        This method is intended to be overwritten.
+
+        Automatically called at the end of self.at_pre_cmd.
+
+        Returns:
+            requirements_met=boolean
+            False: will stop the command
+            True: the command will continue
+        """
+        caller = self.caller
+        target = self.target
+        # check if a hand is open
+        open_hands = caller.open_hands()
+        # hands are full, stop the command
+        if not open_hands:
+            stop_message = f"Your hands are full."
+            caller.msg(stop_message)
+            return False
+        # stop the command if the caller is already caring the object.
+        if target.location == caller:
+            stop_message = f"You are already carrying {target.usdesc}."
+            caller.msg(stop_message)
+            return False
+        return True  # custom requirements met, command can run
+
     def start_message(self):
         """
         Display a message after a command has been successfully deffered.
@@ -577,22 +610,12 @@ class CmdGet(Command):
         """
         caller = self.caller
         target = self.target
-        # check if a hand is open
-        open_hands = caller.open_hands()
-        # hands are full, stop the command
-        if not open_hands:
-            self.stop_forced(stop_message=f"Your hands are full.")
-            return
-        # stop the command if the caller is already caring the object.
-        if target.location == caller:
-            self.stop_forced(stop_message=f"You are already carrying {target.usdesc}.")
-            return
-        if target.location == caller.location:  # get target in in caller's room
+        if target.location == caller.location:  # get target is in caller's room
             caller_message = f"You reach for {target.usdesc}."
             caller.msg(caller_message)
             room_message = f"{caller.usdesc.capitalize()} reaches for {target.usdesc}."
             caller.location.msg_contents(room_message, exclude=(caller,))
-        else:  # object being gotten is not in callers room
+        else:  # get target is not in callers room
             caller_message = f"You reach into {target.location.usdesc}."
             caller.msg(caller_message)
             room_message = f"{caller.usdesc.capitalize()} reaches into {target.location.usdesc}."
@@ -770,7 +793,7 @@ class CmdPut(Command):
                        f"{container.usdesc}.")
             err_msg = f"CmdPut: caller: {caller.dbref}, target: {target.dbref} " \
                       f"container: {container.dbref}. target.move_to returned " \
-                      f"false in Command.deffered_action."
+                      f"false in Command.deferred_action."
             error_report(err_msg, caller)
 
 class CmdInventory(Command):
@@ -808,6 +831,30 @@ class CmdInventory(Command):
         shared among all instances of the Command.
         """
         self.defer_time = 1  # time is seconds for the command to wait before running action of command
+
+    def custom_req_met(self):
+        """
+        Verifies commands custom requirements are met.
+        If this method returns False the command will end.
+        This method must message the caller why the command failed.
+
+        self.target and self.targets will be available in this method.
+
+        This method is intended to be overwritten.
+
+        Automatically called at the end of self.at_pre_cmd.
+
+        Returns:
+            requirements_met=boolean
+            False: will stop the command
+            True: the command will continue
+        """
+        caller = self.caller
+
+        if not caller.contents:
+            caller.msg("You are not carrying or wearing anything.")
+            return False
+        return True  # custom requirements met, allow command to run
 
     def start_message(self):
         """
