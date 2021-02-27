@@ -9,6 +9,7 @@ from typeclasses.rooms import Room
 from typeclasses.objects import Object
 from typeclasses.scripts import Script
 from typeclasses.equipment.wieldable import OneHandedWeapon
+from typeclasses.equipment import clothing
 
 
 class UniqueMudTest(EvenniaTest):
@@ -50,6 +51,17 @@ class UniqueMudTest(EvenniaTest):
         self.sword = create_object(OneHandedWeapon, key="a sword")
         self.sword.targetable = True
         self.sword.location = self.char1.location
+        self.test_hat = create_object(clothing.Clothing, key="test hat")
+        self.test_hat.db.clothing_type = "hat"
+        self.test_hat.location = self.room1
+        # Make a test shirt
+        self.test_shirt = create_object(clothing.Clothing, key="test shirt")
+        self.test_shirt.db.clothing_type = "top"
+        self.test_shirt.location = self.room1
+        # Make a test helmet
+        self.test_helmet = create_object(clothing.HumanoidArmor, key="test helmet")
+        self.test_helmet.db.clothing_type = "head"
+        self.test_helmet.location = self.room1
 
 
 class UniqueMudCmdTest(UniqueMudTest, CommandTest):

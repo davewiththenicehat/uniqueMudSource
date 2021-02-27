@@ -9,11 +9,11 @@ from utils.unit_test_resources import UniqueMudCmdTest
 
 class TestCommands(UniqueMudCmdTest):
     """
-        CommandTest.call arguments
-        call(cmdobj, args, msg=None, cmdset=None,
-            noansi=True, caller=None, receiver=None, cmdstring=None,
-            obj=None, inputs=None, raw_string=None,
-        ):
+    CommandTest.call arguments
+    call(cmdobj, args, msg=None, cmdset=None,
+        noansi=True, caller=None, receiver=None, cmdstring=None,
+        obj=None, inputs=None, raw_string=None,
+    ):
     Objects in EvenniaTest
         self.obj1 = obj
         self.obj2 = "obj2"
@@ -22,17 +22,86 @@ class TestCommands(UniqueMudCmdTest):
         self.exit = "out"
     """
 
+    def test_inv(self):
+        """
+            Test inventory command
+        """
+        # test character with empty inventory
+        command = developer_cmds.CmdMultiCmd
+        arg = "= inv"
+        wanted_message = "^You are not carrying or wearing anything.$"
+        cmd_result = self.call(command(), arg, caller=self.char1)
+        self.assertRegex(cmd_result, wanted_message)
+        command = developer_cmds.CmdMultiCmd
+
+        # get an object
+        arg = "= get Obj, complete_cmd_early"
+        wanted_message = "You pick up Obj\."
+        cmd_result = self.call(command(), arg, caller=self.char1)
+        self.assertRegex(cmd_result, wanted_message)
+        self.assertTrue(self.char1.is_holding(self.obj1))
+        # Get the hat
+        command = developer_cmds.CmdMultiCmd
+        arg = "= get hat, complete_cmd_early"
+        wanted_message = "You pick up test hat"
+        cmd_result = self.call(command(), arg, caller=self.char1)
+        self.assertRegex(cmd_result, wanted_message)
+        # wear the test hat
+        command = developer_cmds.CmdMultiCmd
+        arg = "= wear hat, complete_cmd_early"
+        wanted_message = "You will be busy for 1 second.\nYou begin to put on test hat.\nChar puts on test hat.\nYou are no longer busy.\nChar allowed you to complete your wear command early with their complete_cmd_early command."
+        cmd_result = self.call(command(), arg, caller=self.char1)
+        self.assertRegex(cmd_result, wanted_message)
+        # make certain the hat is no longer in hand
+        self.assertFalse(self.char1.is_holding(self.test_hat))
+
+        # test inv with an object in hand and one worn
+        command = developer_cmds.CmdMultiCmd
+        arg = "= inv, complete_cmd_early"
+        cmd_result = self.call(command(), arg, caller=self.char1)
+        # make certain command takes time to complete
+        wanted_message = "^You will be busy for "
+        self.assertRegex(cmd_result, wanted_message)
+        # make certain command start message echos
+        wanted_message = "You rummage through your possessions, taking inventory."
+        self.assertRegex(cmd_result, wanted_message)
+        # check command carring and wearing items.
+        wanted_message = "You are carrying:\n Obj   \r\nYou are wearing:\n test hat"
+
+        # Get a second item to wear
+        command = developer_cmds.CmdMultiCmd
+        arg = "= get shirt, complete_cmd_early"
+        wanted_message = "You pick up test shirt"
+        cmd_result = self.call(command(), arg, caller=self.char1)
+        self.assertRegex(cmd_result, wanted_message)
+        # wear the test shirt
+        command = developer_cmds.CmdMultiCmd
+        arg = "= wear shirt, complete_cmd_early"
+        wanted_message = "You will be busy for 1 second.\nYou begin to put on test shirt.\nChar puts on test shirt.\nYou are no longer busy.\nChar allowed you to complete your wear command early with their complete_cmd_early command."
+        cmd_result = self.call(command(), arg, caller=self.char1)
+        self.assertRegex(cmd_result, wanted_message)
+        # get a second object
+        arg = "= get Obj2, complete_cmd_early"
+        wanted_message = "You pick up Obj2\."
+        cmd_result = self.call(command(), arg, caller=self.char1)
+        self.assertRegex(cmd_result, wanted_message)
+        self.assertTrue(self.char1.is_holding(self.obj2))
+
+        # test inv with two objects in hand and multiple items in hand
+        command = developer_cmds.CmdMultiCmd
+        arg = "= inv, complete_cmd_early"
+        cmd_result = self.call(command(), arg, caller=self.char1)
+        # make certain command takes time to complete
+        wanted_message = "^You will be busy for "
+        self.assertRegex(cmd_result, wanted_message)
+        # make certain command start message echos
+        wanted_message = "You rummage through your possessions, taking inventory."
+        self.assertRegex(cmd_result, wanted_message)
+        # check command carring and wearing items.
+        wanted_message = "You are carrying:\n Obj    \n Obj2   \r\nYou are wearing:\n test hat     \n test shirt"
+        self.assertRegex(cmd_result, wanted_message)
+
     def test_cmds(self):
-
-
-
-    # misc command test
-        # provide a target that does not exist with a command requiring a target
-        #command = developer_cmds.CmdMultiCmd
-        #arg = "= wear none existant object"
-        #wanted_message = "none existant object is not here."
-        #self.call(command(), arg, wanted_message)
-
     # test deffering commands
         # defer a command and complete it
         command = developer_cmds.CmdMultiCmd
@@ -367,30 +436,12 @@ class TestCommands(UniqueMudCmdTest):
 
     # test clothing commands
     # test inventory command
-        # test character with empty inventory
-        command = developer_cmds.CmdMultiCmd
-        arg = "= inv"
-        wanted_message = "^You are not carrying or wearing anything.$"
-        cmd_result = self.call(command(), arg, caller=self.char1)
-        self.assertRegex(cmd_result, wanted_message)
-        # Make a test hat
-        test_hat = create_object(clothing.Clothing, key="test hat")
-        test_hat.db.clothing_type = "hat"
-        test_hat.location = self.room1
-        # Make a test shirt
-        test_shirt = create_object(clothing.Clothing, key="test shirt")
-        test_shirt.db.clothing_type = "top"
-        test_shirt.location = self.char1
-        # Make a test helmet
-        test_helmet = create_object(clothing.HumanoidArmor, key="test helmet")
-        test_helmet.db.clothing_type = "head"
-        test_helmet.at_init()  # TestCommands will not call at_init hooks.
-        test_helmet.location = self.char1
+        self.test_helmet.location = self.char1
         # give the helmet an armor rating
-        test_helmet.dr.PRC = 2
-        test_helmet.dr.ACD = 3
-        self.assertEqual(test_helmet.attributes.get('dr_PRC'), 2)
-        self.assertEqual(test_helmet.dr.PRC, 2)
+        self.test_helmet.dr.PRC = 2
+        self.test_helmet.dr.ACD = 3
+        self.assertEqual(self.test_helmet.attributes.get('dr_PRC'), 2)
+        self.assertEqual(self.test_helmet.dr.PRC, 2)
         # Test wear with no arguments.
         command = developer_cmds.CmdMultiCmd
         arg = "= wear"
@@ -409,7 +460,7 @@ class TestCommands(UniqueMudCmdTest):
         cmd_result = self.call(command(), arg, caller=self.char1)
         self.assertRegex(cmd_result, wanted_message)
         # make certain the hat is no longer in hand
-        self.assertFalse(self.char1.is_holding(test_hat))
+        self.assertFalse(self.char1.is_holding(self.test_hat))
         # Test tring to wear an item not on person also tests Command.search_caller_only
         command = developer_cmds.CmdMultiCmd
         arg = "= wear Obj"
@@ -477,24 +528,12 @@ class TestCommands(UniqueMudCmdTest):
         wanted_message = "You will be busy for 1 second.\nYou begin to put on test helmet.\nChar puts on test helmet, covering test hat.\nYou are no longer busy.\nChar allowed you to complete your wear command early with their complete_cmd_early command."
         cmd_result = self.call(command(), arg, caller=self.char1)
         self.assertRegex(cmd_result, wanted_message)
-        # test character with items worn and not
-        command = developer_cmds.CmdMultiCmd
-        arg = "= inv, complete_cmd_early"
-        cmd_result = self.call(command(), arg, caller=self.char1)
-        # make certain command takes time to complete
-        wanted_message = "^You will be busy for "
-        self.assertRegex(cmd_result, wanted_message)
-        # make certain command start message echos
-        wanted_message = "You rummage through your possessions, taking inventory."
-        self.assertRegex(cmd_result, wanted_message)
-        wanted_message = "You are carrying:\n test shirt   \r\nYou are wearing:\n test helmet   \n test hat"
-        self.assertRegex(cmd_result, wanted_message)
     # inventory command run again make certain echos to room properly
         #misc tests
-        self.assertEqual(test_hat.db.worn, True)
-        self.assertEqual(test_hat.db.clothing_type, 'hat')
-        self.assertEqual(test_helmet.db.clothing_type, "head")
-        self.assertTrue('head' in test_helmet.type_limit)
+        self.assertEqual(self.test_hat.db.worn, True)
+        self.assertEqual(self.test_hat.db.clothing_type, 'hat')
+        self.assertEqual(self.test_helmet.db.clothing_type, "head")
+        self.assertTrue('head' in self.test_helmet.type_limit)
         # Make certain return_appearance is working
         self.assertEqual(self.char1.return_appearance(self.char1), "You are wearing test helmet.")
         # Test now with the look command
@@ -514,13 +553,19 @@ class TestCommands(UniqueMudCmdTest):
         wanted_message = "You will be busy for 1 second.\nYou begin to put on test undershirt.\nChar puts on test undershirt.\nYou are no longer busy.\nChar allowed you to complete your wear command early with their complete_cmd_early command."
         cmd_result = self.call(command(), arg, caller=self.char1)
         self.assertRegex(cmd_result, wanted_message)
+        # get the test shirt
+        command = developer_cmds.CmdMultiCmd
+        arg = "= get shirt, complete_cmd_early"
+        wanted_message = "You pick up test shirt."
+        cmd_result = self.call(command(), arg, caller=self.char1)
+        self.assertRegex(cmd_result, wanted_message)
         # Test wearing the shirt covering the undershirt
         command = developer_cmds.CmdMultiCmd
         arg = "= wear shirt, complete_cmd_early"
         wanted_message = "You will be busy for 1 second.\nYou begin to put on test shirt.\nChar puts on test shirt, covering test undershirt.\nYou are no longer busy.\nChar allowed you to complete your wear command early with their complete_cmd_early command."
         cmd_result = self.call(command(), arg, caller=self.char1)
         self.assertRegex(cmd_result, wanted_message)
-        self.assertEqual(test_undershirt.db.covered_by, test_shirt)
+        self.assertEqual(test_undershirt.db.covered_by, self.test_shirt)
         #verify that the helmet's armor rating has been cached in the wearer
         self.assertEqual(self.char1.body.head.dr.PRC, 2)
         self.assertEqual(self.char1.body.head.dr.ACD, 3)
