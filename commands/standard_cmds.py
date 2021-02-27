@@ -850,10 +850,9 @@ class CmdInventory(Command):
             True: the command will continue
         """
         caller = self.caller
-
         if not caller.contents:
             caller.msg("You are not carrying or wearing anything.")
-            return False
+            return False  # requirements not met stop the command
         return True  # custom requirements met, allow command to run
 
     def start_message(self):
@@ -872,11 +871,6 @@ class CmdInventory(Command):
     def deferred_action(self):
         """check inventory"""
         caller = self.caller
-
-        if not caller.contents:
-            caller.msg("You are not carrying or wearing anything.")
-            return
-
         items = caller.contents
 
         carry_table = evtable.EvTable(border="header")

@@ -277,7 +277,7 @@ class TestCommands(CommandTest):
         self.obj1.container = False
         arg = "= complete_cmd_early"
         cmd_result = self.call(command(), arg, caller=self.char1)
-        wanted_message = "Obj2 can not be put into Obj\.\nError message: CmdPut: caller: #6\, target: #5 container: #4\. target\.move_to returned false in Command\.deffered_action\.\r\nThis has NOT been logged\. System detects you are a developer\.\nYou are no longer busy\."
+        wanted_message = r"Obj2 can not be put into Obj\.\nError message: CmdPut: caller: #6, target: #5 container: #4\. target\.move_to returned false in Command\.deferred_action\.\r\nThis has NOT been logged\. System detects you are a developer\.\nYou are no longer busy\."
         self.assertRegex(cmd_result, wanted_message)
         self.assertTrue(self.char1.is_holding(self.obj2))
         # drop the first object
@@ -387,16 +387,11 @@ class TestCommands(CommandTest):
 
 
     # test clothing commands
+    # test inventory command
         # test character with empty inventory
         command = developer_cmds.CmdMultiCmd
-        arg = "= inv, complete_cmd_early"
-        wanted_message = "You are not carrying or wearing anything."
-        cmd_result = self.call(command(), arg, caller=self.char1)
-        self.assertRegex(cmd_result, wanted_message)
-        # make certain it takes time to search inventory
-        command = developer_cmds.CmdMultiCmd
-        arg = "= inv, complete_cmd_early"
-        wanted_message = "You rummage through your possessions, taking inventory"
+        arg = "= inv"
+        wanted_message = "^You are not carrying or wearing anything.$"
         cmd_result = self.call(command(), arg, caller=self.char1)
         self.assertRegex(cmd_result, wanted_message)
         # Make a test hat
@@ -503,9 +498,16 @@ class TestCommands(CommandTest):
         # test character with items worn and not
         command = developer_cmds.CmdMultiCmd
         arg = "= inv, complete_cmd_early"
-        wanted_message = "You are carrying:\n test shirt   \r\nYou are wearing:\n test helmet   \n test hat"
         cmd_result = self.call(command(), arg, caller=self.char1)
+        # make certain command takes time to complete
+        wanted_message = "^You will be busy for "
         self.assertRegex(cmd_result, wanted_message)
+        # make certain command start message echos
+        wanted_message = "You rummage through your possessions, taking inventory."
+        self.assertRegex(cmd_result, wanted_message)
+        wanted_message = "You are carrying:\n test shirt   \r\nYou are wearing:\n test helmet   \n test hat"
+        self.assertRegex(cmd_result, wanted_message)
+    # inventory command run again make certain echos to room properly
         #misc tests
         self.assertEqual(test_hat.db.worn, True)
         self.assertEqual(test_hat.db.clothing_type, 'hat')
