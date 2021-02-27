@@ -1,17 +1,13 @@
-from evennia.commands.default.tests import CommandTest
 from commands import developer_cmds
-from typeclasses.races import Human
-from typeclasses.exits import Exit
-from typeclasses.rooms import Room
 from typeclasses.objects import Object
 from evennia import create_object
 from typeclasses.equipment import clothing
 from commands import standard_cmds
 from typeclasses.equipment.wieldable import OneHandedWeapon
+from utils.unit_test_resources import UniqueMudCmdTest
 
 
-class TestCommands(CommandTest):
-
+class TestCommands(UniqueMudCmdTest):
     """
         CommandTest.call arguments
         call(cmdobj, args, msg=None, cmdset=None,
@@ -25,27 +21,10 @@ class TestCommands(CommandTest):
         self.char2 = "char2"
         self.exit = "out"
     """
-    # account_typeclass = DefaultAccount
-    object_typeclass = Object
-    character_typeclass = Human
-    exit_typeclass = Exit
-    room_typeclass = Room
-    # script_typeclass = DefaultScript
 
     def test_cmds(self):
 
-        # make character names something easy to tell apart
-        self.char1.usdesc = 'Char'
-        self.char2.usdesc = 'Char2'
-        # make objects targetable for testing
-        self.obj1.targetable = True
-        self.obj2.targetable = True
-        self.obj3 = create_object(Object, key="Obj3")
-        self.obj3.targetable = True
-        self.obj3.location = self.char1.location
-        self.sword = create_object(OneHandedWeapon, key="a sword")
-        self.sword.targetable = True
-        self.sword.location = self.char1.location
+
 
     # misc command test
         # provide a target that does not exist with a command requiring a target
@@ -456,6 +435,9 @@ class TestCommands(CommandTest):
         arg = "= get Obj2, complete_cmd_early"
         wanted_message = "You pick up Obj2"
         cmd_result = self.call(command(), arg, caller=self.char1)
+        self.obj3 = create_object(Object, key="Obj3")
+        self.obj3.targetable = True
+        self.obj3.location = self.char1.location
         self.assertRegex(cmd_result, wanted_message)
         arg = "= get Obj3"
         wanted_message = "^Your hands are full\.$"
