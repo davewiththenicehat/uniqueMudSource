@@ -29,12 +29,16 @@ class TestCommands(UniqueMudCmdTest):
         # test character with empty inventory
         command = developer_cmds.CmdMultiCmd
         arg = "= inv"
-        wanted_message = "^You are not carrying or wearing anything.$"
-        cmd_result = self.call(command(), arg, caller=self.char1)
+        receivers = {
+            self.char1: "You are not carrying or wearing anything.",
+            self.char2: ''
+        }
+        cmd_result = self.call_multi_receivers(command(), arg, receivers)
+        wanted_message = "^You are not carrying or wearing anything\.$"
         self.assertRegex(cmd_result, wanted_message)
-        command = developer_cmds.CmdMultiCmd
 
         # get an object
+        command = developer_cmds.CmdMultiCmd
         arg = "= get Obj, complete_cmd_early"
         wanted_message = "You pick up Obj\."
         cmd_result = self.call(command(), arg, caller=self.char1)
@@ -58,7 +62,12 @@ class TestCommands(UniqueMudCmdTest):
         # test inv with an object in hand and one worn
         command = developer_cmds.CmdMultiCmd
         arg = "= inv, complete_cmd_early"
-        cmd_result = self.call(command(), arg, caller=self.char1)
+        receivers = {
+            self.char1: None,
+            self.char2: 'Char begings to quickly look through theirs ' \
+                        'possessions.|Char completes theirs search.'
+        }
+        cmd_result = self.call_multi_receivers(command(), arg, receivers)
         # make certain command takes time to complete
         wanted_message = "^You will be busy for "
         self.assertRegex(cmd_result, wanted_message)
