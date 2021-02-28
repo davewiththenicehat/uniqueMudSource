@@ -177,7 +177,7 @@ class UniqueMudCmdTest(UniqueMudTest):
 
     def call_multi_receivers(
         self, cmdobj, args,
-        receivers=tuple(),
+        receivers=dict(),
         cmdset=None, noansi=True,
         caller=None, cmdstring=None,
         obj=None, inputs=None,
