@@ -216,35 +216,6 @@ class TestObjects(CommandTest):
             self.assertFalse(char.attributes.has(db_cond_name))
             self.assertEqual(getattr(char.condition, cond_name), 0)
 
-        # test Character.condition.unconscious
-        char.set_unconscious()
-        # Was not able to get this to work. Works in command.tests
-        # self.assertEqual(char.db.pose, 'is unconscious here.')
-        self.assertFalse(char.ready())
-        # Test commands a character should not be able to do while unconscious.
-        command = developer_cmds.CmdMultiCmd
-        unconscious_commands = ('punch 2-a normal person', 'punch not here',
-                                'out', 'inv', 'sit', 'stand', 'lay', 'get',
-                                'wear', 'remove', 'say', 'drop', 'look', 'stab',
-                                'wield', 'whisper', 'dodge', 'unwield', 'recog',
-                                'emote', 'put')
-        for uncon_cmd in unconscious_commands:
-            arg = f"= {uncon_cmd}"
-            wanted_message = r"You can not do that while unconscious."
-            cmd_result = self.call(command(), arg, wanted_message, caller=char)
-            self.assertEqual(wanted_message, cmd_result)
-        # test commands that should work while character is unconscious
-        cmds_work_while_uncon = ('stat', 'help')
-        for uncon_cmd in cmds_work_while_uncon:
-            arg = f"= {uncon_cmd}"
-            unwanted_message = r"You can not do that while unconscious."
-            cmd_result = self.call(command(), arg, caller=char)
-            self.assertFalse(unwanted_message == cmd_result)
-        # wake char back up
-        char.set_unconscious(False)
-        self.assertTrue(char.ready())
-        self.assertEqual(char.db.pose, 'is laying here.')
-
         # test Character skills
         from world.rules import skills
         for skill_set in skills.SKILLS.keys():

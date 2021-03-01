@@ -114,7 +114,9 @@ class TestCommands(UniqueMudCmdTest):
         """
             test the Command defer system and Character Status
         """
+    # test deffering a command
         # defer a command and complete it
+        # tests self.defer_teme, by recording secods of defferal.
         command = developer_cmds.CmdMultiCmd
         arg = "= defer_cmd, complete_cmd_early"
         wanted_message = "You will be busy for 5 seconds.|Char is testing deferring a command.|Defered command ran successfully.|You are no longer busy.|Char allowed you to complete your defer_cmd command early with their complete_cmd_early command."
@@ -154,6 +156,7 @@ class TestCommands(UniqueMudCmdTest):
         arg = "= defer_cmd, interrupt_cmd, y"
         wanted_message = "You will be busy for 5 seconds.|Char is testing deferring a command.|Stop your defer_cmd command to test_cmd? 'y' for yes or 'i' to ignore.|You are no longer busy.|Test command ran successfully."
         self.call(command(), arg, wanted_message)
+    # test stun
         # stun a character and stop it early
         command = developer_cmds.CmdMultiCmd
         arg = "= stun_self, stop_stun"
@@ -171,6 +174,192 @@ class TestCommands(UniqueMudCmdTest):
         self.call(command(), arg, wanted_message)  # stop the stun above
         wanted_message = "You are not currently stunned."
         self.call(command(), arg, wanted_message)
+    # test unconscious
+        # test actions against an unconscious characer
+        # the evade roll should be 5.
+        self.char1.set_unconscious()
+        self.assertFalse(self.char1.ready())
+        command = developer_cmds.CmdMultiCmd
+        arg = "= control_other Char2=punch Char, complete_cmd_early Char2"
+        wanted_message = r"\nevade 5 VS punch"
+        cmd_result = self.call(command(), arg, caller=self.char1)
+        self.assertRegex(cmd_result, wanted_message)
+        command = developer_cmds.CmdMultiCmd
+        arg = "= out"
+        wanted_message = r"You can not do that while unconscious."
+        cmd_result = self.call(command(), arg, wanted_message,  caller=self.char1)
+        command = developer_cmds.CmdMultiCmd
+        # make certain Character's pose shows unconscious
+        arg = "= l"
+        wanted_message = r"Char is unconscious here"
+        cmd_result = self.call(command(), arg, caller=self.char2)
+        self.assertRegex(cmd_result, wanted_message)
+        # wake the character up
+        self.char1.set_unconscious(False)
+        # make certain Character is in laying position after waking up.
+        command = developer_cmds.CmdMultiCmd
+        arg = "= l"
+        wanted_message = r"Char is laying here"
+        cmd_result = self.call(command(), arg, caller=self.char2)
+        self.assertRegex(cmd_result, wanted_message)
+        # stand self.char1 up
+        wanted_message = "You will be busy for 3 seconds.|You move to stand up.|You stand up."
+        self.call(command(), '= stand, complete_cmd_early', wanted_message)
+    # test self.requires_ready
+        # commands that should work when the user is busy
+        # defer a command and complete it
+        command = developer_cmds.CmdMultiCmd
+        arg = "= defer_cmd"
+        wanted_message = "You will be busy for 5 seconds.|Char is testing deferring a command."
+        self.call(command(), arg, wanted_message)
+        # commands that should work when the Character is busy
+        command = developer_cmds.CmdMultiCmd
+        not_req_ready_commands = ('look', 'drop', 'help', 'stat', 'say')
+        for non_ready_cmd in not_req_ready_commands:
+            arg = f"= {non_ready_cmd}"
+            cmd_result = self.call(command(), arg, caller=self.char1)
+            self.assertFalse(cmd_result.startswith('You will be busy for'))
+        # commands that should not work when the Character is busy
+        command = developer_cmds.CmdMultiCmd
+        req_ready_commands = ('punch', 'inv', 'out', 'sit', 'lay',
+                              'get', 'wear', 'remove', 'whisper', 'kick',
+                              'dodge', 'put', 'stab', 'kick', 'wield',
+                              'unwield', 'emote')
+        for ready_cmd in req_ready_commands:
+            arg = f"= {ready_cmd}"
+            cmd_result = self.call(command(), arg, caller=self.char1)
+            self.assertRegex(cmd_result, '^You will be busy for')
+        # test stands ready state
+        self.char1.position = 'laying'
+        self.call(command(), '= stand', 'You will be busy for')
+        self.char1.position = 'standing'
+        # comlete self.char1's deffered command
+        command = developer_cmds.CmdMultiCmd
+        arg = "= complete_cmd_early"
+        wanted_message = "Defered command ran successfully.|You are no longer busy.|Char allowed you to complete your defer_cmd command early with their complete_cmd_early command."
+        self.call(command(), arg, wanted_message)
+    # test Character.condition.unconscious
+        self.char1.set_unconscious()
+        # test character posing.
+        self.assertEqual(self.char1.db.pose, 'is unconscious here.')
+        self.assertFalse(self.char1.ready())
+        # Test commands a character should not be able to do while unconscious.
+        command = developer_cmds.CmdMultiCmd
+        unconscious_commands = ('punch char2', 'punch not here',
+                                'out', 'inv', 'sit', 'stand', 'lay', 'get',
+                                'wear', 'remove', 'say', 'drop', 'look', 'stab',
+                                'wield', 'whisper', 'dodge', 'unwield', 'recog',
+                                'emote', 'put')
+        for uncon_cmd in unconscious_commands:
+            arg = f"= {uncon_cmd}"
+            wanted_message = r"You can not do that while unconscious."
+            cmd_result = self.call(command(), arg, wanted_message)
+            self.assertEqual(wanted_message, cmd_result)
+        # test commands that should work while character is unconscious
+        cmds_work_while_uncon = ('stat', 'help')
+        for uncon_cmd in cmds_work_while_uncon:
+            arg = f"= {uncon_cmd}"
+            unwanted_message = r"You can not do that while unconscious."
+            cmd_result = self.call(command(), arg)
+            self.assertFalse(unwanted_message == cmd_result)
+        # wake char back up
+        self.char1.set_unconscious(False)
+        self.assertTrue(self.char1.ready())
+        self.assertEqual(self.char1.db.pose, 'is laying here.')
+
+    def test_targeting(self):
+        """
+            Test Command target system.
+            Additional targeting tests in self.test_get_put_drop()
+        """
+        # test Command.can_not_target_self
+        command = developer_cmds.CmdMultiCmd
+        arg = "= punch Char"
+        wanted_message = 'You can not punch yourself.'
+        cmd_result = self.call(command(), arg, wanted_message)
+        # test targeting an exit that is not targetable
+        command = developer_cmds.CmdMultiCmd
+        arg = "= punch out"
+        wanted_message = 'You can not punch out.'
+        cmd_result = self.call(command(), arg, wanted_message)
+        # test targeting a targetable exit
+        self.exit.targetable = True
+        command = developer_cmds.CmdMultiCmd
+        arg = "= punch out, complete_cmd_early"
+        wanted_message = "You will be busy for \\d+ seconds.\nFacing out Char pulls theirs hand back preparing an attack.\npunch \\d+ VS evade 5: You punch at out"
+        cmd_result = self.call(command(), arg)
+        self.assertRegex(cmd_result, wanted_message)
+        self.exit.targetable = False
+        # test attacking a basic Object, defense should be 5
+        # test a targeted command that has a stop_request against an object
+        # to make certain the stop request to an object causes no issues
+        command = developer_cmds.CmdMultiCmd
+        arg = "= kick Obj, complete_cmd_early"
+        wanted_message = "You will be busy for \\d+ seconds.\nFacing Obj Char lifts theirs knee up preparing an attack.\nkick \\d+ VS evade 5: You kick at Obj"
+        cmd_result = self.call(command(), arg)
+        self.assertRegex(cmd_result, wanted_message)
+        # test a target leaving melee range
+        command = developer_cmds.CmdMultiCmd
+        arg = "= punch Char2, control_other Char2=out, complete_cmd_early"
+        wanted_message = "You can no longer reach Char2\\."
+        cmd_result = self.call(command(), arg)
+        self.assertRegex(cmd_result, wanted_message)
+        # get Char2 back into the room.
+        self.char2.location = self.room1
+        self.assertEqual(self.char2.location, self.room1)
+        # test self.target_required
+        command = developer_cmds.CmdMultiCmd
+        arg = "= get not_real_name"
+        wanted_message = "You can not find not_real_name."
+        self.call(command(), arg, wanted_message)
+        # test self.target_in_hand. Offers a suggestion to get the target.
+        arg = "= drop Obj"
+        wanted_message = "Try picking it up first with get Obj."
+        self.call(command(), arg, wanted_message, caller=self.char1)
+        # test self.search_caller_only
+        command = developer_cmds.CmdMultiCmd
+        arg = "= wear Obj"
+        wanted_message = "Try picking it up first with get Obj."
+        self.call(command(), arg, wanted_message)
+        # make certain commands can have a numbered target
+        test_object1 = create_object(Object, key="object one")
+        test_object1.location = self.char1.location
+        test_object2 = create_object(Object, key="object two")
+        test_object2.location = self.char1.location
+        command = developer_cmds.CmdMultiCmd
+        arg = "= punch object"
+        wanted_message = "You can not punch object one"
+        self.call(command(), arg, wanted_message)
+        arg = "= punch 2 object"
+        wanted_message = "You can not punch object two"
+        self.call(command(), arg, wanted_message)
+        # test numbered targets and say to commad
+        test_object1.targetable = True
+        test_object2.targetable = True
+        command = standard_cmds.CmdSay
+        arg = 'to 2 object "test message'
+        wanted_message = r'You say to object two, "test message"'
+        cmd_result = self.call(command(), arg, caller=self.char1)
+        self.assertRegex(cmd_result, wanted_message)
+        # make certain saying to the first object works after saying to the second
+        # this makes certain the Command.target is not a global variable
+        arg = 'to object "test message'
+        wanted_message = r'You say to object one, "test message"'
+        cmd_result = self.call(command(), arg, caller=self.char1)
+        self.assertRegex(cmd_result, wanted_message)
+        # add unit test for drop after get has been updated to use UM targetting system.
+        # test for multiple targets using &
+        command = standard_cmds.CmdSay
+        arg = 'to object & 2 object "test message'
+        wanted_message = r'You say to object one and object two, "test message"'
+        cmd_result = self.call(command(), arg, caller=self.char1)
+        self.assertRegex(cmd_result, wanted_message)
+        # test for multiple targets using " and "
+        command = standard_cmds.CmdSay
+        arg = 'to object and 2 object "test message'
+        wanted_message = r'You say to object one and object two, "test message"'
+        cmd_result = self.call(command(), arg, caller=self.char1)
+        self.assertRegex(cmd_result, wanted_message)
 
     def test_cmds(self):
     # test punch, kick and dodge
@@ -192,51 +381,6 @@ class TestCommands(UniqueMudCmdTest):
         command = developer_cmds.CmdMultiCmd
         arg = "= dodge, control_other Char2=punch Char, complete_cmd_early Char2"
         wanted_message = r"You will be busy for \d+ seconds.\nYou begin to sway warily.\nFacing Char Char2 pulls theirs hand back preparing an attack.\nYou are no longer busy.\nYou try to dodge the incoming attack.\nevade \d+ VS punch \d+: Char2 punches at you with their fist "
-        cmd_result = self.call(command(), arg)
-        self.assertRegex(cmd_result, wanted_message)
-
-        # test attacking an Object
-        command = developer_cmds.CmdMultiCmd
-        arg = "= punch Obj, complete_cmd_early"
-        wanted_message = 'You will be busy for \\d+ seconds.\nFacing Obj Char pulls theirs hand back preparing an attack.\npunch \\d+ VS evade \\d+: You punch at Obj'
-        cmd_result = self.call(command(), arg)
-        self.assertRegex(cmd_result, wanted_message)
-
-        # test a target leaving melee range
-        command = developer_cmds.CmdMultiCmd
-        arg = "= punch Char2, control_other Char2=out, complete_cmd_early"
-        wanted_message = "You can no longer reach Char2\\."
-        cmd_result = self.call(command(), arg)
-        self.assertRegex(cmd_result, wanted_message)
-        # get Char2 back into the room.
-        self.char2.location = self.room1
-        self.assertEqual(self.char2.location, self.room1)
-
-        # test commands that can not target self
-        command = developer_cmds.CmdMultiCmd
-        arg = "= punch Char"
-        wanted_message = 'You can not punch yourself.'
-        cmd_result = self.call(command(), arg, wanted_message)
-
-        # test attaking an exit that is not targetable
-        command = developer_cmds.CmdMultiCmd
-        arg = "= punch out"
-        wanted_message = 'You can not punch out.'
-        cmd_result = self.call(command(), arg, wanted_message)
-
-        # test attaking a targetable exit
-        self.exit.targetable = True
-        command = developer_cmds.CmdMultiCmd
-        arg = "= punch out, complete_cmd_early"
-        wanted_message = "You will be busy for \\d+ seconds.\nFacing out Char pulls theirs hand back preparing an attack.\npunch \\d+ VS evade 5: You punch at out"
-        cmd_result = self.call(command(), arg)
-        self.assertRegex(cmd_result, wanted_message)
-        self.exit.targetable = False
-
-        # test a targeted command that has a stop_request against an object
-        command = developer_cmds.CmdMultiCmd
-        arg = "= kick Obj, complete_cmd_early"
-        wanted_message = "You will be busy for \\d+ seconds.\nFacing Obj Char lifts theirs knee up preparing an attack.\nkick \\d+ VS evade 5: You kick at Obj"
         cmd_result = self.call(command(), arg)
         self.assertRegex(cmd_result, wanted_message)
 
@@ -289,6 +433,7 @@ class TestCommands(UniqueMudCmdTest):
         wanted_message = "You pick up Obj2\."
         cmd_result = self.call(command(), arg, caller=self.char1)
         # put object 2 in object 1
+        # this does NOT test self.sl_split
         self.obj1.container = True
         arg = "= put Obj2 in Obj, complete_cmd_early"
         cmd_result = self.call(command(), arg, caller=self.char1)
@@ -300,10 +445,12 @@ class TestCommands(UniqueMudCmdTest):
         self.assertEqual(self.obj2.location, self.obj1)
         self.obj1.container = False
         # make certrain caller specified locations works with multi target cmds
+        # tests self.sl_split
         arg = '= say to Char2 and Obj2 in Obj "Hello'
         wanted_message = 'You say to Char2 and Obj2, "Hello"'
         self.call(command(), arg, caller=self.char1)
         # now get object 2 from object 1
+        # tests self.sl_split
         arg = "= get Obj2 from Obj, complete_cmd_early"
         cmd_result = self.call(command(), arg, caller=self.char1)
         wanted_message = r"You reach into Obj\."
@@ -312,6 +459,7 @@ class TestCommands(UniqueMudCmdTest):
         self.assertRegex(cmd_result, wanted_message)
         self.assertTrue(self.char1.is_holding(self.obj2))
         # test putting an object into a non container object.
+        # this does NOT use self.sl_split
         arg = "= put Obj2 in Obj"
         wanted_message = '^Obj is not a container\.$'
         cmd_result = self.call(command(), arg, caller=self.char1)
@@ -357,6 +505,7 @@ class TestCommands(UniqueMudCmdTest):
         self.assertFalse(self.char1.is_holding(self.obj2))
         self.obj1.container = False
         # get obj2 from obj1 while obj1 is on the ground
+        # tests self.sl_split
         arg = "= get Obj2 from Obj, complete_cmd_early"
         cmd_result = self.call(command(), arg, caller=self.char1)
         wanted_message = r"You reach into Obj\."
@@ -410,7 +559,7 @@ class TestCommands(UniqueMudCmdTest):
         self.assertRegex(cmd_result, wanted_message)
     # test get command failures
         # get an object from a location that does not exist
-        # test target_required when sl_split found
+        # test self.target_required when self.sl_split found
         arg = "= get Obj from fake location"
         wanted_message = "You could not find fake location to search for Obj."
         self.call(command(), arg, wanted_message, caller=self.char1)
@@ -435,9 +584,7 @@ class TestCommands(UniqueMudCmdTest):
         wanted_message = "fake item is not among your possesions."
         self.call(command(), arg, wanted_message, caller=self.char1)
 
-
     # test clothing commands
-    # test inventory command
         self.test_helmet.location = self.char1
         # give the helmet an armor rating
         self.test_helmet.dr.PRC = 2
@@ -463,12 +610,6 @@ class TestCommands(UniqueMudCmdTest):
         self.assertRegex(cmd_result, wanted_message)
         # make certain the hat is no longer in hand
         self.assertFalse(self.char1.is_holding(self.test_hat))
-        # Test tring to wear an item not on person also tests Command.search_caller_only
-        command = developer_cmds.CmdMultiCmd
-        arg = "= wear Obj"
-        wanted_message = "Try picking it up first with get Obj."
-        cmd_result = self.call(command(), arg, caller=self.char1)
-        self.assertRegex(cmd_result, wanted_message)
         # test tring to wear an item that is not clothing, also tests target_inherits_from
         command = developer_cmds.CmdMultiCmd
         arg = "= get Obj, complete_cmd_early"
@@ -530,8 +671,7 @@ class TestCommands(UniqueMudCmdTest):
         wanted_message = "You will be busy for 1 second.\nYou begin to put on test helmet.\nChar puts on test helmet, covering test hat.\nYou are no longer busy.\nChar allowed you to complete your wear command early with their complete_cmd_early command."
         cmd_result = self.call(command(), arg, caller=self.char1)
         self.assertRegex(cmd_result, wanted_message)
-    # inventory command run again make certain echos to room properly
-        #misc tests
+        # make certain clothing attributes are working with commands.
         self.assertEqual(self.test_hat.db.worn, True)
         self.assertEqual(self.test_hat.db.clothing_type, 'hat')
         self.assertEqual(self.test_helmet.db.clothing_type, "head")
@@ -705,7 +845,7 @@ class TestCommands(UniqueMudCmdTest):
         self.assertRegex(cmd_result, wanted_message)
         # Verify max_defense works
         # Verify Command.dmg_type.TYPE value, adds to attack damage
-        # testing char.dr and the worn helmet.dr
+        # testing self.char1.dr and the worn helmet.dr
         # In this case ACD defense is 6
         #    is the highest defense value vs Command.cmd_types.ACD value of 1 (adds to damage)
         self.char1.dr.ACD = 3
@@ -735,6 +875,7 @@ class TestCommands(UniqueMudCmdTest):
         wanted_message = r"dmg_after_dr returned: 4"
         self.call(command(), arg, wanted_message)
         # Test item.act_roll_max_mod
+        # tests self.roll_max
         self.sword.act_roll_max_mod = 1
         command = developer_cmds.CmdCmdAttrTest
         arg = "requires_wielding:True, cmd_type:one_handed=roll_max"
@@ -1007,63 +1148,6 @@ class TestCommands(UniqueMudCmdTest):
         wanted_message = r"Pose will read 'Obj is here.'."
         self.call(command(), arg, wanted_message, caller=self.char1)
 
-        # test actions against an unconscious characer
-        self.char1.set_unconscious()
-        self.assertFalse(self.char1.ready())
-        command = developer_cmds.CmdMultiCmd
-        arg = "= control_other Char2=punch Char, complete_cmd_early Char2"
-        wanted_message = r"\nevade 5 VS punch"
-        cmd_result = self.call(command(), arg, caller=self.char1)
-        self.assertRegex(cmd_result, wanted_message)
-        command = developer_cmds.CmdMultiCmd
-        arg = "= out"
-        wanted_message = r"You can not do that while unconscious."
-        cmd_result = self.call(command(), arg, wanted_message,  caller=self.char1)
-        command = developer_cmds.CmdMultiCmd
-        # make certain Character's pose shows unconscious
-        arg = "= l"
-        wanted_message = r"Char is unconscious here"
-        cmd_result = self.call(command(), arg, caller=self.char2)
-        self.assertRegex(cmd_result, wanted_message)
-        # wake the character up
-        self.char1.set_unconscious(False)
-        # make certain Character is in laying position after waking up.
-        command = developer_cmds.CmdMultiCmd
-        arg = "= l"
-        wanted_message = r"Char is laying here"
-        cmd_result = self.call(command(), arg, caller=self.char2)
-        self.assertRegex(cmd_result, wanted_message)
-
-        # commands that should work when the user is busy
-        # defer a command and complete it
-        command = developer_cmds.CmdMultiCmd
-        arg = "= defer_cmd"
-        #|Defered command ran successfully.|You are no longer busy.|Char allowed you to complete your defer_cmd command early with their complete_cmd_early command.
-        wanted_message = "You will be busy for 5 seconds.|Char is testing deferring a command."
-        self.call(command(), arg, wanted_message)
-        # commands that should work when the Character is busy
-        command = developer_cmds.CmdMultiCmd
-        not_req_ready_commands = ('look', 'drop', 'help', 'stat', 'say')
-        for non_ready_cmd in not_req_ready_commands:
-            arg = f"= {non_ready_cmd}"
-            cmd_result = self.call(command(), arg, caller=self.char1)
-            self.assertFalse(cmd_result.startswith('You will be busy for'))
-        # commands that should not work when the Character is busy
-        command = developer_cmds.CmdMultiCmd
-        req_ready_commands = ('punch', 'inv', 'out', 'sit', 'stand', 'lay',
-                              'get', 'wear', 'remove', 'whisper', 'kick',
-                              'dodge', 'put', 'stab', 'kick', 'wield',
-                              'unwield', 'emote')
-        for ready_cmd in req_ready_commands:
-            arg = f"= {ready_cmd}"
-            cmd_result = self.call(command(), arg, caller=self.char1)
-            self.assertTrue(cmd_result.startswith('You will be busy for'))
-        # comlete your defer command
-        command = developer_cmds.CmdMultiCmd
-        arg = "= complete_cmd_early"
-        wanted_message = "Defered command ran successfully.|You are no longer busy.|Char allowed you to complete your defer_cmd command early with their complete_cmd_early command."
-        self.call(command(), arg, wanted_message)
-
         # test the statistics command
         command = developer_cmds.CmdMultiCmd
         arg = "= stat"
@@ -1073,47 +1157,6 @@ class TestCommands(UniqueMudCmdTest):
 
         # make certain commands have been taking a cost.
         self.assertTrue(self.char1.END < 100)
-
-        # make certain commands can have a numbered target
-        test_object1 = create_object(Object, key="object one")
-        test_object1.location = self.char1.location
-        test_object2 = create_object(Object, key="object two")
-        test_object2.location = self.char1.location
-        command = developer_cmds.CmdMultiCmd
-        arg = "= punch object"
-        wanted_message = "You can not punch object one"
-        self.call(command(), arg, wanted_message)
-        arg = "= punch 2 object"
-        wanted_message = "You can not punch object two"
-        self.call(command(), arg, wanted_message)
-        # test numbered targets and say to commad
-        test_object1.targetable = True
-        test_object2.targetable = True
-        command = standard_cmds.CmdSay
-        arg = 'to 2 object "test message'
-        wanted_message = r'You say to object two, "test message"'
-        cmd_result = self.call(command(), arg, caller=self.char1)
-        self.assertRegex(cmd_result, wanted_message)
-        # make certain saying to the first object works after saying to the second
-        # this makes certain the Command.target is not a global variable
-        arg = 'to object "test message'
-        wanted_message = r'You say to object one, "test message"'
-        cmd_result = self.call(command(), arg, caller=self.char1)
-        self.assertRegex(cmd_result, wanted_message)
-        # add unit test for drop after get has been updated to use UM targetting system.
-
-        # test for multiple targets using &
-        command = standard_cmds.CmdSay
-        arg = 'to object & 2 object "test message'
-        wanted_message = r'You say to object one and object two, "test message"'
-        cmd_result = self.call(command(), arg, caller=self.char1)
-        self.assertRegex(cmd_result, wanted_message)
-        # test for multiple targets using " and "
-        command = standard_cmds.CmdSay
-        arg = 'to object and 2 object "test message'
-        wanted_message = r'You say to object one and object two, "test message"'
-        cmd_result = self.call(command(), arg, caller=self.char1)
-        self.assertRegex(cmd_result, wanted_message)
 
         # test that commands required_ranks will stop the command.
         command = developer_cmds.CmdMultiCmd
