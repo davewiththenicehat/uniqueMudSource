@@ -595,6 +595,14 @@ class TestCommands(UniqueMudCmdTest):
         self.char1.skills.one_handed.stab = 0
 
     def test_wear_remove(self):
+        """
+            test commands wear and remove.
+            Makes certain their misk affects are applied.
+            Wearing an article of clothing
+                removes it from hand
+                provides dr if item allows
+            removing item reverses these changes
+        """
         # test clothing commands
         self.test_helmet.location = self.char1
         # give the helmet an armor rating
