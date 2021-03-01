@@ -361,65 +361,15 @@ class TestCommands(UniqueMudCmdTest):
         cmd_result = self.call(command(), arg, caller=self.char1)
         self.assertRegex(cmd_result, wnt_msg)
 
-    def test_cmds(self):
-    # test punch, kick and dodge
-        # test punch
-        command = developer_cmds.CmdMultiCmd
-        arg = "= punch Char2, complete_cmd_early"
-        wnt_msg = 'You will be busy for \\d+ seconds.\nFacing Char2 Char pulls theirs hand back preparing an attack.\npunch \\d+ VS evade \\d+: You punch at Char2.*'
-        cmd_result = self.call(command(), arg)
-        self.assertRegex(cmd_result, wnt_msg)
-
-        # test kick
-        command = developer_cmds.CmdMultiCmd
-        arg = "= kick Char2, complete_cmd_early"
-        wnt_msg = 'You will be busy for \\d+ seconds.\nFacing Char2 Char lifts theirs knee up preparing an attack.\nkick \\d+ VS evade \\d+: You kick at Char2'
-        cmd_result = self.call(command(), arg)
-        self.assertRegex(cmd_result, wnt_msg)
-
-        # test dodge
-        command = developer_cmds.CmdMultiCmd
-        arg = "= dodge, control_other Char2=punch Char, complete_cmd_early Char2"
-        wnt_msg = r"You will be busy for \d+ seconds.\nYou begin to sway warily.\nFacing Char Char2 pulls theirs hand back preparing an attack.\nYou are no longer busy.\nYou try to dodge the incoming attack.\nevade \d+ VS punch \d+: Char2 punches at you with their fist "
-        cmd_result = self.call(command(), arg)
-        self.assertRegex(cmd_result, wnt_msg)
-
-    # test one_handed skillset
-        command = developer_cmds.CmdMultiCmd
-        arg = "= get sword, complete_cmd_early"
-        wnt_msg = "You pick up a sword"
-        cmd_result = self.call(command(), arg, caller=self.char1)
-        self.assertRegex(cmd_result, wnt_msg)
-        arg = "= wield sword"
-        wnt_msg = "You wield a sword in your"
-        cmd_result = self.call(command(), arg, caller=self.char1)
-        self.assertRegex(cmd_result, wnt_msg)
-        # test the stab command
-        self.char1.skills.one_handed.stab = 1
-        command = developer_cmds.CmdMultiCmd
-        arg = "= stab char2, complete_cmd_early"
-        wnt_msg = 'You will be busy for \\d+ seconds.\nFacing Char2 Char raises a sword preparing an attack.\nstab \\d+ VS evade \\d+: You stab at Char2.*'
-        cmd_result = self.call(command(), arg)
-        self.assertRegex(cmd_result, wnt_msg)
-        arg = "= drop sword"
-        wnt_msg = "You drop a sword"
-        cmd_result = self.call(command(), arg, caller=self.char1)
-        self.assertRegex(cmd_result, wnt_msg)
-        self.char1.skills.one_handed.stab = 0
-
-    # test command.skill_ranks
-        # humanoids should have 1 rank in dodge, test this with command.skill_ranks
-        command = developer_cmds.CmdCmdFuncTest
-        arg = "/r skill_ranks, self, cmd_type:evasion, skill_name:dodge = False"
-        wnt_msg = r"skill_ranks returned: 1"
-        self.call(command(), arg, wnt_msg, caller=self.char1)
-
-    # test caller specified target location searching
-    #    example put obj in container, container is the caller
-    #    specified location
-    # test get command
-    # test put command
-    # test drop command
+    def test_get_put_drop(self):
+        """
+        test caller specified target location searching
+           example put obj in container, container is the caller
+           specified location
+        test get command
+        test put command
+        test drop command
+        """
         command = developer_cmds.CmdMultiCmd
         # get an object
         arg = "= get Obj, complete_cmd_early"
@@ -583,6 +533,74 @@ class TestCommands(UniqueMudCmdTest):
         arg = "= drop fake item"
         wnt_msg = "fake item is not among your possesions."
         self.call(command(), arg, wnt_msg, caller=self.char1)
+
+    def test_requirements(self):
+        """
+        Test command requiring
+            skills
+            wielded item
+        Status requirments tested in test_cmd_struct
+        """
+        # test using one_handed skillset
+        command = developer_cmds.CmdMultiCmd
+        arg = "= get sword, complete_cmd_early"
+        wnt_msg = "You pick up a sword"
+        cmd_result = self.call(command(), arg, caller=self.char1)
+        self.assertRegex(cmd_result, wnt_msg)
+        arg = "= wield sword"
+        wnt_msg = "You wield a sword in your"
+        cmd_result = self.call(command(), arg, caller=self.char1)
+        self.assertRegex(cmd_result, wnt_msg)
+        # test command.require_ranks
+        # humanoids should have 1 rank in dodge, test this with command.skill_ranks
+        command = developer_cmds.CmdCmdFuncTest
+        arg = "/r skill_ranks, self, cmd_type:evasion, skill_name:dodge = False"
+        wnt_msg = r"skill_ranks returned: 1"
+        self.call(command(), arg, wnt_msg, caller=self.char1)
+        # test that commands required_ranks will stop the command.
+        command = developer_cmds.CmdMultiCmd
+        arg = "= stab char2, complete_cmd_early"
+        wnt_msg = 'You must have 1 or more ranks in stab to stab.'
+        cmd_result = self.call(command(), arg)
+        self.assertRegex(cmd_result, wnt_msg)
+        # test the stab command
+        self.char1.skills.one_handed.stab = 1
+        command = developer_cmds.CmdMultiCmd
+        arg = "= stab char2, complete_cmd_early"
+        wnt_msg = 'You will be busy for \\d+ seconds.\nFacing Char2 Char raises a sword preparing an attack.\nstab \\d+ VS evade \\d+: You stab at Char2.*'
+        cmd_result = self.call(command(), arg)
+        self.assertRegex(cmd_result, wnt_msg)
+        arg = "= drop sword"
+        wnt_msg = "You drop a sword"
+        cmd_result = self.call(command(), arg, caller=self.char1)
+        self.assertRegex(cmd_result, wnt_msg)
+        # test self.requires_wielding
+        command = developer_cmds.CmdMultiCmd
+        self.call(command(), '= stab char2', 'You must be wielding a one handed')
+        self.char1.skills.one_handed.stab = 0
+
+    def test_cmds(self):
+    # test punch, kick and dodge
+        # test punch
+        command = developer_cmds.CmdMultiCmd
+        arg = "= punch Char2, complete_cmd_early"
+        wnt_msg = 'You will be busy for \\d+ seconds.\nFacing Char2 Char pulls theirs hand back preparing an attack.\npunch \\d+ VS evade \\d+: You punch at Char2.*'
+        cmd_result = self.call(command(), arg)
+        self.assertRegex(cmd_result, wnt_msg)
+
+        # test kick
+        command = developer_cmds.CmdMultiCmd
+        arg = "= kick Char2, complete_cmd_early"
+        wnt_msg = 'You will be busy for \\d+ seconds.\nFacing Char2 Char lifts theirs knee up preparing an attack.\nkick \\d+ VS evade \\d+: You kick at Char2'
+        cmd_result = self.call(command(), arg)
+        self.assertRegex(cmd_result, wnt_msg)
+
+        # test dodge
+        command = developer_cmds.CmdMultiCmd
+        arg = "= dodge, control_other Char2=punch Char, complete_cmd_early Char2"
+        wnt_msg = r"You will be busy for \d+ seconds.\nYou begin to sway warily.\nFacing Char Char2 pulls theirs hand back preparing an attack.\nYou are no longer busy.\nYou try to dodge the incoming attack.\nevade \d+ VS punch \d+: Char2 punches at you with their fist "
+        cmd_result = self.call(command(), arg)
+        self.assertRegex(cmd_result, wnt_msg)
 
     # test clothing commands
         self.test_helmet.location = self.char1
@@ -1157,10 +1175,3 @@ class TestCommands(UniqueMudCmdTest):
 
         # make certain commands have been taking a cost.
         self.assertTrue(self.char1.END < 100)
-
-        # test that commands required_ranks will stop the command.
-        command = developer_cmds.CmdMultiCmd
-        arg = "= stab char2, complete_cmd_early"
-        wnt_msg = 'You must have 1 or more ranks in stab to stab.'
-        cmd_result = self.call(command(), arg)
-        self.assertRegex(cmd_result, wnt_msg)
