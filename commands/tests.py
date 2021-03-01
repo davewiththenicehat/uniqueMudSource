@@ -377,6 +377,12 @@ class TestCommands(UniqueMudCmdTest):
         cmd_result = self.call(command(), arg, caller=self.char1)
         self.assertRegex(cmd_result, wnt_msg)
         self.assertTrue(self.char1.is_holding(self.obj1))
+        # test getting an object already in possession
+        command = developer_cmds.CmdMultiCmd
+        arg = "= get Obj"
+        wnt_msg = "^You are already carrying Obj\.$"
+        cmd_result = self.call(command(), arg, caller=self.char1)
+        self.assertRegex(cmd_result, wnt_msg)
         # get a second object
         command = developer_cmds.CmdMultiCmd
         arg = "= get Obj2, complete_cmd_early"
@@ -497,6 +503,15 @@ class TestCommands(UniqueMudCmdTest):
         self.assertRegex(cmd_result, wnt_msg)
         wnt_msg = "Char reaches into Obj\."
         self.assertRegex(cmd_result, wnt_msg)
+        # test getting a third object when hands are full
+        self.obj3 = create_object(Object, key="Obj3")
+        self.obj3.targetable = True
+        self.obj3.location = self.char1.location
+        self.assertRegex(cmd_result, wnt_msg)
+        arg = "= get Obj3"
+        wnt_msg = "^Your hands are full\.$"
+        cmd_result = self.call(command(), arg, caller=self.char1)
+        self.assertRegex(cmd_result, wnt_msg)
         # drop object 1
         arg = "= drop Obj, complete_cmd_early"
         wnt_msg = "Char drops Obj\."
@@ -579,30 +594,8 @@ class TestCommands(UniqueMudCmdTest):
         self.call(command(), '= stab char2', 'You must be wielding a one handed')
         self.char1.skills.one_handed.stab = 0
 
-    def test_cmds(self):
-    # test punch, kick and dodge
-        # test punch
-        command = developer_cmds.CmdMultiCmd
-        arg = "= punch Char2, complete_cmd_early"
-        wnt_msg = 'You will be busy for \\d+ seconds.\nFacing Char2 Char pulls theirs hand back preparing an attack.\npunch \\d+ VS evade \\d+: You punch at Char2.*'
-        cmd_result = self.call(command(), arg)
-        self.assertRegex(cmd_result, wnt_msg)
-
-        # test kick
-        command = developer_cmds.CmdMultiCmd
-        arg = "= kick Char2, complete_cmd_early"
-        wnt_msg = 'You will be busy for \\d+ seconds.\nFacing Char2 Char lifts theirs knee up preparing an attack.\nkick \\d+ VS evade \\d+: You kick at Char2'
-        cmd_result = self.call(command(), arg)
-        self.assertRegex(cmd_result, wnt_msg)
-
-        # test dodge
-        command = developer_cmds.CmdMultiCmd
-        arg = "= dodge, control_other Char2=punch Char, complete_cmd_early Char2"
-        wnt_msg = r"You will be busy for \d+ seconds.\nYou begin to sway warily.\nFacing Char Char2 pulls theirs hand back preparing an attack.\nYou are no longer busy.\nYou try to dodge the incoming attack.\nevade \d+ VS punch \d+: Char2 punches at you with their fist "
-        cmd_result = self.call(command(), arg)
-        self.assertRegex(cmd_result, wnt_msg)
-
-    # test clothing commands
+    def test_wear_remove(self):
+        # test clothing commands
         self.test_helmet.location = self.char1
         # give the helmet an armor rating
         self.test_helmet.dr.PRC = 2
@@ -636,32 +629,6 @@ class TestCommands(UniqueMudCmdTest):
         self.assertRegex(cmd_result, wnt_msg)
         # make certain hands are occupied with the object picked up
         self.assertTrue(self.char1.is_holding(self.obj1))
-        # test getting an object already in possession
-        command = developer_cmds.CmdMultiCmd
-        arg = "= get Obj"
-        wnt_msg = "^You are already carrying Obj\.$"
-        cmd_result = self.call(command(), arg, caller=self.char1)
-        self.assertRegex(cmd_result, wnt_msg)
-        # test getting an object when hands are already full
-        command = developer_cmds.CmdMultiCmd
-        arg = "= get Obj2, complete_cmd_early"
-        wnt_msg = "You pick up Obj2"
-        cmd_result = self.call(command(), arg, caller=self.char1)
-        self.obj3 = create_object(Object, key="Obj3")
-        self.obj3.targetable = True
-        self.obj3.location = self.char1.location
-        self.assertRegex(cmd_result, wnt_msg)
-        arg = "= get Obj3"
-        wnt_msg = "^Your hands are full\.$"
-        cmd_result = self.call(command(), arg, caller=self.char1)
-        self.assertRegex(cmd_result, wnt_msg)
-        arg = "= drop Obj2"
-        wnt_msg = "You drop Obj2"
-        cmd_result = self.call(command(), arg, caller=self.char1)
-        self.assertRegex(cmd_result, wnt_msg)
-        # make certain hands are NOT occupied with the object dropped
-        self.assertFalse(self.char1.is_holding(self.obj2))
-        # test wearing an object that is not clothing
         arg = "= wear Obj"
         wnt_msg = "You can only wear clothing and armor."
         cmd_result = self.call(command(), arg, caller=self.char1)
@@ -734,6 +701,29 @@ class TestCommands(UniqueMudCmdTest):
         arg = "= drop shirt"
         wnt_msg = 'You must remove test shirt to drop it.\r\nTry command remove test shirt to remove it.'
         self.call(command(), arg, wnt_msg, caller=self.char1)
+
+    def test_cmds(self):
+    # test punch, kick and dodge
+        # test punch
+        command = developer_cmds.CmdMultiCmd
+        arg = "= punch Char2, complete_cmd_early"
+        wnt_msg = 'You will be busy for \\d+ seconds.\nFacing Char2 Char pulls theirs hand back preparing an attack.\npunch \\d+ VS evade \\d+: You punch at Char2.*'
+        cmd_result = self.call(command(), arg)
+        self.assertRegex(cmd_result, wnt_msg)
+
+        # test kick
+        command = developer_cmds.CmdMultiCmd
+        arg = "= kick Char2, complete_cmd_early"
+        wnt_msg = 'You will be busy for \\d+ seconds.\nFacing Char2 Char lifts theirs knee up preparing an attack.\nkick \\d+ VS evade \\d+: You kick at Char2'
+        cmd_result = self.call(command(), arg)
+        self.assertRegex(cmd_result, wnt_msg)
+
+        # test dodge
+        command = developer_cmds.CmdMultiCmd
+        arg = "= dodge, control_other Char2=punch Char, complete_cmd_early Char2"
+        wnt_msg = r"You will be busy for \d+ seconds.\nYou begin to sway warily.\nFacing Char Char2 pulls theirs hand back preparing an attack.\nYou are no longer busy.\nYou try to dodge the incoming attack.\nevade \d+ VS punch \d+: Char2 punches at you with their fist "
+        cmd_result = self.call(command(), arg)
+        self.assertRegex(cmd_result, wnt_msg)
 
         # test wielding
         command = developer_cmds.CmdMultiCmd
@@ -834,6 +824,20 @@ class TestCommands(UniqueMudCmdTest):
         self.assertRegex(cmd_result, wnt_msg)
 
         # test method damage after damage reduction
+        # get armor on
+        self.test_helmet.location = self.char1
+        # give the helmet an armor rating
+        self.test_helmet.dr.PRC = 2
+        self.test_helmet.dr.ACD = 3
+        self.assertEqual(self.test_helmet.attributes.get('dr_PRC'), 2)
+        self.assertEqual(self.test_helmet.dr.PRC, 2)
+        command = developer_cmds.CmdMultiCmd
+        # put the armor on
+        arg = "= wear helmet, complete_cmd_early"
+        wnt_msg = "Char puts on test helmet"
+        cmd_result = self.call(command(), arg, caller=self.char1)
+        self.assertRegex(cmd_result, wnt_msg)
+        # get dr from command.dmg_after_dr
         command = developer_cmds.CmdCmdFuncTest
         arg = "/r dmg_after_dr, char = 3, None, head"
         wnt_msg = "dmg_after_dr returned: 1"
@@ -1125,16 +1129,16 @@ class TestCommands(UniqueMudCmdTest):
         self.call(command(), arg, wnt_msg, caller=self.char1)
         # test recog
         command = developer_cmds.CmdMultiCmd
-        arg = "= recog Char2 as a test change"
-        wnt_msg = r"Char will now remember Char2 as a test change."
+        arg = "= recog Char2 as CharTwo"
+        wnt_msg = r"Char will now remember Char2 as CharTwo."
         self.call(command(), arg, wnt_msg, caller=self.char1)
         command = developer_cmds.CmdMultiCmd
         arg = "= l"
-        wnt_msg = r"a test change\(#7\) is standing here\."
+        wnt_msg = r"CharTwo\(#7\) is standing here\."
         cmd_result = self.call(command(), arg, caller=self.char1)
         self.assertRegex(cmd_result, wnt_msg)
         command = developer_cmds.CmdMultiCmd
-        arg = "= forget test change"
+        arg = "= forget CharTwo"
         wnt_msg = r"Char will now know them only as 'Char2'."
         self.call(command(), arg, wnt_msg, caller=self.char1)
         # test mask
