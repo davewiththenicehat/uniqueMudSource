@@ -77,7 +77,9 @@ class DeveloperCommand(Command):
                 value = value.strip()
                 if value == 'None':
                     value = None
-                if value == 'True':
+                elif value == 'False':
+                    value = False
+                elif value == 'True':
                     value = True
             key = key.strip()
             # set know local attributes
@@ -433,6 +435,8 @@ class CmdMultiCmd(Command):
         self.requires_conscious = False  # if true this command requires the caller to be conscious
 
     def func(self):
+        if not self.rhslist:
+            raise ValueError("multi_cmd requires commands to run. Example: multi_cmd = say hello")
         commands = self.rhslist
         for command in commands:
             self.caller.execute_cmd(command)

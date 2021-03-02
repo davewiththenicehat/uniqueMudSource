@@ -710,6 +710,108 @@ class TestCommands(UniqueMudCmdTest):
         wnt_msg = 'You must remove test shirt to drop it.\r\nTry command remove test shirt to remove it.'
         self.call(command(), arg, wnt_msg, caller=self.char1)
 
+    def test_dmg(self):
+        """
+        Test damage in commands.
+        Command.dmg_after_dr method
+        """
+        # test method damage after damage reduction
+        # get armor on
+        self.test_helmet.location = self.char1
+        # give the helmet an armor rating
+        self.test_helmet.dr.PRC = 2
+        self.test_helmet.dr.ACD = 3
+        self.assertEqual(self.test_helmet.attributes.get('dr_PRC'), 2)
+        self.assertEqual(self.test_helmet.dr.PRC, 2)
+        command = developer_cmds.CmdMultiCmd
+        # put the armor on
+        arg = "= wear helmet, complete_cmd_early"
+        wnt_msg = "Char puts on test helmet"
+        cmd_result = self.call(command(), arg, caller=self.char1)
+        self.assertRegex(cmd_result, wnt_msg)
+        # get dr from command.dmg_after_dr
+        command = developer_cmds.CmdCmdFuncTest
+        arg = "/r dmg_after_dr, char = 3, None, head"
+        wnt_msg = "dmg_after_dr returned: 1"
+        cmd_result = self.call(command(), arg, caller=self.char2)
+        self.assertRegex(cmd_result, wnt_msg)
+        # make certain the lowest number returned is 0
+        command = developer_cmds.CmdCmdFuncTest
+        arg = "/r dmg_after_dr, char = 0, None, head"
+        wnt_msg = "dmg_after_dr returned: 0"
+        cmd_result = self.call(command(), arg, caller=self.char2)
+        self.assertRegex(cmd_result, wnt_msg)
+        # now change the targets dr to make certain that affects
+        self.char1.dr.ACD = 3
+        self.char1.dr.PRC = 1
+        command = developer_cmds.CmdCmdFuncTest
+        arg = "/r dmg_after_dr, char = 3, None, head"
+        wnt_msg = "dmg_after_dr returned: 0"
+        cmd_result = self.call(command(), arg, caller=self.char2)
+        self.assertRegex(cmd_result, wnt_msg)
+        # Verify giving None as dmg_dealt works
+        self.char1.dr.ACD = 3
+        self.char1.dr.PRC = 1
+        command = developer_cmds.CmdCmdFuncTest
+        arg = "/r dmg_after_dr, char = None, None, head"
+        wnt_msg = r"dmg_after_dr returned: \d+"
+        cmd_result = self.call(command(), arg, caller=self.char2)
+        self.assertRegex(cmd_result, wnt_msg)
+        # Verify max_defense works
+        # Verify Command.dmg_type.TYPE value, adds to attack damage
+        # testing self.char1.dr and the worn helmet.dr
+        # In this case ACD defense is 6
+        #    is the highest defense value vs Command.dmg_types.ACD value of 1 (adds to damage)
+        self.char1.dr.ACD = 3
+        self.char1.dr.PRC = 1
+        command = developer_cmds.CmdCmdFuncTest
+        arg = "/r dmg_after_dr, char = 7, True, head"
+        wnt_msg = r"dmg_after_dr returned: 2"
+        cmd_result = self.call(command(), arg, wnt_msg)
+        # test adding a weapon to the equation
+        self.sword.dmg_types.ACD = 1
+        command = developer_cmds.CmdMultiCmd
+        arg = "= get sword, complete_cmd_early"
+        wnt_msg = "Char picks up a sword"
+        cmd_result = self.call(command(), arg, caller=self.char1, receiver=self.char2)
+        self.assertRegex(cmd_result, wnt_msg)
+        command = developer_cmds.CmdMultiCmd
+        arg = "= wield sword"
+        wnt_msg = "You wield a sword in your"
+        cmd_result = self.call(command(), arg, caller=self.char1)
+        self.assertRegex(cmd_result, wnt_msg)
+        command = developer_cmds.CmdCmdFuncTest
+        arg = "/r dmg_after_dr, char, requires_wielding:True, cmd_type:one_handed = 7, True, head"
+        wnt_msg = r"dmg_after_dr returned: 3"
+        cmd_result = self.call(command(), arg, wnt_msg)
+        # change the sword's ACD modifier, damage should change by the adjustment
+        self.sword.dmg_types.ACD = 2
+        wnt_msg = r"dmg_after_dr returned: 4"
+        self.call(command(), arg, wnt_msg)
+    # test self.dmg_max
+        # with a wielded weapon
+        # test weapon.dmg_max
+        self.sword.dmg_max = 5
+        command = developer_cmds.CmdCmdAttrTest
+        arg = "requires_wielding:True, cmd_type:one_handed=dmg_max"
+        wnt_msg = r"dmg_max: 5"
+        self.call(command(), arg, wnt_msg)
+        # with no wielded weapon
+        command = developer_cmds.CmdMultiCmd
+        self.call(command(), '= drop sword', 'You drop a sword.')
+        command = developer_cmds.CmdCmdAttrTest
+        arg = "cmd_type:unarmed=dmg_max"
+        wnt_msg = r"dmg_max: 4"
+        self.call(command(), arg, wnt_msg)
+    # test self.dmg_mod_stat
+        command = developer_cmds.CmdCmdFuncTest
+        arg = "/r dmg_after_dr, char, cmd_type:unarmed, dmg_max:1 = 7, True, chest"
+        wnt_msg = r"dmg_after_dr returned: 5"
+        cmd_result = self.call(command(), arg, wnt_msg)
+        # now change the Characters strength
+        old_str = self.char1.STR.get()
+        self.char1.STR.set(200)
+
     def test_cmds(self):
     # test punch, kick and dodge
         # test punch
@@ -831,79 +933,12 @@ class TestCommands(UniqueMudCmdTest):
         cmd_result = self.call(command(), arg)
         self.assertRegex(cmd_result, wnt_msg)
 
-        # test method damage after damage reduction
-        # get armor on
-        self.test_helmet.location = self.char1
-        # give the helmet an armor rating
-        self.test_helmet.dr.PRC = 2
-        self.test_helmet.dr.ACD = 3
-        self.assertEqual(self.test_helmet.attributes.get('dr_PRC'), 2)
-        self.assertEqual(self.test_helmet.dr.PRC, 2)
+        # wield a sword
         command = developer_cmds.CmdMultiCmd
-        # put the armor on
-        arg = "= wear helmet, complete_cmd_early"
-        wnt_msg = "Char puts on test helmet"
-        cmd_result = self.call(command(), arg, caller=self.char1)
+        arg = '= get sword, complete_cmd_early, wield sword, complete_cmd_early'
+        wnt_msg = "You wield a sword"
+        cmd_result = self.call(command(), arg)
         self.assertRegex(cmd_result, wnt_msg)
-        # get dr from command.dmg_after_dr
-        command = developer_cmds.CmdCmdFuncTest
-        arg = "/r dmg_after_dr, char = 3, None, head"
-        wnt_msg = "dmg_after_dr returned: 1"
-        cmd_result = self.call(command(), arg, caller=self.char2)
-        self.assertRegex(cmd_result, wnt_msg)
-        # make certain the lowest number returned is 0
-        command = developer_cmds.CmdCmdFuncTest
-        arg = "/r dmg_after_dr, char = 0, None, head"
-        wnt_msg = "dmg_after_dr returned: 0"
-        cmd_result = self.call(command(), arg, caller=self.char2)
-        self.assertRegex(cmd_result, wnt_msg)
-        # now change the targets dr to make certain that affects
-        self.char1.dr.ACD = 3
-        self.char1.dr.PRC = 1
-        command = developer_cmds.CmdCmdFuncTest
-        arg = "/r dmg_after_dr, char = 3, None, head"
-        wnt_msg = "dmg_after_dr returned: 0"
-        cmd_result = self.call(command(), arg, caller=self.char2)
-        self.assertRegex(cmd_result, wnt_msg)
-        # Verify giving None as dmg_dealt works
-        self.char1.dr.ACD = 3
-        self.char1.dr.PRC = 1
-        command = developer_cmds.CmdCmdFuncTest
-        arg = "/r dmg_after_dr, char = None, None, head"
-        wnt_msg = r"dmg_after_dr returned: \d+"
-        cmd_result = self.call(command(), arg, caller=self.char2)
-        self.assertRegex(cmd_result, wnt_msg)
-        # Verify max_defense works
-        # Verify Command.dmg_type.TYPE value, adds to attack damage
-        # testing self.char1.dr and the worn helmet.dr
-        # In this case ACD defense is 6
-        #    is the highest defense value vs Command.cmd_types.ACD value of 1 (adds to damage)
-        self.char1.dr.ACD = 3
-        self.char1.dr.PRC = 1
-        command = developer_cmds.CmdCmdFuncTest
-        arg = "/r dmg_after_dr, char = 7, True, head"
-        wnt_msg = r"dmg_after_dr returned: 2"
-        cmd_result = self.call(command(), arg, wnt_msg)
-        # test adding a weapon to the equation
-        self.sword.dmg_types.ACD = 1
-        command = developer_cmds.CmdMultiCmd
-        arg = "= get sword, complete_cmd_early"
-        wnt_msg = "Char picks up a sword"
-        cmd_result = self.call(command(), arg, caller=self.char1, receiver=self.char2)
-        self.assertRegex(cmd_result, wnt_msg)
-        command = developer_cmds.CmdMultiCmd
-        arg = "= wield sword"
-        wnt_msg = "You wield a sword in your"
-        cmd_result = self.call(command(), arg, caller=self.char1)
-        self.assertRegex(cmd_result, wnt_msg)
-        command = developer_cmds.CmdCmdFuncTest
-        arg = "/r dmg_after_dr, char, requires_wielding:True, cmd_type:one_handed = 7, True, head"
-        wnt_msg = r"dmg_after_dr returned: 3"
-        cmd_result = self.call(command(), arg, wnt_msg)
-        # change the sword's ACD modifier, damage should change by the adjustment
-        self.sword.dmg_types.ACD = 2
-        wnt_msg = r"dmg_after_dr returned: 4"
-        self.call(command(), arg, wnt_msg)
         # Test item.act_roll_max_mod
         # tests self.roll_max
         self.sword.act_roll_max_mod = 1
