@@ -931,6 +931,73 @@ class TestCommands(UniqueMudCmdTest):
         self.assertNotEqual(hands_state[0].occupied, sword_dbref)
         self.assertNotEqual(hands_state[1].occupied, sword_dbref)
 
+    def test_rolls(self):
+        """
+        Test non damage based rolls in commands.
+        """
+
+    # test self.roll_max
+        # test default values
+        command = developer_cmds.CmdCmdFuncTest
+        arg = "/d action_roll, self, cmd_type:unarmed, evade_mod_stat:OBS, skill_name:punch = False, True"
+        wanted_message = r"roll_max: 51"
+        cmd_result = self.call(command(), arg)
+        self.assertRegex(cmd_result, wanted_message)
+        # adjust self.roll_max
+        # Test with default values
+        # roll max default and default skill ranks in the command used.
+        arg = "/d action_roll, self, cmd_type:unarmed, evade_mod_stat:OBS, skill_name:punch, roll_max:53 = False, True"
+        wanted_message = r"roll_max: 54"
+        cmd_result = self.call(command(), arg)
+        self.assertRegex(cmd_result, wanted_message)
+
+    # test char.evd_max interaction with commands
+        # deffer an attack command.
+        # run an evasion CmdMultiCmd
+
+    # Test item.act_roll_max_mod
+        # wield a sword
+        command = developer_cmds.CmdMultiCmd
+        arg = '= get sword, complete_cmd_early, wield sword, complete_cmd_early'
+        wnt_msg = "You wield a sword"
+        cmd_result = self.call(command(), arg)
+        self.assertRegex(cmd_result, wnt_msg)
+        # tests self.roll_max
+        self.sword.act_roll_max_mod = 1
+        command = developer_cmds.CmdCmdAttrTest
+        arg = "requires_wielding:True, cmd_type:one_handed=roll_max"
+        wnt_msg = r"roll_max: 51"
+        self.call(command(), arg, wnt_msg)
+        self.sword.act_roll_max_mod = 10
+        wnt_msg = r"roll_max: 60"
+        self.call(command(), arg, wnt_msg)
+    # test item evasion bonus item.evd_stats, item.evd_roll_max_mod
+        self.assertFalse(self.sword.attributes.has('evd_stats'))
+        self.sword.evd_stats = ('AGI',)
+        self.assertEqual(self.sword.attributes.get('evd_stats'), ('AGI',))
+        self.sword.evd_roll_max_mod = 1
+        self.assertEqual(self.sword.attributes.get('evd_roll_max_mod'), 1)
+        command = developer_cmds.CmdMultiCmd
+        arg = "= dodge, control_other Char2=punch Char, complete_cmd_early Char2"
+        wnt_msg = r"You will be busy for \d+ seconds.\nYou begin to sway warily.\nFacing Char Char2 pulls theirs hand back preparing an attack.\nYou are no longer busy.\nYou try to dodge the incoming attack.\nevade \d+ VS punch \d+: Char2 punches at you with their fist "
+        cmd_result = self.call(command(), arg)
+        self.assertRegex(cmd_result, wnt_msg)
+        # defer an evasion command to test
+        command = developer_cmds.CmdMultiCmd
+        arg = "= dodge"
+        wnt_msg = r"You will be busy for \d+ seconds.\nYou begin to sway warily."
+        cmd_result = self.call(command(), arg)
+        self.assertRegex(cmd_result, wnt_msg)
+        command = developer_cmds.CmdCmdFuncTest
+        arg = "evade_roll, self, cmd_type:evasion, evade_mod_stat:AGI = AGI, False, True"
+        wnt_msg = r"roll_max: 53"
+        cmd_result = self.call(command(), arg)
+        self.assertRegex(cmd_result, wnt_msg)
+        del self.sword.evd_stats
+        self.assertFalse(self.sword.attributes.has('evd_stats'))
+        del self.sword.evd_roll_max_mod
+        self.assertFalse(self.sword.attributes.get('evd_roll_max_mod'))
+
     def test_cmds(self):
     # test punch, kick and dodge
         # test punch
@@ -966,49 +1033,6 @@ class TestCommands(UniqueMudCmdTest):
         wnt_msg = r"^get_body_part returned: False"
         cmd_result = self.call(command(), arg)
         self.assertRegex(cmd_result, wnt_msg)
-
-        # Test item.act_roll_max_mod
-        # wield a sword
-        command = developer_cmds.CmdMultiCmd
-        arg = '= get sword, complete_cmd_early, wield sword, complete_cmd_early'
-        wnt_msg = "You wield a sword"
-        cmd_result = self.call(command(), arg)
-        self.assertRegex(cmd_result, wnt_msg)
-        # tests self.roll_max
-        self.sword.act_roll_max_mod = 1
-        command = developer_cmds.CmdCmdAttrTest
-        arg = "requires_wielding:True, cmd_type:one_handed=roll_max"
-        wnt_msg = r"roll_max: 51"
-        self.call(command(), arg, wnt_msg)
-        self.sword.act_roll_max_mod = 10
-        wnt_msg = r"roll_max: 60"
-        self.call(command(), arg, wnt_msg)
-        # test item evasion bonus
-        self.assertFalse(self.sword.attributes.has('evd_stats'))
-        self.sword.evd_stats = ('AGI',)
-        self.assertEqual(self.sword.attributes.get('evd_stats'), ('AGI',))
-        self.sword.evd_roll_max_mod = 1
-        self.assertEqual(self.sword.attributes.get('evd_roll_max_mod'), 1)
-        command = developer_cmds.CmdMultiCmd
-        arg = "= dodge, control_other Char2=punch Char, complete_cmd_early Char2"
-        wnt_msg = r"You will be busy for \d+ seconds.\nYou begin to sway warily.\nFacing Char Char2 pulls theirs hand back preparing an attack.\nYou are no longer busy.\nYou try to dodge the incoming attack.\nevade \d+ VS punch \d+: Char2 punches at you with their fist "
-        cmd_result = self.call(command(), arg)
-        self.assertRegex(cmd_result, wnt_msg)
-        # defer an evasion command to test
-        command = developer_cmds.CmdMultiCmd
-        arg = "= dodge"
-        wnt_msg = r"You will be busy for \d+ seconds.\nYou begin to sway warily."
-        cmd_result = self.call(command(), arg)
-        self.assertRegex(cmd_result, wnt_msg)
-        command = developer_cmds.CmdCmdFuncTest
-        arg = "evade_roll, self, cmd_type:evasion, evade_mod_stat:AGI = AGI, False, True"
-        wnt_msg = r"roll_max: 53"
-        cmd_result = self.call(command(), arg)
-        self.assertRegex(cmd_result, wnt_msg)
-        del self.sword.evd_stats
-        self.assertFalse(self.sword.attributes.has('evd_stats'))
-        del self.sword.evd_roll_max_mod
-        self.assertFalse(self.sword.attributes.get('evd_roll_max_mod'))
 
         # test sit stand lay also tests Character.set_position
         command = developer_cmds.CmdMultiCmd

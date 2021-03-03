@@ -51,7 +51,7 @@ def targeted_action(caller, target, log=False):
     return action_result - evade_result, action_result, evade_result
 
 
-def evade_roll(char, evade_mod_stat, log=False, unit_test=False):
+def evade_roll(char=None, evade_mod_stat=None, log=False, unit_test=False):
     """
     evade roll is  a random roll between 1 and the evade's max roll.
         Plus the evade's stat modifier
@@ -90,9 +90,10 @@ def evade_roll(char, evade_mod_stat, log=False, unit_test=False):
         If a Character has an evade action active.
             Ranks in the evade action's skill will modifify the roll max.
             All wielded items that can modify the max roll will.
-        If a character is sitting or laying they will suffer a penalty.
+        If a Character is sitting or laying they will suffer a penalty.
             Sitting provides a 20 penalty
             Laying provides a 50 penalty
+        If a Character is unconscious they always roll a 5 for Evade Rolls.
         An evade roll result can not be less than 5.
     """
     # collected roll_max from character, use default if character does not have one.

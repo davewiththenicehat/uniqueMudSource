@@ -585,6 +585,9 @@ class CmdCmdFuncTest(DeveloperCommand):
         cmd_func_test /r dmg_after_dr, char, requires_wielding:True, cmd_type:one_handed = 7, True, head
 
         /r, shows the return from the function
+        /d, deffer this command after setting its attributes.
+            Functions that use attributes from self.caller.deffered_command will be using attributes
+            on this command.
         char, the name of the character the command will target
         requires_wielding:True,
             requires_wielding refers to Command.requires_wielding
@@ -626,6 +629,7 @@ class CmdCmdFuncTest(DeveloperCommand):
         if not cmd_args:
             caller.msg("A function name is required.")
         func_name = cmd_args[0]
+        # set variables pass in command argument
         if len(cmd_args) > 1:
             target_name = cmd_args[1]
             target = None
@@ -637,6 +641,14 @@ class CmdCmdFuncTest(DeveloperCommand):
                 else:
                     caller.msg(f'{target_name} is not here.')
                     return
+        # if the defer switch is set, defer this command.
+        if 'd' in self.switches:
+            # defer the command
+            defer_successful = self.defer()
+            # show a message to player that their command is waiting
+            if not defer_successful:
+                raise AssertionError("Defer switch set, was not able to defer this command.")
+                return
         if hasattr(self, func_name): # find this function in the command module
             func_inst = getattr(self, func_name)
             arguments = []
@@ -657,6 +669,10 @@ class CmdCmdFuncTest(DeveloperCommand):
                 caller.msg(f'{func_name} returned: {func_return}')
         else:
             caller.msg(f'No function {func_name} found.')
+            # Do not return here
+        if 'd' in self.switches:  # if this had the defer switch set, stop the defferal
+            self.stop_forced()
+
 
 
 class CmdCmdAttrTest(DeveloperCommand):
