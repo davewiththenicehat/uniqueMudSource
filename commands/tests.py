@@ -1,10 +1,11 @@
-from commands import developer_cmds
-from typeclasses.objects import Object
 from evennia import create_object
+
+from typeclasses.objects import Object
 from typeclasses.equipment import clothing
-from commands import standard_cmds
+from commands import standard_cmds, developer_cmds
 from typeclasses.equipment.wieldable import OneHandedWeapon
 from utils.unit_test_resources import UniqueMudCmdTest
+from world.rules.stats import STATS
 
 
 class TestCommands(UniqueMudCmdTest):
@@ -816,7 +817,7 @@ class TestCommands(UniqueMudCmdTest):
         wnt_msg = r"dmg_after_dr returned: 1"
         cmd_result = self.call(command(), arg, wnt_msg)
         self.char1.STR.set(old_str)
-        #dmg_mod_stat
+    #self.dmg_mod_stat
         # switch the stat modifing damage and run the test again.
         command = developer_cmds.CmdCmdFuncTest
         arg = "/r dmg_after_dr, char, cmd_type:unarmed, dmg_max:1, dmg_mod_stat:AGI = None, True, chest"
@@ -828,8 +829,22 @@ class TestCommands(UniqueMudCmdTest):
         self.char1.cache_stat_modifiers()
         arg = "/r dmg_after_dr, char, cmd_type:unarmed, dmg_max:1, dmg_mod_stat:AGI = None, True, chest"
         wnt_msg = r"dmg_after_dr returned: 1"
-        cmd_result = self.call(command(), arg, wnt_msg)
+        self.call(command(), arg, wnt_msg)
         self.char1.STR.set(old_str)
+        # test all other stats
+        for stat in STATS:
+            if stat != 'STR':
+                stat_inst = getattr(self.char1, stat)
+                if stat_inst:
+                    old_stat_value =stat_inst.get()
+                    stat_inst.set(50)
+                    self.char1.cache_stat_modifiers()
+                    arg = f"/r dmg_after_dr, char, cmd_type:unarmed, dmg_max:1, dmg_mod_stat:{stat} = None, True, chest"
+                    wnt_msg = r"dmg_after_dr returned: 1"
+                    self.call(command(), arg, wnt_msg)
+                    stat_inst.set(old_stat_value)
+                else:
+                    raise AssertionError(f"self.char1 has no stat {stat}.")
 
     def test_cmds(self):
     # test punch, kick and dodge
