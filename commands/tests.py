@@ -846,29 +846,10 @@ class TestCommands(UniqueMudCmdTest):
                 else:
                     raise AssertionError(f"self.char1 has no stat {stat}.")
 
-    def test_cmds(self):
-    # test punch, kick and dodge
-        # test punch
-        command = developer_cmds.CmdMultiCmd
-        arg = "= punch Char2, complete_cmd_early"
-        wnt_msg = 'You will be busy for \\d+ seconds.\nFacing Char2 Char pulls theirs hand back preparing an attack.\npunch \\d+ VS evade \\d+: You punch at Char2.*'
-        cmd_result = self.call(command(), arg)
-        self.assertRegex(cmd_result, wnt_msg)
-
-        # test kick
-        command = developer_cmds.CmdMultiCmd
-        arg = "= kick Char2, complete_cmd_early"
-        wnt_msg = 'You will be busy for \\d+ seconds.\nFacing Char2 Char lifts theirs knee up preparing an attack.\nkick \\d+ VS evade \\d+: You kick at Char2'
-        cmd_result = self.call(command(), arg)
-        self.assertRegex(cmd_result, wnt_msg)
-
-        # test dodge
-        command = developer_cmds.CmdMultiCmd
-        arg = "= dodge, control_other Char2=punch Char, complete_cmd_early Char2"
-        wnt_msg = r"You will be busy for \d+ seconds.\nYou begin to sway warily.\nFacing Char Char2 pulls theirs hand back preparing an attack.\nYou are no longer busy.\nYou try to dodge the incoming attack.\nevade \d+ VS punch \d+: Char2 punches at you with their fist "
-        cmd_result = self.call(command(), arg)
-        self.assertRegex(cmd_result, wnt_msg)
-
+    def test_wield_unwield(self):
+        """
+        Test the wield and unwield commands.
+        """
         # test wielding
         command = developer_cmds.CmdMultiCmd
         arg = "= get sword, complete_cmd_early"
@@ -949,10 +930,29 @@ class TestCommands(UniqueMudCmdTest):
         hands_state = self.char1.hands()
         self.assertNotEqual(hands_state[0].occupied, sword_dbref)
         self.assertNotEqual(hands_state[1].occupied, sword_dbref)
-        # remake the sword
-        self.sword = create_object(OneHandedWeapon, key="a sword")
-        self.sword.targetable = True
-        self.sword.location = self.char1.location
+
+    def test_cmds(self):
+    # test punch, kick and dodge
+        # test punch
+        command = developer_cmds.CmdMultiCmd
+        arg = "= punch Char2, complete_cmd_early"
+        wnt_msg = 'You will be busy for \\d+ seconds.\nFacing Char2 Char pulls theirs hand back preparing an attack.\npunch \\d+ VS evade \\d+: You punch at Char2.*'
+        cmd_result = self.call(command(), arg)
+        self.assertRegex(cmd_result, wnt_msg)
+
+        # test kick
+        command = developer_cmds.CmdMultiCmd
+        arg = "= kick Char2, complete_cmd_early"
+        wnt_msg = 'You will be busy for \\d+ seconds.\nFacing Char2 Char lifts theirs knee up preparing an attack.\nkick \\d+ VS evade \\d+: You kick at Char2'
+        cmd_result = self.call(command(), arg)
+        self.assertRegex(cmd_result, wnt_msg)
+
+        # test dodge
+        command = developer_cmds.CmdMultiCmd
+        arg = "= dodge, control_other Char2=punch Char, complete_cmd_early Char2"
+        wnt_msg = r"You will be busy for \d+ seconds.\nYou begin to sway warily.\nFacing Char Char2 pulls theirs hand back preparing an attack.\nYou are no longer busy.\nYou try to dodge the incoming attack.\nevade \d+ VS punch \d+: Char2 punches at you with their fist "
+        cmd_result = self.call(command(), arg)
+        self.assertRegex(cmd_result, wnt_msg)
 
         # test method get_body_part
         command = developer_cmds.CmdCmdFuncTest
@@ -967,13 +967,13 @@ class TestCommands(UniqueMudCmdTest):
         cmd_result = self.call(command(), arg)
         self.assertRegex(cmd_result, wnt_msg)
 
+        # Test item.act_roll_max_mod
         # wield a sword
         command = developer_cmds.CmdMultiCmd
         arg = '= get sword, complete_cmd_early, wield sword, complete_cmd_early'
         wnt_msg = "You wield a sword"
         cmd_result = self.call(command(), arg)
         self.assertRegex(cmd_result, wnt_msg)
-        # Test item.act_roll_max_mod
         # tests self.roll_max
         self.sword.act_roll_max_mod = 1
         command = developer_cmds.CmdCmdAttrTest
