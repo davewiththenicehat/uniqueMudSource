@@ -805,12 +805,31 @@ class TestCommands(UniqueMudCmdTest):
         self.call(command(), arg, wnt_msg)
     # test self.dmg_mod_stat
         command = developer_cmds.CmdCmdFuncTest
-        arg = "/r dmg_after_dr, char, cmd_type:unarmed, dmg_max:1 = 7, True, chest"
-        wnt_msg = r"dmg_after_dr returned: 5"
+        arg = "/r dmg_after_dr, char, cmd_type:unarmed, dmg_max:1 = None, True, chest"
+        wnt_msg = r"dmg_after_dr returned: 3"
         cmd_result = self.call(command(), arg, wnt_msg)
         # now change the Characters strength
         old_str = self.char1.STR.get()
-        self.char1.STR.set(200)
+        self.char1.STR.set(50)
+        self.char1.cache_stat_modifiers()
+        arg = "/r dmg_after_dr, char, cmd_type:unarmed, dmg_max:1 = None, True, chest"
+        wnt_msg = r"dmg_after_dr returned: 1"
+        cmd_result = self.call(command(), arg, wnt_msg)
+        self.char1.STR.set(old_str)
+        #dmg_mod_stat
+        # switch the stat modifing damage and run the test again.
+        command = developer_cmds.CmdCmdFuncTest
+        arg = "/r dmg_after_dr, char, cmd_type:unarmed, dmg_max:1, dmg_mod_stat:AGI = None, True, chest"
+        wnt_msg = r"dmg_after_dr returned: 3"
+        cmd_result = self.call(command(), arg, wnt_msg)
+        # now change the Characters strength
+        old_str = self.char1.AGI.get()
+        self.char1.AGI.set(50)
+        self.char1.cache_stat_modifiers()
+        arg = "/r dmg_after_dr, char, cmd_type:unarmed, dmg_max:1, dmg_mod_stat:AGI = None, True, chest"
+        wnt_msg = r"dmg_after_dr returned: 1"
+        cmd_result = self.call(command(), arg, wnt_msg)
+        self.char1.STR.set(old_str)
 
     def test_cmds(self):
     # test punch, kick and dodge

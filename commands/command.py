@@ -169,6 +169,7 @@ class Command(default_cmds.MuxCommand):
             The item.item_type attribute must match the command's Command.cmd_type
             Example: 'one_handed'
         required_ranks = 0  # required ranks in the commands skill_name for this command to work.
+        dmg_mod_stat = 'STR'  # the stat that will modifier damage this command manipulates
         dmg_types = None  # dictionary of damage types this command can manipulate.
             Attack commands should ALWAYS have one or more dmg_type.
                 If an attack command has no dmg_types,
