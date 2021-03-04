@@ -941,8 +941,8 @@ class TestCommands(UniqueMudCmdTest):
         command = developer_cmds.CmdCmdFuncTest
         arg = "/d action_roll, self, cmd_type:unarmed, evade_mod_stat:OBS, skill_name:punch = False, True"
         wanted_message = r"roll_max: 51"
-        cmd_result = self.call(command(), arg)
-        self.assertRegex(cmd_result, wanted_message)
+#        cmd_result = self.call(command(), arg)
+#        self.assertRegex(cmd_result, wanted_message)
         # adjust self.roll_max
         # Test with default values
         # roll max default and default skill ranks in the command used.
@@ -972,27 +972,34 @@ class TestCommands(UniqueMudCmdTest):
         wnt_msg = r"roll_max: 60"
         self.call(command(), arg, wnt_msg)
     # test item evasion bonus item.evd_stats, item.evd_roll_max_mod
+        # set evasion bonuses on the wielded item
         self.assertFalse(self.sword.attributes.has('evd_stats'))
         self.sword.evd_stats = ('AGI',)
         self.assertEqual(self.sword.attributes.get('evd_stats'), ('AGI',))
         self.sword.evd_roll_max_mod = 1
         self.assertEqual(self.sword.attributes.get('evd_roll_max_mod'), 1)
-        command = developer_cmds.CmdMultiCmd
-        arg = "= dodge, control_other Char2=punch Char, complete_cmd_early Char2"
-        wnt_msg = r"You will be busy for \d+ seconds.\nYou begin to sway warily.\nFacing Char Char2 pulls theirs hand back preparing an attack.\nYou are no longer busy.\nYou try to dodge the incoming attack.\nevade \d+ VS punch \d+: Char2 punches at you with their fist "
-        cmd_result = self.call(command(), arg)
-        self.assertRegex(cmd_result, wnt_msg)
-        # defer an evasion command to test
-        command = developer_cmds.CmdMultiCmd
-        arg = "= dodge"
-        wnt_msg = r"You will be busy for \d+ seconds.\nYou begin to sway warily."
-        cmd_result = self.call(command(), arg)
-        self.assertRegex(cmd_result, wnt_msg)
+        # Run an evasion command
         command = developer_cmds.CmdCmdFuncTest
-        arg = "evade_roll, self, cmd_type:evasion, evade_mod_stat:AGI = AGI, False, True"
+        arg = "/d evade_roll, self, cmd_type:evasion, evade_mod_stat:AGI, evade_msg:'test evade' = AGI, False, True"
+        wnt_msg = r"roll_max: 52"
+        cmd_result = self.call(command(), arg)
+        self.assertRegex(cmd_result, wnt_msg)
+        # increase the evd_roll_max_mod and run the test again
+        self.sword.evd_roll_max_mod = 2
+        self.assertEqual(self.sword.attributes.get('evd_roll_max_mod'), 2)
+        command = developer_cmds.CmdCmdFuncTest
+        arg = "/d evade_roll, self, cmd_type:evasion, evade_mod_stat:AGI, evade_msg:'test evade' = AGI, False, True"
         wnt_msg = r"roll_max: 53"
         cmd_result = self.call(command(), arg)
         self.assertRegex(cmd_result, wnt_msg)
+        # change the attack commands evade_mod_stat or evade modifier stat
+        # Keeping the evade_mod_stat on the evade command. So they do not match.
+        command = developer_cmds.CmdCmdFuncTest
+        arg = "/d evade_roll, self, cmd_type:evasion, evade_mod_stat:AGI, evade_msg:'test evade' = WIS, False, True"
+        wnt_msg = r"roll_max: 51"  # the 2 from sword.evade_mod_stat is no longer used
+        cmd_result = self.call(command(), arg)
+        self.assertRegex(cmd_result, wnt_msg)
+        # reset the evade item stats
         del self.sword.evd_stats
         self.assertFalse(self.sword.attributes.has('evd_stats'))
         del self.sword.evd_roll_max_mod

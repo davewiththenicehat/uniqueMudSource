@@ -102,6 +102,8 @@ class Command(default_cmds.MuxCommand):
             action of command
         evade_mod_stat = 'AGI'  # stat used to evade this command
             AGI  # agility, defend against physical actions like attacks
+        evade_msg, message to display when the character attempts to evade
+            Used in world.rules.actions.evade_roll
         action_mod_stat = 'OBS'  # stat used to modify this command
             OBS  # observation, for physical actions. Attacks
         cost_stat='END'  # stat this command will use for the action's cost
@@ -1073,7 +1075,7 @@ class Command(default_cmds.MuxCommand):
             return
         else:
             target = self.target
-        if self.evade_mod_stat:
+        if not self.evade_mod_stat:
             evade_mod_stat = self.evade_mod_stat
         return actions.evade_roll(target, evade_mod_stat, log, unit_test)
 

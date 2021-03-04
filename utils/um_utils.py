@@ -4,6 +4,44 @@ This module contains misc small functions
 
 from evennia.utils.logger import log_info, log_warn, log_err
 
+def string_to_data(value=None):
+    """
+    Converts a string to a variable data type.
+    White spaces on end of strings are always stripped.
+    strings:
+        'None' become None
+        'False' becomes False
+        'True' becomes True
+        int becomes an intigers
+
+    Arguments:
+        value, a string to convert
+
+    Returns:
+        value, a data version of the string passed.
+        If the string could not be converted to a data type the string is returned.
+
+    Raises:
+        ValueError, if the argument was not passed or is None.
+            Not the string 'None' but the data variable None
+    """
+    if value == None:
+        raise ValueError("utils.um_utils.string_to_data, argument 1 must be passed and can " \
+                         "not equal None. Not the string 'None' but the data variable None.")
+    try:
+        # if the string can become an inteiger make it one
+        value = int(value)
+    except ValueError:
+        # convert the string to a data type
+        value = value.strip()
+        if value == 'None':
+            value = None
+        elif value == 'False':
+            value = False
+        elif value == 'True':
+            value = True
+    return value
+
 def highlighter(message, highlight_color=None, **kwargs):
     """
     Assists with complex text highlighting.

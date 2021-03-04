@@ -1,6 +1,7 @@
 from commands.command import Command
 from evennia import CmdSet
 from world.rules import stats
+from utils.um_utils import string_to_data
 
 
 class DeveloperCmdSet(CmdSet):
@@ -69,18 +70,7 @@ class DeveloperCommand(Command):
         """
         for attribute in attributes:
             key, value = attribute.split(':')
-            # convert strings to ints if they are ints.
-            try:
-                value = int(value)
-            except ValueError:
-                # if None was passed as an argument turn it into None
-                value = value.strip()
-                if value == 'None':
-                    value = None
-                elif value == 'False':
-                    value = False
-                elif value == 'True':
-                    value = True
+            value = string_to_data(value)
             key = key.strip()
             # set know local attributes
             if key == 'requires_wielding':
@@ -135,6 +125,8 @@ class DeveloperCommand(Command):
                 self.cost_level = value
             elif key == 'log':
                 self.log = value
+            elif key == 'evade_msg':
+                self.evade_msg = value
             else:
                 # These will be set as class attributes
                 setattr(self, key, value)
@@ -653,15 +645,8 @@ class CmdCmdFuncTest(DeveloperCommand):
             func_inst = getattr(self, func_name)
             arguments = []
             for argument in self.rhslist:
-                # convert strings to ints if they are ints.
-                try:
-                    int_arg = int(argument)
-                    arguments.append(int_arg)
-                except ValueError:
-                    # if None was passed as an argument turn it into None
-                    if argument.strip() == 'None':
-                        argument = None
-                    arguments.append(argument)
+                argument = string_to_data(argument)
+                arguments.append(argument)
             # Call the function capturing any returns.
             func_return = func_inst(*arguments)
             # show the return to screen if the r switch was used
@@ -672,7 +657,6 @@ class CmdCmdFuncTest(DeveloperCommand):
             # Do not return here
         if 'd' in self.switches:  # if this had the defer switch set, stop the defferal
             self.stop_forced()
-
 
 
 class CmdCmdAttrTest(DeveloperCommand):

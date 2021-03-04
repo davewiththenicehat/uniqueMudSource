@@ -96,6 +96,14 @@ def evade_roll(char=None, evade_mod_stat=None, log=False, unit_test=False):
         If a Character is unconscious they always roll a 5 for Evade Rolls.
         An evade roll result can not be less than 5.
     """
+    if not char:
+        raise ValueError("world.rules.actions.evade_roll, argument 1 char required. " \
+                         "Argument 1 is an instance of a Character.")
+    elif not evade_mod_stat:
+        raise ValueError("world.rules.actions.evade_roll, " \
+                         "argument 2 evade_mod_stat required. " \
+                         "Argument 2 is a string example of a Character stat." \
+                         "Example: 'AGI'.")
     # collected roll_max from character, use default if character does not have one.
     roll_max = getattr(char.evd_max, evade_mod_stat, EVADE_MAX)
     evade_mod = 0
@@ -110,10 +118,11 @@ def evade_roll(char=None, evade_mod_stat=None, log=False, unit_test=False):
     evade_cmd = char.nattributes.get('deffered_command')
     if evade_cmd:  # if there is an active command
         cmd_type = getattr(evade_cmd, 'cmd_type', False)
-        if cmd_type:  # very cmd_type existance
+        if cmd_type:  # verify cmd_type existance
             if log:
-                log_info(f'Character ID: {char.id} | cmd_type: {cmd_type} | " \
-                         f"{evade_cmd.evade_mod_stat}')
+                log_info(f"Character ID: {char.id} | cmd_type: {cmd_type} | " \
+                      f"evade_cmd.evade_mod_stat: {evade_cmd.evade_mod_stat} | " \
+                      f"evade_mod_stat: {evade_mod_stat}")
             # If the command is an evasion command and
             # it's evade type is the same as the attack action's
             if cmd_type == 'evasion' and evade_cmd.evade_mod_stat == evade_mod_stat:
