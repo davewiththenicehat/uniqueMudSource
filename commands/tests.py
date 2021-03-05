@@ -1128,42 +1128,9 @@ class TestCommands(UniqueMudCmdTest):
         self.char2.position = 'standing'
         self.assertEqual(self.char2.position, 'standing')
 
-    def test_cmds(self):
-    # test punch, kick and dodge
-        # test punch
-        command = developer_cmds.CmdMultiCmd
-        arg = "= punch Char2, complete_cmd_early"
-        wnt_msg = 'You will be busy for \\d+ seconds.\nFacing Char2 Char pulls theirs hand back preparing an attack.\npunch \\d+ VS evade \\d+: You punch at Char2.*'
-        cmd_result = self.call(command(), arg)
-        self.assertRegex(cmd_result, wnt_msg)
-
-        # test kick
-        command = developer_cmds.CmdMultiCmd
-        arg = "= kick Char2, complete_cmd_early"
-        wnt_msg = 'You will be busy for \\d+ seconds.\nFacing Char2 Char lifts theirs knee up preparing an attack.\nkick \\d+ VS evade \\d+: You kick at Char2'
-        cmd_result = self.call(command(), arg)
-        self.assertRegex(cmd_result, wnt_msg)
-
-        # test dodge
-        command = developer_cmds.CmdMultiCmd
-        arg = "= dodge, control_other Char2=punch Char, complete_cmd_early Char2"
-        wnt_msg = r"You will be busy for \d+ seconds.\nYou begin to sway warily.\nFacing Char Char2 pulls theirs hand back preparing an attack.\nYou are no longer busy.\nYou try to dodge the incoming attack.\nevade \d+ VS punch \d+: Char2 punches at you with their fist "
-        cmd_result = self.call(command(), arg)
-        self.assertRegex(cmd_result, wnt_msg)
-
-        # test method get_body_part
-        command = developer_cmds.CmdCmdFuncTest
-        arg = "/r get_body_part, char2"
-        wnt_msg = r"get_body_part returned: False"
-        cmd_result = self.call(command(), arg)
-        self.assertFalse(cmd_result == wnt_msg)
-        # now test an object with no body parts
-        command = developer_cmds.CmdCmdFuncTest
-        arg = "/r get_body_part, obj"
-        wnt_msg = r"^get_body_part returned: False"
-        cmd_result = self.call(command(), arg)
-        self.assertRegex(cmd_result, wnt_msg)
-
+    def test_rpsys(self):
+        """
+        """
         # test permision lock down for pose, sdesc and mask
         # test commands on a character without the permission
         for cmd in ('mask', 'sdesc', 'pose'):
@@ -1173,6 +1140,7 @@ class TestCommands(UniqueMudCmdTest):
             cmd_result = self.call(command(), arg, caller=self.char2)
             self.assertRegex(cmd_result, wnt_msg)
         # on on a character with permission
+        # test rpsytem commands
         # mask
         command = developer_cmds.CmdMultiCmd
         arg = "= mask"
@@ -1188,8 +1156,6 @@ class TestCommands(UniqueMudCmdTest):
         arg = "= sdesc"
         wnt_msg = "Usage: sdesc <sdesc-text>"
         cmd_result = self.call(command(), arg, wnt_msg, caller=self.char1)
-
-        # test rpsytem commands
         # emote
         command = developer_cmds.CmdMultiCmd
         arg = "= emote test emote"
@@ -1245,6 +1211,42 @@ class TestCommands(UniqueMudCmdTest):
         arg = '=control_other char2=say at obj2 and obj "test message'
         wnt_msg = r'Char2 says at Obj2 and Obj, "test message"'
         self.call(command(), arg, wnt_msg, caller=self.char1)
+
+    def test_cmds(self):
+    # test punch, kick and dodge
+        # test punch
+        command = developer_cmds.CmdMultiCmd
+        arg = "= punch Char2, complete_cmd_early"
+        wnt_msg = 'You will be busy for \\d+ seconds.\nFacing Char2 Char pulls theirs hand back preparing an attack.\npunch \\d+ VS evade \\d+: You punch at Char2.*'
+        cmd_result = self.call(command(), arg)
+        self.assertRegex(cmd_result, wnt_msg)
+
+        # test kick
+        command = developer_cmds.CmdMultiCmd
+        arg = "= kick Char2, complete_cmd_early"
+        wnt_msg = 'You will be busy for \\d+ seconds.\nFacing Char2 Char lifts theirs knee up preparing an attack.\nkick \\d+ VS evade \\d+: You kick at Char2'
+        cmd_result = self.call(command(), arg)
+        self.assertRegex(cmd_result, wnt_msg)
+
+        # test dodge
+        command = developer_cmds.CmdMultiCmd
+        arg = "= dodge, control_other Char2=punch Char, complete_cmd_early Char2"
+        wnt_msg = r"You will be busy for \d+ seconds.\nYou begin to sway warily.\nFacing Char Char2 pulls theirs hand back preparing an attack.\nYou are no longer busy.\nYou try to dodge the incoming attack.\nevade \d+ VS punch \d+: Char2 punches at you with their fist "
+        cmd_result = self.call(command(), arg)
+        self.assertRegex(cmd_result, wnt_msg)
+
+        # test method get_body_part
+        command = developer_cmds.CmdCmdFuncTest
+        arg = "/r get_body_part, char2"
+        wnt_msg = r"get_body_part returned: False"
+        cmd_result = self.call(command(), arg)
+        self.assertFalse(cmd_result == wnt_msg)
+        # now test an object with no body parts
+        command = developer_cmds.CmdCmdFuncTest
+        arg = "/r get_body_part, obj"
+        wnt_msg = r"^get_body_part returned: False"
+        cmd_result = self.call(command(), arg)
+        self.assertRegex(cmd_result, wnt_msg)
 
         # Test whisper
         # say
