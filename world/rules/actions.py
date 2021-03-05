@@ -121,8 +121,8 @@ def evade_roll(char=None, evade_mod_stat=None, log=False, unit_test=False):
         if cmd_type:  # verify cmd_type existance
             if log:
                 log_info(f"Character ID: {char.id} | cmd_type: {cmd_type} | " \
-                      f"evade_cmd.evade_mod_stat: {evade_cmd.evade_mod_stat} | " \
-                      f"evade_mod_stat: {evade_mod_stat}")
+                         f"evade_cmd.evade_mod_stat: {evade_cmd.evade_mod_stat} | " \
+                         f"evade_mod_stat: {evade_mod_stat}")
             # If the command is an evasion command and
             # it's evade type is the same as the attack action's
             if cmd_type == 'evasion' and evade_cmd.evade_mod_stat == evade_mod_stat:

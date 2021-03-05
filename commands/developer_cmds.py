@@ -127,6 +127,8 @@ class DeveloperCommand(Command):
                 self.log = value
             elif key == 'evade_msg':
                 self.evade_msg = value
+            elif key == 'skill_name':
+                self.skill_name = value
             else:
                 # These will be set as class attributes
                 setattr(self, key, value)
