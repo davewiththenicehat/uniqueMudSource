@@ -1292,6 +1292,14 @@ class TestCommands(UniqueMudCmdTest):
         wnt_msg = r"Pose will read 'Obj is here.'."
         self.call(command(), arg, wnt_msg, caller=self.char1)
 
+    def test_stats_cmd(self):
+        # test the statistics command
+        command = developer_cmds.CmdMultiCmd
+        arg = "= stat"
+        wnt_msg = "Statistics for: Char"
+        cmd_result = self.call(command(), arg)
+        self.assertRegex(cmd_result, wnt_msg)
+
     def test_cmds(self):
     # test punch, kick and dodge
         # test punch
@@ -1325,13 +1333,6 @@ class TestCommands(UniqueMudCmdTest):
         command = developer_cmds.CmdCmdFuncTest
         arg = "/r get_body_part, obj"
         wnt_msg = r"^get_body_part returned: False"
-        cmd_result = self.call(command(), arg)
-        self.assertRegex(cmd_result, wnt_msg)
-
-        # test the statistics command
-        command = developer_cmds.CmdMultiCmd
-        arg = "= stat"
-        wnt_msg = "Statistics for: Char"
         cmd_result = self.call(command(), arg)
         self.assertRegex(cmd_result, wnt_msg)
 
