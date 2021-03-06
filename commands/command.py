@@ -769,14 +769,14 @@ class Command(default_cmds.MuxCommand):
             target=None, instance of the target that would receive the damage.
             log=False, should this function log messages
 
-        Notes:
-            unit tests for this are in commands.tests
-
         Returns:
             damage dealt after dr for the body part hit after the targets damage reduction.
             Default the highest possible damage is returned.
             pass max_defense=True, to return the lowest possible damage.
             The minimum value this function returns is 0.
+
+        Unit Tests:
+            in commands.test.TestCommands.test_dmg
 
         equation:
             Each action has a list of damage types they can manipulate.
@@ -840,6 +840,8 @@ class Command(default_cmds.MuxCommand):
             commands arguments.
                 'unit_test_succ': combat_action will always succeed.
                 'unit_test_fail': combat_action will always fail.
+
+            in commands.test.TestCommands.test_ most any command set.
 
         Returns:
             True, if the action completed successfully.

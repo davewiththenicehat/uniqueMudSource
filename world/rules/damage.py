@@ -133,7 +133,6 @@ def get_dmg_after_dr(command, dmg_dealt=None, max_defense=False, body_part=None,
         log=False, should this function log messages
 
     Notes:
-        unit tests for this are in commands.tests
         If the command has requires_wielding is set.
             The required item's dmg_types are added to the command's
             A key is only updated if it has a value other than 0.
@@ -141,13 +140,16 @@ def get_dmg_after_dr(command, dmg_dealt=None, max_defense=False, body_part=None,
                 The command's and the item's dmg_type values are added together, before the
                 command's dmg_types key is updated.
 
+    Unit Tests:
+        in commands.test.TestCommands.test_dmg
+
     Returns:
         damage dealt after dr for the body part hit after the targets damage reduction.
         Default the highest possible damage is returned.
         pass max_defense=True, to return the lowest possible damage.
         The minimum value this function returns is 0.
 
-    equation:
+    Equation:
         Each action has a list of damage types it can manipulate.
         By default the damage type that does the most damage is chosen.
         Some actions instead choose the least possible damage.
