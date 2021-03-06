@@ -132,6 +132,7 @@ class TestCommands(UniqueMudCmdTest):
         wnt_msg = "You will be busy for 5 seconds.|Char is testing deferring a command.|You will be busy for 5 seconds."
         self.call(command(), arg, wnt_msg)
         # force a deffered command to stop, a deffered command was left open on 'char' from the test above
+        # self.stop_forced
         command = developer_cmds.CmdMultiCmd
         arg = "= stop_cmd"
         wnt_msg = "You are no longer busy.|Test command ran successfully."
@@ -156,6 +157,16 @@ class TestCommands(UniqueMudCmdTest):
         arg = "= defer_cmd, interrupt_cmd, y"
         wnt_msg = "You will be busy for 5 seconds.|Char is testing deferring a command.|Stop your defer_cmd command to test_cmd? 'y' for yes or 'i' to ignore.|You are no longer busy.|Test command ran successfully."
         self.call(command(), arg, wnt_msg)
+        # force a target other than self to stop a command
+        # self.stop_forced
+        command = developer_cmds.CmdMultiCmd
+        arg = "= punch Char"
+        wnt_msg = "You will be busy for 3 seconds."
+        self.call(command(), arg, wnt_msg, caller=self.char2)
+        command = developer_cmds.CmdMultiCmd
+        arg = "= stop_cmd Char2"
+        wnt_msg = "You are no longer busy.|Char stopped your punch command with their stop_cmd."
+        self.call(command(), arg, wnt_msg, receiver=self.char2)
     # test stun
         # stun a character and stop it early
         command = developer_cmds.CmdMultiCmd
