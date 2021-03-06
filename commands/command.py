@@ -717,13 +717,15 @@ class Command(default_cmds.MuxCommand):
             caller.msg(f'You can no longer reach {self.target.usdesc}.')
             return True
 
-    def get_body_part(self, target=None, no_understore=False, log=False):
+    def get_body_part(self, target=None, part_name=False, log=None):
         """
-        Return the name of a body part that exists on target
+        Return an instance of a body part on a target.
 
         Arguments:
             target, an Object target for get_part to choose a body part from
-            no_understore=False, if True underscores '_' will be removed from the returned part name.
+            part_name=False, Pass a string name of a body part and get_body_part will return an
+                instance of that part.
+                Example: 'left_leg'
             log=False, if True log the variables used
 
         Returns:
@@ -731,6 +733,9 @@ class Command(default_cmds.MuxCommand):
                 Example: "head" or "waist"
             False, if this object has no body parts to hit.
             None, the function failed on the python level.
+
+        Unit Tests:
+            in commands.test.TestCommands.test_cmd_methods
 
         Notes:
             If not passed, target is a reference of self.target
@@ -744,7 +749,7 @@ class Command(default_cmds.MuxCommand):
                     target = self.caller
             else:
                 target = self.caller
-        return body.get_part(target, no_understore, log)
+        return body.get_part(target, part_name, log)
 
     def dmg_after_dr(self, dmg_dealt=None, max_defense=False, body_part=None, target=None, log=False):
         """

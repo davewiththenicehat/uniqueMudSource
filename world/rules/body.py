@@ -76,9 +76,20 @@ def get_part(target, part_name=False, log=None):
         False, if this object has no body parts to hit.
         None, the function failed on the python level.
 
+    Notes:
+        Body parts retain python's standard attribute format.
+        The name attribute is the name of the body part.
+        As it is an instance of an object spaces are replaced with _.
+
+        Get a parts name with:
+            part = body.body_part()
+            part_name = part.name.replace('_', ' ')  # replace _ with spaces
+
     todo:
         option to target low middle or high
     """
+
+    # if the target has no body or parts stop the method
     if hasattr(target, 'body'):
         if not hasattr(target.body, 'parts'):
             if log:
@@ -88,15 +99,19 @@ def get_part(target, part_name=False, log=None):
         if log:
             log_info(f"world.rules.get_body_part, target.id: {target.id}; target missing body instance.")
         return False  # target must have a body instance
-    parts_count = len(target.body.parts)  # get a max key count
-    parts_count -= 1  # because indexing starts at 0
-    if parts_count < 1:  # return false is there are no body parts to hit
-        if log:
-            log_info(f"world.rules.get_body_part, target.id: {target.id}; parts_count: {parts_count}. No parts found on target.")
-        return False
-    parts_key = randint(0, parts_count)
+
+    # collect a part name if none was passed.
     if not part_name:
+        parts_count = len(target.body.parts)  # get a max key count
+        parts_count -= 1  # because indexing starts at 0
+        if parts_count < 1:  # return false is there are no body parts to hit
+            if log:
+                log_info(f"world.rules.get_body_part, target.id: {target.id}; parts_count: {parts_count}. No parts found on target.")
+            return False
+        parts_key = randint(0, parts_count)
         part_name = target.body.parts[parts_key]
-    if log:
-        log_info(f"world.rules.get_body_part, target.id: {target.id}; body_part: {part_name} | parts_key: {parts_key}")
+        if log:
+            log_info(f"world.rules.get_body_part, target.id: {target.id}; body_part: {part_name} | parts_key: {parts_key}")
+
+    # return the body part, or false if a part was not found
     return getattr(target.body, part_name, False)

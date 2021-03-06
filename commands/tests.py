@@ -5,6 +5,7 @@ from typeclasses.equipment import clothing
 from commands import standard_cmds, developer_cmds
 from utils.unit_test_resources import UniqueMudCmdTest
 from world.rules.stats import STATS
+from world.rules.body import HUMANOID_BODY
 
 
 class TestCommands(UniqueMudCmdTest):
@@ -1381,17 +1382,30 @@ class TestCommands(UniqueMudCmdTest):
         # make certain commands have been taking a cost.
         self.assertTrue(self.char1.END < 100)
 
-    def test_cmds(self):
+    def test_cmd_methods(self):
+        """
+            Test Command methods.
+            Many methods are tested in other command unit tests.
+        """
 
         # test method get_body_part
+        # run a test with no arguments. Object with a body part
+        # self.get_body_part and body.get_part tested here
         command = developer_cmds.CmdCmdFuncTest
         arg = "/r get_body_part, char2"
-        wnt_msg = r"get_body_part returned: False"
         cmd_result = self.call(command(), arg)
-        self.assertFalse(cmd_result == wnt_msg)
+        wnt_msg = r"get_body_part returned: broke: \d+ bleeding: \d+ missing: \d+ occupied: \d+ wielding: \d+"
+        self.assertRegex(wnt_msg, cmd_result)
         # now test an object with no body parts
         command = developer_cmds.CmdCmdFuncTest
         arg = "/r get_body_part, obj"
-        wnt_msg = r"^get_body_part returned: False"
+        wnt_msg = r"^get_body_part returned: False$"
         cmd_result = self.call(command(), arg)
         self.assertRegex(cmd_result, wnt_msg)
+        # test requesting a specific part
+        command = developer_cmds.CmdCmdFuncTest
+        for part_name in HUMANOID_BODY:
+            arg = f"/r get_body_part, char2 = None, {part_name}, False"
+            cmd_result = self.call(command(), arg)
+            wnt_msg = r"get_body_part returned: broke: \d+ bleeding: \d+ missing: \d+ occupied: \d+ wielding: \d+"
+            self.assertRegex(wnt_msg, cmd_result)

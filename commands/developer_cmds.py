@@ -614,7 +614,7 @@ class CmdCmdFuncTest(DeveloperCommand):
             cmd_args = cmd_args[0]
             cmd_args = cmd_args.split(',')
             if len(cmd_args) > 2:
-               self.set_inst_attrs(cmd_args[2:])
+                self.set_inst_attrs(cmd_args[2:])
         super().at_pre_cmd()
 
     def func(self):
@@ -630,7 +630,7 @@ class CmdCmdFuncTest(DeveloperCommand):
             if target_name:
                 target = caller.search(target_name, quiet=True)
                 if target:
-                    target=target[0]
+                    target = target[0]
                     self.target = target
                 else:
                     caller.msg(f'{target_name} is not here.')
@@ -643,7 +643,7 @@ class CmdCmdFuncTest(DeveloperCommand):
             if not defer_successful:
                 raise AssertionError("Defer switch set, was not able to defer this command.")
                 return
-        if hasattr(self, func_name): # find this function in the command module
+        if hasattr(self, func_name):  # find this function in the command module
             func_inst = getattr(self, func_name)
             arguments = []
             for argument in self.rhslist:
