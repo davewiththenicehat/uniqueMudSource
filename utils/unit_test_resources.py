@@ -16,6 +16,7 @@ from typeclasses.objects import Object
 from typeclasses.scripts import Script
 from typeclasses.equipment.wieldable import OneHandedWeapon
 from typeclasses.equipment import clothing
+from commands import developer_cmds
 
 # set up signal here since we are not starting the server
 _RE = re.compile(r"^\+|-+\+|\+-+|--+|\|(?:\s|$)", re.MULTILINE)
@@ -333,3 +334,63 @@ class UniqueMudCmdTest(UniqueMudTest):
         for char, char_msg in receivers_msg_methods:
             char.msg = char_msg
         return returned_msg
+
+    def loop_tests(self, cmds=None):
+        """
+            Loop through a premade dictionary running unit test on data within.
+
+            Arguments:
+                cmds=dict(), a dictionary of data to test.
+                    Keys:
+                        'arg': command arguments to pass to call_multi_receivers
+                        'receivers': receivers dictionary to pass to call_multi_receivers
+                        'post_reg_tests': a tuple of strings to run regex tests on.
+                            These are ran on the returned string from call_multi_receivers
+
+            Example:
+                Take from commands.test.TestCommands.test_unarmed
+                punch_rc = {self.char1: "You will be busy for 3 seconds.|Facing Char2 Char pulls theirs hand back preparing an attack.",
+                           self.char2: "Facing Char2 Char pulls theirs hand back preparing an attack.",
+                           self.obj1: "Facing Char2 Char pulls theirs hand back preparing an attack.|Char punches at Char2 with their fist and connects. Hitting Char2's "}
+                punch_post = ("punch \d+ VS evade \d+: You punch at Char2 with your fist and connect\. Hitting Char2's ",
+                             "Dealing \d+ damage\.|You are no longer busy\.",
+                             # defenders messages
+                             "evade \d+ VS punch \d+: Char punches at you with their fist and connects. Hitting your ",
+                             "You take \d+ damage\.",
+                             # location messages
+                             "Hitting Char2's \w+\s*\w*\.")
+                punch_cmd = {
+                            'arg': f"= punch Char2 unit_test_succ, complete_cmd_early",
+                            'receivers': punch_rc,
+                            'post_reg_tests': punch_post
+                           }
+                # test a punch that misses
+                punch_miss_rc = {self.char1: "You will be busy for 3 seconds.|Facing Char2 Char pulls theirs hand back preparing an attack.",
+                           self.char2: "Facing Char2 Char pulls theirs hand back preparing an attack.",
+                           self.obj1: "Facing Char2 Char pulls theirs hand back preparing an attack.|Char punches at Char2 with their fist and misses."}
+                punch_miss_post = ("punch \d+ VS evade \d+: You punch at Char2 with your fist but miss.",
+                             "Dealing \d+ damage\.|You are no longer busy\.",
+                             # defenders messages
+                             "evade \d+ VS punch \d+: Char punches at you with their fist but you successfully evade the punch\.")
+                punch_missed_cmd = {
+                            'arg': f"= punch Char2 unit_test_fail, complete_cmd_early",
+                            'receivers': punch_miss_rc,
+                            'post_reg_tests': punch_miss_post
+                           }
+               # run the test
+               self.loop_tests((punch_cmd, punch_missed_cmd))
+
+           Raises:
+               AssertionError, if a unit test failed.
+        """
+        command = developer_cmds.CmdMultiCmd
+        for cmd in cmds:
+            cmd_result = self.call_multi_receivers(command(), cmd['arg'], cmd['receivers'])
+            for post_test in cmd['post_reg_tests']:
+                try:
+                    self.assertRegex(cmd_result, post_test)
+                # clean up the asserion message
+                except AssertionError:
+                    msg = f"\nNo regex match for pattern:\n{post_test}\nIn " \
+                          f"string: \n{cmd_result}"
+                    raise AssertionError(msg)

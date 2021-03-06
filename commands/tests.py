@@ -3,7 +3,6 @@ from evennia import create_object
 from typeclasses.objects import Object
 from typeclasses.equipment import clothing
 from commands import standard_cmds, developer_cmds
-from typeclasses.equipment.wieldable import OneHandedWeapon
 from utils.unit_test_resources import UniqueMudCmdTest
 from world.rules.stats import STATS
 
@@ -1300,28 +1299,78 @@ class TestCommands(UniqueMudCmdTest):
         cmd_result = self.call(command(), arg)
         self.assertRegex(cmd_result, wnt_msg)
 
+    def test_unarmed(self):
+        """
+        test the unarmed command set.
+        """
+        # tests for the kick command
+        kick_rc = {self.char1: "You will be busy for 5 seconds.|Facing Char2 Char lifts theirs knee up preparing an attack.",
+                   self.char2: "Facing Char2 Char lifts theirs knee up preparing an attack.",
+                   self.obj1: "Facing Char2 Char lifts theirs knee up preparing an attack.|Char kicks at Char2 with their foot and connects. Hitting Char2's "}
+        kick_post = ("kick \d+ VS evade \d+: You kick at Char2 with your foot and connect\. Hitting Char2's",
+                     "Dealing \d+ damage\.|You are no longer busy\.",
+                     # defenders messages
+                     "You may want to dodge\.",
+                     "evade \d+ VS kick \d+: Char kicks at you with their foot and connects. Hitting your",
+                     "You take \d+ damage\.",
+                     # location messages
+                     "Hitting Char2's \w+\s*\w*\.")
+        kick_cmd = {
+                    'arg': f"= kick Char2 unit_test_succ, complete_cmd_early",
+                    'receivers': kick_rc,
+                    'post_reg_tests': kick_post
+                   }
+        # test a missed kick
+        kick_miss_rc = {self.char1: "You will be busy for 5 seconds.|Facing Char2 Char lifts theirs knee up preparing an attack.",
+                   self.char2: "Facing Char2 Char lifts theirs knee up preparing an attack.",
+                   self.obj1: "Facing Char2 Char lifts theirs knee up preparing an attack.|Char kicks at Char2 with their foot and misses."}
+        kick_miss_post = ("kick \d+ VS evade \d+: You kick at Char2 with your foot but miss\.",
+                     # defenders messages
+                     "You may want to dodge\.",
+                     "evade \d+ VS kick \d+: Char kicks at you with their foot but you successfully evade the kick\.")
+        kick_missed_cmd = {
+                    'arg': f"= kick Char2 unit_test_fail, complete_cmd_early",
+                    'receivers': kick_miss_rc,
+                    'post_reg_tests': kick_miss_post
+                   }
+
+        # tests for the punch command
+        punch_rc = {self.char1: "You will be busy for 3 seconds.|Facing Char2 Char pulls theirs hand back preparing an attack.",
+                   self.char2: "Facing Char2 Char pulls theirs hand back preparing an attack.",
+                   self.obj1: "Facing Char2 Char pulls theirs hand back preparing an attack.|Char punches at Char2 with their fist and connects. Hitting Char2's "}
+        punch_post = ("punch \d+ VS evade \d+: You punch at Char2 with your fist and connect\. Hitting Char2's ",
+                     "Dealing \d+ damage\.|You are no longer busy\.",
+                     # defenders messages
+                     "evade \d+ VS punch \d+: Char punches at you with their fist and connects. Hitting your ",
+                     "You take \d+ damage\.",
+                     # location messages
+                     "Hitting Char2's \w+\s*\w*\.")
+        punch_cmd = {
+                    'arg': f"= punch Char2 unit_test_succ, complete_cmd_early",
+                    'receivers': punch_rc,
+                    'post_reg_tests': punch_post
+                   }
+        # test a punch that misses
+        punch_miss_rc = {self.char1: "You will be busy for 3 seconds.|Facing Char2 Char pulls theirs hand back preparing an attack.",
+                   self.char2: "Facing Char2 Char pulls theirs hand back preparing an attack.",
+                   self.obj1: "Facing Char2 Char pulls theirs hand back preparing an attack.|Char punches at Char2 with their fist and misses."}
+        punch_miss_post = ("punch \d+ VS evade \d+: You punch at Char2 with your fist but miss.",
+                     "Dealing \d+ damage\.|You are no longer busy\.",
+                     # defenders messages
+                     "evade \d+ VS punch \d+: Char punches at you with their fist but you successfully evade the punch\.")
+        punch_missed_cmd = {
+                    'arg': f"= punch Char2 unit_test_fail, complete_cmd_early",
+                    'receivers': punch_miss_rc,
+                    'post_reg_tests': punch_miss_post
+                   }
+
+        # run the tests
+        self.loop_tests((kick_cmd, kick_missed_cmd, punch_cmd, punch_missed_cmd))
+
+        # make certain commands have been taking a cost.
+        self.assertTrue(self.char1.END < 100)
+
     def test_cmds(self):
-    # test punch, kick and dodge
-        # test punch
-        command = developer_cmds.CmdMultiCmd
-        arg = "= punch Char2, complete_cmd_early"
-        wnt_msg = 'You will be busy for \\d+ seconds.\nFacing Char2 Char pulls theirs hand back preparing an attack.\npunch \\d+ VS evade \\d+: You punch at Char2.*'
-        cmd_result = self.call(command(), arg)
-        self.assertRegex(cmd_result, wnt_msg)
-
-        # test kick
-        command = developer_cmds.CmdMultiCmd
-        arg = "= kick Char2, complete_cmd_early"
-        wnt_msg = 'You will be busy for \\d+ seconds.\nFacing Char2 Char lifts theirs knee up preparing an attack.\nkick \\d+ VS evade \\d+: You kick at Char2'
-        cmd_result = self.call(command(), arg)
-        self.assertRegex(cmd_result, wnt_msg)
-
-        # test dodge
-        command = developer_cmds.CmdMultiCmd
-        arg = "= dodge, control_other Char2=punch Char, complete_cmd_early Char2"
-        wnt_msg = r"You will be busy for \d+ seconds.\nYou begin to sway warily.\nFacing Char Char2 pulls theirs hand back preparing an attack.\nYou are no longer busy.\nYou try to dodge the incoming attack.\nevade \d+ VS punch \d+: Char2 punches at you with their fist "
-        cmd_result = self.call(command(), arg)
-        self.assertRegex(cmd_result, wnt_msg)
 
         # test method get_body_part
         command = developer_cmds.CmdCmdFuncTest
@@ -1335,6 +1384,3 @@ class TestCommands(UniqueMudCmdTest):
         wnt_msg = r"^get_body_part returned: False"
         cmd_result = self.call(command(), arg)
         self.assertRegex(cmd_result, wnt_msg)
-
-        # make certain commands have been taking a cost.
-        self.assertTrue(self.char1.END < 100)

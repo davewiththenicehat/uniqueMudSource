@@ -789,18 +789,27 @@ class Command(default_cmds.MuxCommand):
     def combat_action(self, action_mod=None, caller_msg=None, target_msg=None, room_msg=None, log=None):
         """
         A command method intended to be a used to easily facilitate basic combat actions.
-        This is indeded for basic combat actions.
+        This is intended for basic combat actions.
         Complex combat actions, or ones with intricate descriptions need to be custom made.
         combat_action can be very useful as an outline for more complex actions
 
         Arguments
             action_mod=None, an int to add to the caller's action roll.
+            caller_msg=None, Replaced message sent to caller.
+                Replaces: You {self.key} at {target.usdesc}
+                if self.weapon_desc: with your {weapon_desc}
+            target_msg=None, Replaced message sent to action's target.
+                Replaces: {caller.usdesc} {cmd_desc} at you
+                if self.weapon_desc: with {caller.get_pronoun('|p')} {weapon_desc}
+            room_msg=None, Replaced message sent to the caller's location.
+                Replaces: {caller.usdesc} {cmd_desc} at {target.usdesc}
+                if self.weapon_desc: with {caller.get_pronoun('|p')} {weapon_desc}
             log, if this method and methods and functions used within should log messages
 
         Usage:
             Below is an example taken from commands.combat.unarmed.CmdPunch
                 def deferred_action(self):
-                    action_mod = self.unarmed_str_mod  # add half of the caller's str modifier to the attack
+                    action_mod = self.unarmed_str_mod  # add unarmed STR mod
                     return self.combat_action(action_mod)
 
         Notes:
@@ -817,8 +826,15 @@ class Command(default_cmds.MuxCommand):
 
             combat_action intentionally does not accept a damage modifier
             Damage should be modified with Command.dmg_max
-            Keeping on the idea of uncertain outcomes that the player is more likely to succeed at.
+                Keeping on the idea of uncertain outcomes that the player is
+                more likely to succeed at.
 
+        Unit Test:
+            If called by a character attached to a developer account. Arguments
+            'unit_test_succ' and 'unit_test_fail' can be added anywhere in the
+            commands arguments.
+                'unit_test_succ': combat_action will always succeed.
+                'unit_test_fail': combat_action will always fail.
 
         Returns:
             True, if the action completed successfully.
@@ -827,14 +843,14 @@ class Command(default_cmds.MuxCommand):
                 Example: self.target_out_of_melee()
 
         todo:
-            add damage type messages
-            f" Hitting {target.usdesc}'s {part_hit}."
-            f" {dmg_type_desc} {target.usdesc}'s {part_hit}."
+            add damage type messages.
 
         """
         # stop the method if target is out of range
         if self.target_out_of_melee():
             return False
+
+        # reference data types
         caller = self.caller
         target = self.target
         cmd_desc = self.desc
@@ -842,10 +858,31 @@ class Command(default_cmds.MuxCommand):
         passed_caller_msg = caller_msg
         passed_target_msg = target_msg
         passed_room_msg = room_msg
-        result, action_result, evade_result = actions.targeted_action(caller, target, log)
+        result = None
+
+        # for unit tests add support for always hit or always miss
+        if hasattr(caller, 'account'):  # caller has an account
+            perm_str = ''
+            if hasattr(caller.account, 'permissions'):
+                perm_str = str(caller.account.permissions)
+            if 'developer' in perm_str:  # if the caller is a developer
+                if 'unit_test_succ' in self.args:  # attack always succeeds
+                    result = 95
+                    action_result = 100
+                    evade_result = 5
+                elif 'unit_test_fail' in self.args:  # attack always fails
+                    result = -95
+                    action_result = 5
+                    evade_result = 100
+
+        # roll the attack
+        if result is None:  # Not a dev account using unit_test arg
+            result, action_result, evade_result = actions.targeted_action(caller, target, log)
         if action_mod:  # if passed, add action mod to results
             result += action_mod
             action_result += action_mod
+
+        # create the attack messages
         caller_msg, target_msg = self.act_vs_msg(action_result, evade_result)
         # use passed messages if they were not provided, make messages
         if passed_caller_msg:  # if a custom caller message was passed
@@ -878,7 +915,7 @@ class Command(default_cmds.MuxCommand):
             if part_hit:  # if that target had parts to hit, add it to the action's messages
                 part_hit_name = part_hit.name.replace('_', ' ')  # change "side_name" to "side name"
                 caller_msg += f" Hitting {target.usdesc}'s {part_hit_name}."
-                target_msg += f" Hitting your {part_hit}."
+                target_msg += f" Hitting your {part_hit_name}."
                 room_msg += f" Hitting {target.usdesc}'s {part_hit_name}."
             caller_msg += f" Dealing {dmg_dealt} damage."
             target_msg += f" You take {dmg_dealt} damage."
@@ -888,6 +925,7 @@ class Command(default_cmds.MuxCommand):
             target_msg += f" but you successfully evade the {self.key}."
             room_msg += " and misses."
             self.successful(False)  # record the failure
+
         # display messages to caller, target and everyone else in the room
         caller.msg(caller_msg)
         # only show message to target if it is a Character
