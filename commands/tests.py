@@ -1412,6 +1412,13 @@ class TestCommands(UniqueMudCmdTest):
         """
         Test command method cost.
         self.cost() Command.cost()
+
+        Test for:
+            error catching
+            correct costs taken
+                all stats tested including willpower and endurance
+                all cost_levels tested
+                modifier stat is adjust to 100, 0 and -100 for each test
         """
 
         # test no deferred command when the cost deferred argument is True
@@ -1441,25 +1448,9 @@ class TestCommands(UniqueMudCmdTest):
         arg = "/r cost, char, cost_level:low, cost_stat:ZZZ = very_easy, ZZZ, True, False"
         wnt_msg = "Error message: rules.action.cost, character: 6, Failed to find an instance of stat ZZZ on character. Find acceptable stats in world.rules.stats.STATS."
         cmd_result = self.call(command(), arg, wnt_msg)
-        """
-        command = developer_cmds.CmdCmdFuncTest
-        stat_pre_cmd = self.char1.END
-        print(f"stat_pre_cmd: {stat_pre_cmd}")
-        arg = "/r/d cost, char, cost_level:low, cost_stat:END = low, END, True, True, True"
-        cmd_result = self.call(command(), arg)
-        wnt_msg = "You will be busy for 3 seconds.\ncost returned: 0\.0075\nYou are no longer busy\."
-        self.assertRegex(cmd_result, wnt_msg)
-        stat_post_cmd = self.char1.END.get()
-        print(f"self.char1.END: {stat_post_cmd}")
 
-        self.char1.END = 100
-        arg = "/r/d cost, char, cost_level:high, cost_stat:END = low, END, True, True, True"
-        cmd_result = self.call(command(), arg)
-        wnt_msg = "You will be busy for 3 seconds.\ncost returned: 0\.75\nYou are no longer busy\."
-        self.assertRegex(cmd_result, wnt_msg)
-        stat_post_cmd = self.char1.END.get()
-        print(f"self.char1.END: {stat_post_cmd}")
-        """
+        # test draining all stat types, all cost levels
+        # with modifier stat being 100, 0 than -100
         command = developer_cmds.CmdCmdFuncTest
         for stat in ('WILL', 'END') + STATS:
 
@@ -1481,27 +1472,28 @@ class TestCommands(UniqueMudCmdTest):
 
             # test all cost levels
             for cost_level in COST_LEVELS:
-
-                # Test where the modifier_stat is at 100
-                # make certain the stat and modifier stat are at 100
-                cost_stat_instance.set(100)
-                cost_mod_stat_inst.set(100)
-                # get the cost that should be removed.
-                stat_action_cost_mod = getattr(self.char1, f"{cost_mod_stat}_action_cost_mod", 0)
-                base_cost = COST_LEVELS[cost_level]
-                cost = base_cost - (base_cost * stat_action_cost_mod)
-                # Run command removing stat, where cost_mod_stat is 100
-                arg = f"/r/d cost, char, cost_level:{cost_level}, cost_stat:{stat} = {cost_level}, {stat}, True, True"
-                wnt_msg = f"You will be busy for 3 seconds.|cost returned: {cost}|You are no longer busy."
-                cmd_result = self.call(command(), arg, wnt_msg)
-                # verify correct ammount was taken
-                try:
-                    self.assertEqual(cost_stat_instance, 100 - cost)
-                except AssertionError:
-                    err_msg = "commands.test.TestCommands.test_cost, " \
-                              f"cost_stat_instance: {cost_stat_instance.name}" \
-                              f" is {cost_stat_instance} when it should be " \
-                              f"{100 - cost}."
-                    raise AssertionError(err_msg)
-                # set the stat back to default max
-                cost_stat_instance.set(100)
+                # test multiple cost modifier levels
+                for mod_stat_adj in (100, 0, -100):
+                    cost_stat_instance.set(100)
+                    cost_mod_stat_inst.set(mod_stat_adj)
+                    cost_stat_pre_run = cost_stat_instance.get()
+                    # get the cost that should be removed.
+                    stat_action_cost_mod = getattr(self.char1, f"{cost_mod_stat}_action_cost_mod", 0)
+                    base_cost = COST_LEVELS[cost_level]
+                    cost = base_cost - (base_cost * stat_action_cost_mod)
+                    # Run command removing stat, where cost_mod_stat is 100
+                    arg = f"/r/d cost, char, cost_level:{cost_level}, cost_stat:{stat} = {cost_level}, {stat}, True, True"
+                    wnt_msg = f"You will be busy for 3 seconds.|cost returned: {cost}|You are no longer busy."
+                    cmd_result = self.call(command(), arg, wnt_msg)
+                    # verify correct ammount was taken
+                    try:
+                        self.assertEqual(cost_stat_instance, cost_stat_pre_run - cost)
+                    except AssertionError: # make the assert message meaningful
+                        err_msg = "commands.test.TestCommands.test_cost, " \
+                                  f"cost_stat_instance: {cost_stat_instance.name}" \
+                                  f" is {cost_stat_instance.get()} when it " \
+                                  f"should be {cost_stat_pre_run - cost}."
+                        raise AssertionError(err_msg)
+                    # set the stat back to default max
+                    cost_stat_instance.set(100)
+                    cost_mod_stat_inst.set(100)
