@@ -744,8 +744,13 @@ class Element:
 
     def __isub__(self, other):
         "Element's __isub__ descriptor"
-        return self.sub(other, '__isub__')
-
+        self.verify()  # verify this object instance if it has not been already
+        other = self.verify_num_arg(other)
+        value = self.get()
+        if self.log:
+            log_info(f"Element {self.name} for db object {self.container.dbref}, __isub__ called. other is {other} value is {value}.")
+        self.value = value - other
+        return self.value
 
     def mul(self, other, descriptor='mul'):
         "Elements multiplication method"

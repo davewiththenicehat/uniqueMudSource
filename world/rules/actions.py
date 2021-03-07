@@ -293,12 +293,11 @@ def action_cost(char, cost_level='very easy', cost_stat='END', subt_cost=True,
         return 0
     # get the stat modifier for this action, IE char.CON_action_cost_mod
     cost_stat_instance = getattr(char, cost_stat, False)
-    cost_mod_stat = cost_stat  # if this stat has no , default to itself
     if cost_stat_instance:
         # each cost attribute (END, will) has a modifier_stat.
         # types are stats WIS, CON so on
         # base stats CON, WIS so on will use themselves as the cost modifider
-        cost_mod_stat = getattr(cost_stat_instance, 'modifier_stat', None)
+        cost_mod_stat = getattr(cost_stat_instance, 'modifier_stat', cost_stat)
     else:  # an instance of the stat is required
         err_msg = f"rules.action.cost, character: {char.id}, "
         if action_cmd:
@@ -344,5 +343,5 @@ def action_cost(char, cost_level='very easy', cost_stat='END', subt_cost=True,
                    f"{cost_stat_instance.name} | cost_mod_stat: {cost_mod_stat}"
         log_info(log_msg)
     if subt_cost:
-        cost_stat_instance.set(cost_stat_instance - cost)  # subtract the cost
+        cost_stat_instance -= cost
     return cost
