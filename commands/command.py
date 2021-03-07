@@ -949,25 +949,34 @@ class Command(default_cmds.MuxCommand):
             log_info("room message: "+room_msg)
         return True
 
-    def cost(self, cost_level='low', cost_stat='END', log=False):
+    def cost(self, cost_level='low', cost_stat='END', subt_cost=True,
+             deferred=True, log=False):
         """
-        action cost
+        Take a cost from self.caller.
 
         Arguments:
+            cost_stat='END', The stat this function will use for this action.
+                If deferred argument is True. This variable will be overriden
+                with the action commands cost_stat attribute
             cost_level='low', level this action should cost.
                 Accepts: 'low', 'mid', 'high' or an integer
                 if a number, the cost is that number.
-                This variable will be overriden with the action commands cost_level attribute
-            cost_stat='END', The stat this function will use for this action.
-                This variable will be overriden with the action commands cost_stat attribute
-
+                If Falsey this command has no cost and returns 0.
+                If deferred argument is True. This variable will be overriden
+                with the action commands cost_level attribute
+            subt_cost=True, if True, the cost will be subtracted from the
+                cost_stat.
+            deferred=True, get cost_level and cost_stat from char's deffered
+                command.
             log=False, if True log the variables used
 
         Returns:
             the numrical value that the stat will be drained.
+            False, the function found an error
+            None, the function failed on the python level
         """
         caller = self.caller
-        actions.action_cost(caller, cost_level, cost_stat)
+        return actions.action_cost(caller, cost_level, cost_stat, subt_cost, deferred)
 
     def target_bad(self, target):
         """

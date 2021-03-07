@@ -86,7 +86,7 @@ def get_part(target, part_name=False, log=None):
             part_name = part.name.replace('_', ' ')  # replace _ with spaces
 
     Unit Tests:
-        in commands.test.TestCommands.test_cmd_methods
+        in commands.test.TestCommands.test_cmd_methods and world.tests
 
     todo:
         option to target low middle or high

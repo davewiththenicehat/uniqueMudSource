@@ -1382,7 +1382,7 @@ class TestCommands(UniqueMudCmdTest):
         # make certain commands have been taking a cost.
         self.assertTrue(self.char1.END < 100)
 
-    def test_cmd_methods(self):
+    def test_get_body_part(self):
         """
             Test Command methods.
             Many methods are tested in other command unit tests.
@@ -1393,19 +1393,49 @@ class TestCommands(UniqueMudCmdTest):
         # self.get_body_part and body.get_part tested here
         command = developer_cmds.CmdCmdFuncTest
         arg = "/r get_body_part, char2"
-        cmd_result = self.call(command(), arg)
-        wnt_msg = r"get_body_part returned: broke: \d+ bleeding: \d+ missing: \d+ occupied: \d+ wielding: \d+"
-        self.assertRegex(wnt_msg, cmd_result)
+        wnt_msg = "get_body_part returned: broke: 0 bleeding: 0 missing: 0 occupied: 0 wielding: 0"
+        self.call(command(), arg, wnt_msg)
         # now test an object with no body parts
         command = developer_cmds.CmdCmdFuncTest
         arg = "/r get_body_part, obj"
-        wnt_msg = r"^get_body_part returned: False$"
-        cmd_result = self.call(command(), arg)
-        self.assertRegex(cmd_result, wnt_msg)
+        wnt_msg = "get_body_part returned: False"
+        self.call(command(), arg, wnt_msg)
         # test requesting a specific part
         command = developer_cmds.CmdCmdFuncTest
         for part_name in HUMANOID_BODY:
             arg = f"/r get_body_part, char2 = None, {part_name}, False"
+            wnt_msg = "get_body_part returned: broke: 0 bleeding: 0 missing: 0 occupied: 0 wielding: 0"
+            self.call(command(), arg, wnt_msg)
+
+    def test_cost(self):
+        # test method self.cost()
+        # test no deferred command when the cost deferred argument is True
+        command = developer_cmds.CmdCmdFuncTest
+        arg = "/r cost, self"
+        wnt_msg = "Error message: rules.action.cost, character: 6. Failed to find an active command."
+        self.call(command(), arg, wnt_msg)
+
+        command = developer_cmds.CmdCmdFuncTest
+        stat_pre_cmd = self.char1.END
+        print(f"stat_pre_cmd: {stat_pre_cmd}")
+        arg = "/r/d cost, char, cost_level:low, cost_stat:END = low, END, True, True, True"
+        cmd_result = self.call(command(), arg)
+        wnt_msg = "You will be busy for 3 seconds.\ncost returned: 0\.0075\nYou are no longer busy\."
+        self.assertRegex(cmd_result, wnt_msg)
+        stat_post_cmd = self.char1.END.get()
+        print(f"self.char1.END: {stat_post_cmd}")
+
+        self.char1.END = 100
+        arg = "/r/d cost, char, cost_level:high, cost_stat:END = low, END, True, True, True"
+        cmd_result = self.call(command(), arg)
+        wnt_msg = "You will be busy for 3 seconds.\ncost returned: 0\.75\nYou are no longer busy\."
+        self.assertRegex(cmd_result, wnt_msg)
+        stat_post_cmd = self.char1.END.get()
+        print(f"self.char1.END: {stat_post_cmd}")
+
+        command = developer_cmds.CmdCmdFuncTest
+        for stat in STATS:
+            arg = "/r/d cost, char, cost_level:high, cost_stat:END = low, END, True, True, True"
             cmd_result = self.call(command(), arg)
-            wnt_msg = r"get_body_part returned: broke: \d+ bleeding: \d+ missing: \d+ occupied: \d+ wielding: \d+"
-            self.assertRegex(wnt_msg, cmd_result)
+            wnt_msg = "You will be busy for 3 seconds.\ncost returned: 0\.75\nYou are no longer busy\."
+            self.assertRegex(cmd_result, wnt_msg)

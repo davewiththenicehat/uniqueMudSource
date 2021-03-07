@@ -13,6 +13,14 @@ LAYING_EVADE_PENALTY = 50
 EVADE_MIN = 5
 EVADE_MAX = 51
 
+COST_LEVELS = {
+    'very easy': .01,
+    'very_easy': .01,
+    'easy': .1,
+    'moderate': 1,
+    'hard': 3,
+    'daunting': 5
+}
 
 def targeted_action(caller, target, log=False):
     """
@@ -230,7 +238,8 @@ def action_roll(char, log=False, unit_test=False):
     return result
 
 
-def action_cost(char, cost_level='low', cost_stat='END', subt_cost=True, log=False):
+def action_cost(char, cost_level='low', cost_stat='END', subt_cost=True,
+                deferred=True, log=False):
     """
     action cost will calculate the cost of an action.
     remove that cost from the Character and return a numerical value of the cost.
@@ -238,41 +247,49 @@ def action_cost(char, cost_level='low', cost_stat='END', subt_cost=True, log=Fal
     Arguments:
         char, is the character commiting the action
         cost_stat='END', The stat this function will use for this action.
-            This variable will be overriden with the action commands cost_stat attribute
+            If deferred argument is True. This variable will be overriden with
+            the action commands cost_stat attribute
         cost_level='low', level this action should cost.
             Accepts: 'low', 'mid', 'high' or an integer
             if a number, the cost is that number.
-            This variable will be overriden with the action commands cost_level attribute
+            If Falsey this command has no cost and returns 0.
+            If deferred argument is True. This variable will be overriden with
+            the action commands cost_level attribute
         subt_cost=True, if True, the cost will be subtracted from the cost_stat.
+        deferred=True, get cost_level and cost_stat from char's deffered
+            command.
         log=False, if True log the variables used
 
     Returns:
         the numrical value that the stat will be drained.
+        False, the function found an error
+        None, the function failed on the python level
 
     todo:
         make a cache for the equation: https://docs.python.org/3/library/functools.html
 
     notes:
-        Unit test for this function is in commands.tests
+        Unit test for this function is in commands.tests.TestCommands.test_methods
 
     Equation:
         cost - (cost * stat_action_cost_mod)
     """
-    action_cmd = char.nattributes.get('deffered_command')  # get the command
-    if not action_cmd:  # if there is no active command stop the cost
-        error_message = f"rules.action.cost, character: {char.id}. " \
-                        f"Failed to find an active command."
-        um_utils.error_report(error_message, char)
-        return False
-    # if the command has a cost_stat, use it
-    stat = getattr(action_cmd, 'cost_stat', None)
-    if stat:
-        cost_stat = stat
-    # if the command has a cost_level, use it
-    level = getattr(action_cmd, 'cost_level', None)
-    if level:
-        cost_level = level
-    else:  # this command does not have a cost
+    # get a deferred command if any.
+    action_cmd = char.nattributes.get('deffered_command')
+    if deferred:  # this function call is for a deferred command on char
+        if action_cmd:
+            # if the command has a cost_stat, use it
+            stat = getattr(action_cmd, 'cost_stat', None)
+            if stat:
+                cost_stat = stat
+            # if the command has a cost_level, use it
+            cost_level = getattr(action_cmd, 'cost_level', None)
+        else:
+            err_msg = f"rules.action.cost, character: {char.id}. " \
+                      f"Failed to find an active command."
+            um_utils.error_report(err_msg, char)
+            return False
+    if not cost_level:  # this command does not have a cost
         return 0
     # get the stat modifier for this action, IE char.CON_action_cost_mod
     cost_stat_instance = getattr(char, cost_stat, False)
@@ -283,10 +300,11 @@ def action_cost(char, cost_level='low', cost_stat='END', subt_cost=True, log=Fal
         # base stats CON, WIS so on will use themselves as the cost modifider
         cost_mod_stat = getattr(cost_stat_instance, 'modifier_stat', None)
     else:  # an instance of the stat is required
-        error_message = f"rules.action.cost, character: {char.id}, action: " \
-                        f"{action_cmd.key}. Failed to find an instance of " \
-                        f"{cost_stat} on character."
-        um_utils.error_report(error_message, char)
+        err_msg = f"rules.action.cost, character: {char.id}, "
+        if action_cmd:
+            err_msg += f"action: {action_cmd.key}, "
+        err_msg += f"Failed to find an instance of {cost_stat} on character."
+        um_utils.error_report(err_msg, char)
         return False
     stat_action_cost_mod = getattr(char, f"{cost_mod_stat}_action_cost_mod", 0)
     # set the base cost for the cost
@@ -298,29 +316,37 @@ def action_cost(char, cost_level='low', cost_stat='END', subt_cost=True, log=Fal
         elif cost_level == 'high':
             base_cost = 1
         else:
-            error_message = f"rules.action.cost, character: {char.id} | action: " \
-                            f"{action_cmd.key} | cost_level argument must equal " \
-                            f"'low' 'mid' 'high' or a number."
-            um_utils.error_report(error_message, char)
+            err_msg = f"rules.action.cost, character: {char.id} | "
+            if action_cmd:
+                err_msg += f"action: {action_cmd.key} | "
+            err_msg += "cost_level argument must equal 'low' 'mid' 'high' or " \
+                       "a number."
+            um_utils.error_report(err_msg, char)
             return False
     # if the cost level is a number, use it as base cost
     elif isinstance(cost_level, (int, float)):
         char.msg("cost_level is a number")
         base_cost = cost_level
     else:
-        error_message = f"rules.action.cost, character: {char.id} | action: " \
-                        f"{action_cmd.key} | cost_level argument must equal " \
-                        "'low' 'mid' 'high' or a number."
-        um_utils.error_report(error_message, char)
+        err_msg = f"rules.action.cost, character: {char.id} | "
+        if action_cmd:
+            err_msg += f"action: {action_cmd.key} | "
+        err_msg += "cost_level argument must equal 'low' 'mid' 'high' or " \
+                   "a number."
+        um_utils.error_report(err_msg, char)
         return False
     # adjust the action cost by the stat action cost modifier
     cost = base_cost - (base_cost * stat_action_cost_mod)
+    log = True
     if log:
-        log_info(f"rules.action_cost, character: {char.id} | action: " \
-                 f"{action_cmd.key} | cost: {cost} | cost_stat: {cost_stat} | " \
-                 f"base_cost: {base_cost} | {cost_mod_stat}_action_cost_mod: " \
-                 f"{stat_action_cost_mod} | cost_stat_instance.name: " \
-                 f"{cost_stat_instance.name} | cost_mod_stat: {cost_mod_stat}")
+        log_msg = f"rules.action_cost, character: {char.id} | "
+        if action_cmd:
+            log_msg += f"action: {action_cmd.key} "
+        log_msg += f"| cost: {cost} | cost_stat: {cost_stat} | " \
+                   f"base_cost: {base_cost} | {cost_mod_stat}_action_cost_mod: " \
+                   f"{stat_action_cost_mod} | cost_stat_instance.name: " \
+                   f"{cost_stat_instance.name} | cost_mod_stat: {cost_mod_stat}"
+        log_info(log_msg)
     if subt_cost:
         cost_stat_instance.set(cost_stat_instance - cost)  # subtract the cost
     return cost
