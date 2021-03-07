@@ -107,11 +107,9 @@ class Command(default_cmds.MuxCommand):
         action_mod_stat = 'OBS'  # stat used to modify this command
             OBS  # observation, for physical actions. Attacks
         cost_stat='END'  # stat this command will use for the action's cost
-        cost_level='low' #  level this action should cost.
-            Acceptable levels: 'low', 'mid', 'high' or an integer
-            low, nearly free actions like walking
-            mid, is for easy but exerting actions like punch.
-            high, is for actions that require a lot of energy.
+        cost_level='very easy' #  level this action should cost.
+            Acceptable levels: 'very easy', 'easy', 'moderate', 'hard', 'daunting' or a number or an integer
+            dictionary for these values is in world.rules.actions.COST_LEVELS
             If a number is used for cost_level that number is used as the base
                 cost for the command.
         desc = None  # a present tense description for the action of this command.
@@ -220,7 +218,7 @@ class Command(default_cmds.MuxCommand):
         dmg_after_dr(dmg_dealt=None, body_part_name=None), Returns damage dealt after damage reduction.
         combat_action(action_mod=None, caller_msg=None, target_msg=None, room_msg=None, log=None),
             A command method intended to be a used to easily facilitate basic combat actions.
-        cost(cost_level='low', cost_stat='END'), Calculate and remove the cost of this Command
+        cost(cost_level='very easy', cost_stat='END'), Calculate and remove the cost of this Command
         target_bad(target=object), returns True if object passed is not targetable by this command
         target_search(target_name=str), Search for an instance of a target.
         split_target_name(target_name=str), accepts command target string.
@@ -267,7 +265,7 @@ class Command(default_cmds.MuxCommand):
         self.requires_wielding = None  # require a wielded item type for command to work.
         self.required_ranks = 0  # required ranks in the commands skill_name for this command to work.
         self.cost_stat = 'END'  # stat this command will use for the action's cost
-        self.cost_level = None  # level this action should cost. Acceptable levels: 'low', 'mid', 'high'
+        self.cost_level = None  # level this action should cost. Acceptable levels: 'very easy', 'easy', 'moderate' 'hard', 'daunting' or a number
         self.log = False  # set to true to info logging should be enabled. Error and warning messages are always enabled.
         self.learn_diff = 1  # How difficult the command is to learn.
         self.comp_diff = 2  # How difficult the command is to complete
@@ -949,7 +947,7 @@ class Command(default_cmds.MuxCommand):
             log_info("room message: "+room_msg)
         return True
 
-    def cost(self, cost_level='low', cost_stat='END', subt_cost=True,
+    def cost(self, cost_level='very easy', cost_stat='END', subt_cost=True,
              deferred=True, log=False):
         """
         Take a cost from self.caller.
@@ -958,8 +956,8 @@ class Command(default_cmds.MuxCommand):
             cost_stat='END', The stat this function will use for this action.
                 If deferred argument is True. This variable will be overriden
                 with the action commands cost_stat attribute
-            cost_level='low', level this action should cost.
-                Accepts: 'low', 'mid', 'high' or an integer
+            cost_level='very easy', level this action should cost.
+                Accepts: 'very easy', 'easy', 'moderate' 'hard', 'daunting' or a number or an integer
                 if a number, the cost is that number.
                 If Falsey this command has no cost and returns 0.
                 If deferred argument is True. This variable will be overriden

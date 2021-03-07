@@ -47,7 +47,7 @@ class UnarmedCommand(Command):
         self.target_required = True  # if True and the command has no target, Command.func will stop execution and message the player
         self.can_not_target_self = True  # if True this command will end with a message if the Character targets themself
         self.cmd_type = 'unarmed'  # Should be a string of the cmd type. IE: 'evasion' for an evasion cmd
-        self.cost_level = 'mid' #  level this action should cost. Acceptable levels: 'low', 'mid', 'high'
+        self.cost_level = 'easy' #  level this action should cost. Acceptable levels: 'very easy', 'easy', 'moderate' 'hard', 'daunting' or a number
         self.required_ranks = 1  # required ranks in the commands skill_name for this command to work.
 
     def at_pre_cmd(self):
@@ -138,7 +138,7 @@ class CmdKick(UnarmedCommand):
         super().at_init()
         self.defer_time = 5  # time is seconds for the command to wait before running action of command
         self.desc = "kicks"  # a present tense description for the action of this command. IE: "kicks"
-        self.cost_level = 'high' #  level this action should cost. Acceptable levels: 'low', 'mid', 'high'
+        self.cost_level = 'high' #  level this action should cost. Acceptable levels: 'very easy', 'easy', 'moderate' 'hard', 'daunting' or a number
 
     def start_message(self):
         """

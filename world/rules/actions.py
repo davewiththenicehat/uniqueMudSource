@@ -238,7 +238,7 @@ def action_roll(char, log=False, unit_test=False):
     return result
 
 
-def action_cost(char, cost_level='low', cost_stat='END', subt_cost=True,
+def action_cost(char, cost_level='very easy', cost_stat='END', subt_cost=True,
                 deferred=True, log=False):
     """
     action cost will calculate the cost of an action.
@@ -249,8 +249,8 @@ def action_cost(char, cost_level='low', cost_stat='END', subt_cost=True,
         cost_stat='END', The stat this function will use for this action.
             If deferred argument is True. This variable will be overriden with
             the action commands cost_stat attribute
-        cost_level='low', level this action should cost.
-            Accepts: 'low', 'mid', 'high' or an integer
+        cost_level='very easy', level this action should cost.
+            Accepts: 'very easy', 'easy', 'moderate' 'hard', 'daunting' or a number or an integer
             if a number, the cost is that number.
             If Falsey this command has no cost and returns 0.
             If deferred argument is True. This variable will be overriden with
@@ -303,24 +303,20 @@ def action_cost(char, cost_level='low', cost_stat='END', subt_cost=True,
         err_msg = f"rules.action.cost, character: {char.id}, "
         if action_cmd:
             err_msg += f"action: {action_cmd.key}, "
-        err_msg += f"Failed to find an instance of {cost_stat} on character."
+        err_msg += f"Failed to find an instance of stat {cost_stat} on " \
+                   "character. Find acceptable stats in world.rules.stats.STATS."
         um_utils.error_report(err_msg, char)
         return False
     stat_action_cost_mod = getattr(char, f"{cost_mod_stat}_action_cost_mod", 0)
     # set the base cost for the cost
     if isinstance(cost_level, str):
-        if cost_level == 'low':
-            base_cost = .01
-        elif cost_level == 'mid':
-            base_cost = .5
-        elif cost_level == 'high':
-            base_cost = 1
-        else:
+        base_cost = COST_LEVELS.get(cost_level, False)
+        if not base_cost:
             err_msg = f"rules.action.cost, character: {char.id} | "
             if action_cmd:
                 err_msg += f"action: {action_cmd.key} | "
-            err_msg += "cost_level argument must equal 'low' 'mid' 'high' or " \
-                       "a number."
+            err_msg += "cost_level argument must equal 'very easy', 'easy', " \
+                       "'moderate' 'hard', 'daunting' or a number."
             um_utils.error_report(err_msg, char)
             return False
     # if the cost level is a number, use it as base cost
@@ -331,8 +327,8 @@ def action_cost(char, cost_level='low', cost_stat='END', subt_cost=True,
         err_msg = f"rules.action.cost, character: {char.id} | "
         if action_cmd:
             err_msg += f"action: {action_cmd.key} | "
-        err_msg += "cost_level argument must equal 'low' 'mid' 'high' or " \
-                   "a number."
+        err_msg += "cost_level argument must equal 'very easy', 'easy', " \
+                   "'moderate' 'hard', 'daunting' or a number."
         um_utils.error_report(err_msg, char)
         return False
     # adjust the action cost by the stat action cost modifier

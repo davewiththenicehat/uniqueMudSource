@@ -43,7 +43,7 @@ class EvasionCommand(Command):
         shared among all instances of the Command.
         """
         self.cmd_type = 'evasion'  # Should be a string of the cmd type. IE: 'evasion' for an evasion cmd
-        self.cost_level = 'low' #  level this action should cost. Acceptable levels: 'low', 'mid', 'high'
+        self.cost_level = 'very easy' #  level this action should cost. Acceptable levels: 'very easy', 'easy', 'moderate' 'hard', 'daunting' or a number
         self.required_ranks = 1  # required ranks in the commands skill_name for this command to work.
 
     def at_pre_cmd(self):

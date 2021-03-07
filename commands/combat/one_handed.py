@@ -40,7 +40,7 @@ class OneHandedCommand(Command):
         self.can_not_target_self = True  # if True this command will end with a message if the Character targets themself
         self.cmd_type = 'one_handed'  # Should be a string of the cmd type. IE: 'evasion' for an evasion cmd
         self.requires_wielding = True  # require a wielded item type for command to work.
-        self.cost_level = 'mid' #  level this action should cost. Acceptable levels: 'low', 'mid', 'high'
+        self.cost_level = 'easy' #  level this action should cost. Acceptable levels: 'very easy', 'easy', 'moderate' 'hard', 'daunting' or a number
         self.required_ranks = 1  # required ranks in the commands skill_name for this command to work.
 
 
