@@ -161,8 +161,9 @@ class TestUtils(UniqueMudCmdTest):
         """
         test utils.element.Element
         """
+        char = self.char1
+
         # test setting Element
-        char = create_object(Character, key="Gendered", location=self.room1)
         self.assertEqual(char.hp, 100)
         self.assertNotEqual(char.hp, 99)
         self.assertIsInstance(char.hp, Element)
@@ -321,7 +322,7 @@ class TestUtils(UniqueMudCmdTest):
         self.assertEqual(test_message, "Test|n")
 
     def test_error_report(self):
-        char = create_object(Character, key="Gendered", location=self.room1)
+        char = self.char2
         # test error reporting utility
         report_msg = um_utils.error_report("test error")
         self.assertEqual(report_msg, "test error")
