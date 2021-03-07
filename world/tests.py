@@ -7,9 +7,9 @@ from commands import developer_cmds
 from world.rules import body
 from evennia import create_object
 from typeclasses.characters import Character
-from evennia.contrib import gendersub
 from utils.element import Element
 from utils import um_utils
+from utils.unit_test_resources import UniqueMudCmdTest
 
 class TestRules(CommandTest):
 
@@ -65,8 +65,6 @@ class TestRules(CommandTest):
         # make certain it returns false on fail
         fail_body_part = body.get_part(self.char1, 'no_part_name')
         self.assertFalse(fail_body_part)
-
-        # test Character skill ranks
 
         # test dodge
         command = developer_cmds.CmdMultiCmd
@@ -152,15 +150,17 @@ class TestRules(CommandTest):
         self.char1.skills.unarmed.punch = 0
 
 
-class TestUtils(CommandTest):
+class TestUtils(UniqueMudCmdTest):
     """
     Used to test the utilities
 
     Objects in EvenniaTest
         self.obj1 self.obj2 self.char1 self.char2 self.exit
     """
-    def test_utils(self):
-
+    def test_element(self):
+        """
+        test utils.element.Element
+        """
         # test setting Element
         char = create_object(Character, key="Gendered", location=self.room1)
         self.assertEqual(char.hp, 100)
@@ -301,6 +301,8 @@ class TestUtils(CommandTest):
         del char.hp
         self.assertFalse(char.attributes.has('hp_value'))
 
+    def test_highlighter(self):
+
         # test um_utils.highlighter
         # test highlighting
         test_message = um_utils.highlighter('test', 'r')
@@ -318,6 +320,8 @@ class TestUtils(CommandTest):
         test_message = um_utils.highlighter('test', up=True)
         self.assertEqual(test_message, "Test|n")
 
+    def test_error_report(self):
+        char = create_object(Character, key="Gendered", location=self.room1)
         # test error reporting utility
         report_msg = um_utils.error_report("test error")
         self.assertEqual(report_msg, "test error")
