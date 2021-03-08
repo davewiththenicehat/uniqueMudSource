@@ -4,7 +4,7 @@ from typeclasses.objects import Object
 from typeclasses.equipment import clothing
 from commands import standard_cmds, developer_cmds
 from utils.unit_test_resources import UniqueMudCmdTest
-from world.rules.stats import STATS
+from world.rules.stats import STATS, STAT_MAP_DICT
 from world.rules.body import HUMANOID_BODY
 from world.rules.actions import COST_LEVELS
 
@@ -848,7 +848,7 @@ class TestCommands(UniqueMudCmdTest):
             if stat != 'STR':
                 stat_inst = getattr(self.char1, stat)
                 if stat_inst:
-                    old_stat_value =stat_inst.get()
+                    old_stat_value = stat_inst.get()
                     stat_inst.set(50)
                     self.char1.cache_stat_modifiers()
                     arg = f"/r dmg_after_dr, char, cmd_type:unarmed, dmg_max:1, dmg_mod_stat:{stat} = None, True, chest"
@@ -1453,7 +1453,9 @@ class TestCommands(UniqueMudCmdTest):
         # test draining all stat types, all cost levels
         # with modifier stat being 100, 0 than -100
         command = developer_cmds.CmdCmdFuncTest
-        for stat in ('WILL', 'END') + STATS:
+        std_cost_stats = ('WILL', 'willpower', 'END', 'endurance')
+        stats_long_names = tuple(STAT_MAP_DICT.values())
+        for stat in std_cost_stats + STATS + stats_long_names:
 
             # get variables needed for tests
             cost_stat_instance = getattr(self.char1, stat, False)
