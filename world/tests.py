@@ -329,9 +329,7 @@ class TestUtils(UniqueMudCmdTest):
             self.assertEqual(st_ins + 10, 60)
             # test __add__
             self.assertEqual(10 + st_ins, 60)
-            # test __iadd__
-            # st_ins += 10
-            # self.assertEqual(st_ins, 60)
+            # verify attr is still an Element
             self.assertIsInstance(st_ins, Element)
 
             # test sub descriptors
@@ -340,9 +338,7 @@ class TestUtils(UniqueMudCmdTest):
             self.assertEqual(st_ins - 10, 40)
             # test __sub__
             self.assertEqual(10 - st_ins, 40)
-            # test __isub__
-            #st_ins -= 10
-            #self.assertEqual(st_ins, 40)
+            # verify attr is still an Element
             self.assertIsInstance(st_ins, Element)
 
     def test_highlighter(self):
