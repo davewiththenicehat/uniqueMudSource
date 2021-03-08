@@ -7,6 +7,7 @@ from utils.unit_test_resources import UniqueMudCmdTest
 from world.rules.stats import STATS, STAT_MAP_DICT
 from world.rules.body import HUMANOID_BODY
 from world.rules.actions import COST_LEVELS
+from utils.element import Element
 
 
 class TestCommands(UniqueMudCmdTest):
@@ -844,7 +845,8 @@ class TestCommands(UniqueMudCmdTest):
         self.call(command(), arg, wnt_msg)
         self.char1.STR.set(old_str)
         # test all other stats
-        for stat in STATS:
+        stats_long_names = tuple(STAT_MAP_DICT.values())
+        for stat in STATS + stats_long_names:
             if stat != 'STR':
                 stat_inst = getattr(self.char1, stat)
                 if stat_inst:
@@ -853,10 +855,17 @@ class TestCommands(UniqueMudCmdTest):
                     self.char1.cache_stat_modifiers()
                     arg = f"/r dmg_after_dr, char, cmd_type:unarmed, dmg_max:1, dmg_mod_stat:{stat} = None, True, chest"
                     wnt_msg = r"dmg_after_dr returned: 1"
-                    self.call(command(), arg, wnt_msg)
+                    try:
+                        self.call(command(), arg, wnt_msg)
+                    except AssertionError:
+                        err_msg = "commands.tests.CommandTest.test_dmg " \
+                                  f"stat: {stat}, dmg_after_dr returned " \
+                                  "incorrect value."
+                        raise AssertionError(err_msg)
                     stat_inst.set(old_stat_value)
                 else:
                     raise AssertionError(f"self.char1 has no stat {stat}.")
+                self.assertIsInstance(stat_inst, Element)
 
     def test_wield_unwield(self):
         """

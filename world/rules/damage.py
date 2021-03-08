@@ -44,6 +44,7 @@ Notes
 from random import randint
 from evennia.utils.logger import log_info, log_warn
 from utils.um_utils import error_report
+from world.rules.stats import STATS, STAT_MAP_DICT
 
 # a mapping of damage types and full names
 MAP_DICT = {
@@ -106,8 +107,13 @@ def roll(command, use_mod=True, log=False):
     # only get stat modifier if use_mod is True
     if use_mod:
         if hasattr(command, 'dmg_mod_stat'):  # if the command has a custom damage modifier stat use it instead
-            dmg_mod_stat = getattr(command, 'dmg_mod_stat')
-        dmg_mod_name = dmg_mod_stat+'_dmg_mod'
+            dmg_mod_stat = getattr(command, 'dmg_mod_stat', False)
+            # convert long stat names to short stat names.
+            if dmg_mod_stat not in STATS:
+                for sh_nm, ln_nm in STAT_MAP_DICT.items():
+                    if dmg_mod_stat == ln_nm:
+                        dmg_mod_stat = sh_nm
+            dmg_mod_name = dmg_mod_stat+'_dmg_mod'
         if hasattr(caller, dmg_mod_name):  # if the caller of the command has the stat damage modifier use it.
             dmg_mod = getattr(caller, dmg_mod_name)
     return randint(1, dmg_max) + dmg_mod
