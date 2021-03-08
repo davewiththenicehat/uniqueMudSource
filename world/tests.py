@@ -6,10 +6,11 @@ from typeclasses.objects import Object
 from commands import developer_cmds
 from world.rules import body
 from evennia import create_object
-from typeclasses.characters import Character
 from utils.element import Element
 from utils import um_utils
 from utils.unit_test_resources import UniqueMudCmdTest
+from world.rules.stats import STATS
+
 
 class TestRules(CommandTest):
 
@@ -301,6 +302,48 @@ class TestUtils(UniqueMudCmdTest):
         # test element deletion
         del char.hp
         self.assertFalse(char.attributes.has('hp_value'))
+
+        # run tests on an instance of a Element object
+        for stat in ("endurance", "strength"):
+
+            # get stat instance
+            st_ins = getattr(self.char1, stat, False)
+            if not st_ins:
+                err_msg = "world.rules.tests.TestUtils.test_element, failed " \
+                          f"to find self.char1.{stat}"
+                raise AssertionError(err_msg)
+
+            # test setting Element
+            self.assertEqual(st_ins, 100)
+            self.assertNotEqual(st_ins, 99)
+            self.assertIsInstance(st_ins, Element)
+
+            # set the instance
+            st_ins.set(10)
+            self.assertEqual(st_ins, 10)
+            self.assertIsInstance(st_ins, Element)
+
+            # test add descriptors
+            st_ins.set(50)
+            # test __radd__
+            self.assertEqual(st_ins + 10, 60)
+            # test __add__
+            self.assertEqual(10 + st_ins, 60)
+            # test __iadd__
+            # st_ins += 10
+            # self.assertEqual(st_ins, 60)
+            self.assertIsInstance(st_ins, Element)
+
+            # test sub descriptors
+            st_ins.set(50)
+            # test __rsub__
+            self.assertEqual(st_ins - 10, 40)
+            # test __sub__
+            self.assertEqual(10 - st_ins, 40)
+            # test __isub__
+            #st_ins -= 10
+            #self.assertEqual(st_ins, 40)
+            self.assertIsInstance(st_ins, Element)
 
     def test_highlighter(self):
 

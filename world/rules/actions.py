@@ -342,6 +342,6 @@ def action_cost(char, cost_level='very easy', cost_stat='END', subt_cost=True,
                    f"{stat_action_cost_mod} | cost_stat_instance.name: " \
                    f"{cost_stat_instance.name} | cost_mod_stat: {cost_mod_stat}"
         log_info(log_msg)
-    if subt_cost:
-        cost_stat_instance -= cost
+    if subt_cost:  # subtract the cost
+        cost_stat_instance.set(cost_stat_instance - cost)
     return cost

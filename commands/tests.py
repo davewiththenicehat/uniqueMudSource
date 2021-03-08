@@ -1420,6 +1420,7 @@ class TestCommands(UniqueMudCmdTest):
                 all cost_levels tested
                 modifier stat is adjust to 100, 0 and -100 for each test
         """
+        from utils.element import Element
 
         # test no deferred command when the cost deferred argument is True
         command = developer_cmds.CmdCmdFuncTest
@@ -1473,7 +1474,7 @@ class TestCommands(UniqueMudCmdTest):
             # test all cost levels
             for cost_level in COST_LEVELS:
                 # test multiple cost modifier levels
-                for mod_stat_adj in (100, 0, -100):
+                for mod_stat_adj in (100, 0, -95):
                     cost_stat_instance.set(100)
                     cost_mod_stat_inst.set(mod_stat_adj)
                     cost_stat_pre_run = cost_stat_instance.get()
@@ -1497,3 +1498,6 @@ class TestCommands(UniqueMudCmdTest):
                     # set the stat back to default max
                     cost_stat_instance.set(100)
                     cost_mod_stat_inst.set(100)
+                    # make certain cost stat and modifier stat are still Elements
+                    self.assertIsInstance(cost_stat_instance, Element)
+                    self.assertIsInstance(cost_mod_stat_inst, Element)

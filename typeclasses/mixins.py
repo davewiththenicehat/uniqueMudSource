@@ -227,7 +227,7 @@ class AllObjectsMixin:
 
     Attributes:
         These attributes automatically manage self.attributes.attr_type in the database.
-        
+
         targetable = False  # is the object targetable.
         container = False  # Can the object contain other objects
     """
