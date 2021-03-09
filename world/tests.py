@@ -180,7 +180,7 @@ class TestUtils(UniqueMudCmdTest):
 
         char.hp = 10
         self.assertEqual(char.hp - 5, 5)
-        self.assertEqual(5 - char.hp, 5)
+        self.assertEqual(5 - char.hp, -5)
         char.hp -= 5
         self.assertEqual(char.hp, 5)
 
@@ -192,27 +192,32 @@ class TestUtils(UniqueMudCmdTest):
 
         char.hp = 10
         self.assertEqual(char.hp / 2, 5)
-        self.assertEqual(2 / char.hp, 5)
+        self.assertEqual(2 / char.hp, 0.2)
         char.hp /= 2
         self.assertEqual(char.hp, 5)
 
         char.hp = 10
         self.assertEqual(char.hp ** 2, 100)
-        self.assertEqual(2 ** char.hp, 100)
-        # char.hp **= 2
-        # self.assertEqual(char.hp, 100)
+        self.assertEqual(2 ** char.hp, 1024.0)
+        char.hp = 3
+        char.hp **= 2
+        self.assertEqual(char.hp, 9)
 
         char.hp = 11
         self.assertEqual(char.hp // 2, 5)
-        self.assertEqual(2 // char.hp, 5)
+        char.hp = 2
+        self.assertEqual(11 // char.hp, 5)
+        char.hp = 11
         char.hp //= 2
         self.assertEqual(char.hp, 5)
 
         char.hp = 11
         self.assertEqual(char.hp % 2, 1)
-        self.assertEqual(2 % char.hp, 1)
-        char.hp %= 2
-        self.assertEqual(char.hp, 1)
+        char.hp = 12
+        self.assertEqual(5 % char.hp, 5)
+        char.hp = 17
+        char.hp %= 12
+        self.assertEqual(char.hp, 5)
 
         # make certain element can save as full float
         char.hp = 11
@@ -302,6 +307,8 @@ class TestUtils(UniqueMudCmdTest):
         # test element deletion
         del char.hp
         self.assertFalse(char.attributes.has('hp_value'))
+        # verify attr is still an Element
+        self.assertIsInstance(char.hp, Element)
 
         # run tests on an instance of a Element object
         for stat in ("endurance", "strength"):
@@ -316,15 +323,21 @@ class TestUtils(UniqueMudCmdTest):
             # test setting Element
             self.assertEqual(st_ins, 100)
             self.assertNotEqual(st_ins, 99)
+            # verify attr is still an Element
             self.assertIsInstance(st_ins, Element)
 
             # set the instance
             st_ins.set(10)
+            # verify change in database was recorded.
+            self.assertEqual(char.attributes.get(f'{st_ins.name}_value'), 10)
             self.assertEqual(st_ins, 10)
+            # verify attr is still an Element
             self.assertIsInstance(st_ins, Element)
 
             # test add descriptors
             st_ins.set(50)
+            # verify change in database was recorded.
+            self.assertEqual(char.attributes.get(f'{st_ins.name}_value'), 50)
             # test __radd__
             self.assertEqual(st_ins + 10, 60)
             # test __add__
@@ -334,12 +347,142 @@ class TestUtils(UniqueMudCmdTest):
 
             # test sub descriptors
             st_ins.set(50)
+            # verify change in database was recorded.
+            self.assertEqual(char.attributes.get(f'{st_ins.name}_value'), 50)
             # test __rsub__
             self.assertEqual(st_ins - 10, 40)
             # test __sub__
-            self.assertEqual(10 - st_ins, 40)
+            self.assertEqual(10 - st_ins, -40)
             # verify attr is still an Element
             self.assertIsInstance(st_ins, Element)
+
+            # test mul descriptors
+            st_ins.set(4)
+            # verify change in database was recorded.
+            self.assertEqual(char.attributes.get(f'{st_ins.name}_value'), 4)
+            # test __rmul__
+            self.assertEqual(st_ins * 10, 40)
+            # test __mul__
+            self.assertEqual(10 * st_ins, 40)
+            # verify attr is still an Element
+            self.assertIsInstance(st_ins, Element)
+
+            # test truediv descriptors
+            st_ins.set(2)
+            # verify change in database was recorded.
+            self.assertEqual(char.attributes.get(f'{st_ins.name}_value'), 2)
+            # test __truediv__
+            self.assertEqual(st_ins / 3, 0.6666666666666666)
+            # test __rtruediv__
+            self.assertEqual(3 / st_ins, 1.5)
+            # verify attr is still an Element
+            self.assertIsInstance(st_ins, Element)
+
+            # test floordiv descriptors
+            st_ins.set(11)
+            # verify change in database was recorded.
+            self.assertEqual(char.attributes.get(f'{st_ins.name}_value'), 11)
+            # test __floordiv__
+            self.assertEqual(st_ins // 2, 5)
+            # test __rfloordiv__
+            st_ins.set(2)
+            self.assertEqual(11 // st_ins, 5)
+            # verify attr is still an Element
+            self.assertIsInstance(st_ins, Element)
+
+            # test modulo division descriptors
+            st_ins.set(11)
+            # verify change in database was recorded.
+            self.assertEqual(char.attributes.get(f'{st_ins.name}_value'), 11)
+            # test __mod__
+            self.assertEqual(st_ins % 2, 1)
+            # test __rmod__
+            st_ins.set(2)
+            self.assertEqual(11 % st_ins, 1)
+            # verify attr is still an Element
+            self.assertIsInstance(st_ins, Element)
+
+            # test power descriptors
+            st_ins.set(2)
+            # verify change in database was recorded.
+            self.assertEqual(char.attributes.get(f'{st_ins.name}_value'), 2)
+            # test __pow__
+            self.assertEqual(st_ins ** 3, 8)
+            # test __rpow__
+            st_ins.set(3)
+            self.assertEqual(st_ins ** 2, 9)
+            # verify attr is still an Element
+            self.assertIsInstance(st_ins, Element)
+
+            # test standard operators
+            st_ins.set(33)
+            # verify change in database was recorded.
+            self.assertEqual(char.attributes.get(f'{st_ins.name}_value'), 33)
+            self.assertTrue(st_ins < 34)
+            self.assertFalse(st_ins < 33)
+            self.assertTrue(st_ins <= 34)
+            self.assertTrue(st_ins > 32)
+            self.assertFalse(st_ins > 33)
+            self.assertTrue(st_ins >= 32)
+            self.assertTrue(st_ins == 33)
+            self.assertTrue(st_ins != 34)
+
+            # test setting attributes
+            st_ins.set(100)
+            st_ins.set(33)
+            self.assertEqual(char.attributes.get(f'{st_ins.name}_value'), 33)
+            # test breakpoint
+            self.assertEqual(char.attributes.get(f'{st_ins.name}_breakpoint'), None)
+            st_ins.breakpoint = 10
+            self.assertEqual(char.attributes.get(f'{st_ins.name}_breakpoint'), 10)
+            st_ins.breakpoint = 0
+            self.assertEqual(char.attributes.get(f'{st_ins.name}_breakpoint'), 0)
+            # test min
+            self.assertFalse(char.attributes.has(f'{st_ins.name}_min'))
+            st_ins.min = -99
+            self.assertEqual(char.attributes.get(f'{st_ins.name}_min'), -99)
+            st_ins.min = -100
+            self.assertEqual(char.attributes.get(f'{st_ins.name}_min'), -100)
+            # test max
+            self.assertFalse(char.attributes.has(f'{st_ins.name}_max'))
+            st_ins.max = 101
+            self.assertEqual(char.attributes.get(f'{st_ins.name}_max'), 101)
+            st_ins.max = 100
+            self.assertEqual(char.attributes.get(f'{st_ins.name}_max'), 100)
+            # verify attr is still an Element
+            self.assertIsInstance(st_ins, Element)
+
+            # test element functions
+            st_ins.descending_breakpoint_func = br_func
+            st_ins.ascending_breakpoint_func = as_br_func
+            st_ins.set(-1)
+            self.assertTrue(char.descending_breakpoint_reached)
+            # reset it and do it again
+            char.descending_breakpoint_reached = False
+            st_ins.set(1)
+            self.assertTrue(char.ascending_breakpoint_reached)  # test ascending breakpoints
+            self.assertFalse(char.descending_breakpoint_reached)  # test descending breakpoints a second time.
+            st_ins.set(-1)
+            self.assertTrue(char.descending_breakpoint_reached)
+            # clean up temp variables
+            char.ascending_breakpoint_reached = None
+            char.descending_breakpoint_reached = None
+            # test min_func
+            st_ins.max_func = max_test_func
+            st_ins.set(st_ins.get() + 200)
+            self.assertTrue(char.max_reached)
+            # verify attr is still an Element
+            self.assertIsInstance(st_ins, Element)
+
+            # test delet
+            st_ins.delete()
+            self.assertFalse(char.attributes.has(f'{st_ins.name}_value'))
+            # verify attr is still an Element
+            self.assertIsInstance(st_ins, Element)
+
+            tmp = st_ins
+            st_ins = 3
+            st_ins = tmp
 
     def test_highlighter(self):
 

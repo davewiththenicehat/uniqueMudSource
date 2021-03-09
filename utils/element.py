@@ -100,8 +100,8 @@ class ListElement:
     Notes:
     Default values 0 will NOT record to the database.
     Do NOT access a ListElements database entry directory.
-    self.db_fields_dict is a dictionary of damage types and their default value
-        example: self.db_fields_dict = [(key),(default_value)]
+    self.db_fields_dict is a dictionary of Element attributes and their default value
+        example: self.db_fields_dict = {attr: (el_db_key, el_def_value)}
         default_value should be 0
     It is recommended store only, numbers, strings and booleans.
         Anything more complex may be difficult to work with in code.
@@ -408,10 +408,12 @@ class Element:
         +=, -=, *=, /=, //=, %=, **=
         ==, !=, <, <=, >, >=
     All bitwise support is not available as well as @
-    There are custom methods to use
-        Element.percent()  # returns the % the current value is from 0 to Element.max
-        Element.breakpoint_percent()  # returns the % the current value is from Element.breakpoint to Element.max
+
+    Methods:
+        percent()  # returns the % the current value is from 0 to Element.max
+        breakpoint_percent()  # returns the % the current value is from Element.breakpoint to Element.max
             # both return a float rounded to the 2 point
+        clear()  # set all Element attributes to default.
 
     Notes:
     Default values will NOT record to the database.
@@ -674,11 +676,15 @@ class Element:
         value = ((value - self.breakpoint) * 100) / (self.max - self.breakpoint)
         return round(value, 2)
 
-    def delete(self):
+    def clear(self):
         "delete the instance of the Element, including values in database."
         # intentionally delete database entries
         for el_key, el_def_value in ELEMENT_DB_FIELDS:
             delattr(self, el_key)
+
+    def delete(self):
+        "delete the instance of the Element, including values in database."
+        self.clear()
 
     def breakpoint_percentage(self):
         "returns the percent the element is from its breakpoint to its max number."
@@ -701,6 +707,17 @@ class Element:
         else:
             log_warn(f"Element {self.name} for db object {self.container.dbref}, self.__str__ received a non numerical type")
             return str(value)
+
+    def __delete__(self, instance):
+        """Element's __delete__ descriptor"""
+        self.clear()
+
+    #def __del__(self):
+    #    """
+    #        Elements __del__ descriptor
+    #       Called after instance is deleted
+    #    """
+    #    super().__del__()
 
     def add(self, other, descriptor='add'):
         "Elements addition method"
@@ -740,7 +757,14 @@ class Element:
 
     def __rsub__(self, other):
         "Element's __rsub__ descriptor"
-        return self.sub(other, '__rsub__')
+        #return self.sub(other, '__rsub__')
+        self.verify()  # verify this object instance if it has not been already
+        other = self.verify_num_arg(other)
+        value = self.get()
+        if self.log:
+            log_info(f"Element {self.name} for db object {self.container.dbref}, __rsub__ called other is {other} value is {value}.")
+        value = other - value
+        return value
 
     def __isub__(self, other):
         "Element's __isub__ descriptor"
@@ -783,8 +807,13 @@ class Element:
         return self.truediv(other, '__truediv__')
 
     def __rtruediv__(self, other):
-        "Element's __rtruediv__ descriptor"
-        return self.truediv(other, '__rtruediv__')
+        self.verify()  # verify this object instance if it has not been already
+        other = self.verify_num_arg(other)
+        value = self.get()
+        if self.log:
+            log_info(f"Element {self.name} for db object {self.container.dbref}, __rtruediv__ called other is {other} value is {value}.")
+        value = other / value
+        return value
 
     def __itruediv__(self, other):
         "Element's __itruediv__ descriptor"
@@ -806,7 +835,13 @@ class Element:
 
     def __rfloordiv__(self, other):
         "Element's __rfloordiv__ descriptor"
-        return self.floordiv(other, '__rfloordiv__')
+        self.verify()  # verify this object instance if it has not been already
+        other = self.verify_num_arg(other)
+        value = self.get()
+        if self.log:
+            log_info(f"Element {self.name} for db object {self.container.dbref}, __rfloordiv__ called other is {other} value is {value}.")
+        value = other // value
+        return value
 
     def __ifloordiv__(self, other):
         "Element's __ifloordiv__ descriptor"
@@ -828,7 +863,13 @@ class Element:
 
     def __rmod__(self, other):
         "Element's __rmod__ descriptor"
-        return self.mod(other, '__rmod__')
+        self.verify()  # verify this object instance if it has not been already
+        other = self.verify_num_arg(other)
+        value = self.get()
+        if self.log:
+            log_info(f"Element {self.name} for db object {self.container.dbref}, {descriptor} called other is {other} value is {value}.")
+        value = other % value
+        return value
 
     def __imod__(self, other):
         "Element's __imod__ descriptor"
@@ -850,7 +891,13 @@ class Element:
 
     def __rpow__(self, other):
         "Element's __rpow__ descriptor"
-        return self.pow(other, '__rpow__')
+        self.verify()  # verify this object instance if it has not been already
+        other = self.verify_num_arg(other)
+        value = self.get()
+        if self.log:
+            log_info(f"Element {self.name} for db object {self.container.dbref}, __rpow__ called other is {other} value is {value}.")
+        value = other ** value
+        return value
 
     def __ipow__(self, other):
         "Element's __ipow__ descriptor"
