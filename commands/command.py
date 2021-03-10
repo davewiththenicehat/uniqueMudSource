@@ -799,14 +799,17 @@ class Command(default_cmds.MuxCommand):
         Arguments
             action_mod=None, an int to add to the caller's action roll.
             caller_msg=None, Replaced message sent to caller.
-                Replaces: You {self.key} at {target.usdesc}
-                if self.weapon_desc: with your {weapon_desc}
+                Replaces:
+                    You {self.key} at {target.usdesc}
+                    if self.weapon_desc: with your {weapon_desc}
             target_msg=None, Replaced message sent to action's target.
-                Replaces: {caller.usdesc} {cmd_desc} at you
-                if self.weapon_desc: with {caller.get_pronoun('|p')} {weapon_desc}
+                Replaces:
+                    {caller.usdesc} {cmd_desc} at you
+                    if self.weapon_desc: with {caller.get_pronoun('|p')} {weapon_desc}
             room_msg=None, Replaced message sent to the caller's location.
-                Replaces: {caller.usdesc} {cmd_desc} at {target.usdesc}
-                if self.weapon_desc: with {caller.get_pronoun('|p')} {weapon_desc}
+                Replaces:
+                    {caller.usdesc} {cmd_desc} at {target.usdesc}
+                    if self.weapon_desc: with {caller.get_pronoun('|p')} {weapon_desc}
             log, if this method and methods and functions used within should log messages
 
         Usage:
@@ -864,6 +867,12 @@ class Command(default_cmds.MuxCommand):
         passed_target_msg = target_msg
         passed_room_msg = room_msg
         result = None
+
+        # remove the words "a" and "an" from the start of weapon_desc
+        if weapon_desc.startswith('a '):
+            weapon_desc = weapon_desc.replace('a ', '', 1)
+        elif weapon_desc.startswith('an '):
+            weapon_desc = weapon_desc.replace('a ', '', 1)
 
         # for unit tests add support for always hit or always miss
         if hasattr(caller, 'account'):  # caller has an account

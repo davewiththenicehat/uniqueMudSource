@@ -1402,11 +1402,11 @@ class TestCommands(UniqueMudCmdTest):
         # tests for the stab command
         stab_rc = {self.char1: "You will be busy for 3 seconds.|Facing Char2 Char raises a sword preparing an attack.",
                    self.char2: "Facing Char2 Char raises a sword preparing an attack.",
-                   self.obj1: "Facing Char2 Char raises a sword preparing an attack.|Char stabs at Char2 with their a sword and connects. Hitting Char2's "}
-        stab_post = ("stab \d+ VS evade \d+: You stab at Char2 with your a sword and connect\. Hitting Char2's",
+                   self.obj1: "Facing Char2 Char raises a sword preparing an attack.|Char stabs at Char2 with their sword and connects. Hitting Char2's "}
+        stab_post = ("stab \d+ VS evade \d+: You stab at Char2 with your sword and connect\. Hitting Char2's",
                      "Dealing \d+ damage\.|You are no longer busy\.",
                      # defenders messages
-                     "evade \d+ VS stab \d+: Char stabs at you with their a sword and connects. Hitting your",
+                     "evade \d+ VS stab \d+: Char stabs at you with their sword and connects. Hitting your",
                      "You take \d+ damage\.",
                      # location messages
                      "Hitting Char2's \w+\s*\w*\.")
@@ -1418,10 +1418,10 @@ class TestCommands(UniqueMudCmdTest):
         # test a missed stab
         stab_miss_rc = {self.char1: "You will be busy for 3 seconds.|Facing Char2 Char raises a sword preparing an attack.",
                    self.char2: "Facing Char2 Char raises a sword preparing an attack.",
-                   self.obj1: "Facing Char2 Char raises a sword preparing an attack.|Char stabs at Char2 with their a sword and misses."}
-        stab_miss_post = ("stab \d+ VS evade \d+: You stab at Char2 with your a sword but miss\.",
+                   self.obj1: "Facing Char2 Char raises a sword preparing an attack.|Char stabs at Char2 with their sword and misses."}
+        stab_miss_post = ("stab \d+ VS evade \d+: You stab at Char2 with your sword but miss\.",
                      # defenders messages
-                     "evade \d+ VS stab \d+: Char stabs at you with their a sword but you successfully evade the stab\.")
+                     "evade \d+ VS stab \d+: Char stabs at you with their sword but you successfully evade the stab\.")
         stab_missed_cmd = {
                     'arg': f"= stab Char2 unit_test_fail, complete_cmd_early",
                     'receivers': stab_miss_rc,
