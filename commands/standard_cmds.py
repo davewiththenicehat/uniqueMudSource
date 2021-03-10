@@ -924,12 +924,28 @@ class CmdSit(Command):
         """
         self.defer_time = 1  # time is seconds for the command to wait before running action of command
 
-    def at_pre_cmd(self):
+    def custom_req_met(self):
+        """
+        Verifies commands custom requirements are met.
+        If this method returns False the command will end.
+        This method must message the caller why the command failed.
+
+        self.target and self.targets will be available in this method.
+
+        This method is intended to be overwritten.
+
+        Automatically called at the end of self.at_pre_cmd.
+
+        Returns:
+            requirements_met=boolean
+            False: will stop the command
+            True: the command will continue
+        """
         caller = self.caller
         if caller.position == 'sitting':
             caller.msg("You are already sitting.")
-            return True
-        return super().at_pre_cmd()
+            return False
+        return True  # custom requirements met, allow command to run
 
     def start_message(self):
         """
@@ -966,12 +982,28 @@ class CmdStand(Command):
     locks = "cmd:all()"
     arg_regex = r"\s|$"
 
-    def at_pre_cmd(self):
+    def custom_req_met(self):
+        """
+        Verifies commands custom requirements are met.
+        If this method returns False the command will end.
+        This method must message the caller why the command failed.
+
+        self.target and self.targets will be available in this method.
+
+        This method is intended to be overwritten.
+
+        Automatically called at the end of self.at_pre_cmd.
+
+        Returns:
+            requirements_met=boolean
+            False: will stop the command
+            True: the command will continue
+        """
         caller = self.caller
         if caller.position == 'standing':
             caller.msg("You are already standing.")
-            return True
-        return super().at_pre_cmd()
+            return False
+        return True  # custom requirements met, allow command to run
 
     def start_message(self):
         """
@@ -1017,14 +1049,28 @@ class CmdLay(Command):
         """
         self.defer_time = 1  # time is seconds for the command to wait before running action of command
 
-    def at_pre_cmd(self):
+    def custom_req_met(self):
+        """
+        Verifies commands custom requirements are met.
+        If this method returns False the command will end.
+        This method must message the caller why the command failed.
+
+        self.target and self.targets will be available in this method.
+
+        This method is intended to be overwritten.
+
+        Automatically called at the end of self.at_pre_cmd.
+
+        Returns:
+            requirements_met=boolean
+            False: will stop the command
+            True: the command will continue
+        """
         caller = self.caller
-        # do not run command if dead or unconscious, or otherwise not ready
-        if super().at_pre_cmd():
-            return True
         if caller.position == 'laying':
             caller.msg("You are already laying.")
-            return True
+            return False
+        return True  # custom requirements met, allow command to run
 
     def start_message(self):
         """

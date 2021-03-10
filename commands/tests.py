@@ -1092,8 +1092,9 @@ class TestCommands(UniqueMudCmdTest):
         # test character already sitting
         command = developer_cmds.CmdMultiCmd
         arg = "= sit"
-        wnt_msg = "You are already sitting."
-        cmd_result = self.call(command(), arg, wnt_msg, caller=self.char1)
+        wnt_msg = "^You are already sitting\.$"
+        cmd_result = self.call(command(), arg)
+        self.assertRegex(cmd_result, wnt_msg)
         # stand up
         command = developer_cmds.CmdMultiCmd
         arg = "= stand, complete_cmd_early"
@@ -1113,8 +1114,9 @@ class TestCommands(UniqueMudCmdTest):
         # test character already standing
         command = developer_cmds.CmdMultiCmd
         arg = "= stand"
-        wnt_msg = "You are already standing."
-        cmd_result = self.call(command(), arg, wnt_msg, caller=self.char1)
+        wnt_msg = "^You are already standing\.$"
+        cmd_result = self.call(command(), arg)
+        self.assertRegex(cmd_result, wnt_msg)
         # lay down
         command = developer_cmds.CmdMultiCmd
         arg = "= lay, complete_cmd_early"
@@ -1134,8 +1136,9 @@ class TestCommands(UniqueMudCmdTest):
         # test character already laying
         command = developer_cmds.CmdMultiCmd
         arg = "= lay"
-        wnt_msg = "You are already laying."
-        cmd_result = self.call(command(), arg, wnt_msg, caller=self.char1)
+        wnt_msg = "^You are already laying\.$"
+        cmd_result = self.call(command(), arg)
+        self.assertRegex(cmd_result, wnt_msg)
         # a prone Character can not move.
         command = developer_cmds.CmdMultiCmd
         arg = "= out"
