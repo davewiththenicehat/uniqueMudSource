@@ -251,8 +251,8 @@ class Character(AllObjectsMixin, CharExAndObjMixin, ClothedCharacter, GenderChar
                 # create attributes to represent skill sets
                 setattr(self._skills, skill_name, ListElement(self._skills, skill))
                 # verify the newly created Element
-                part_inst = getattr(self._skills, skill_name)
-                part_inst.verify()
+                set_inst = getattr(self._skills, skill_name)
+                set_inst.verify()
         return self._skills
 
     # define objects's condition

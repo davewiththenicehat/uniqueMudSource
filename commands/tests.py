@@ -1395,6 +1395,56 @@ class TestCommands(UniqueMudCmdTest):
         # make certain commands have been taking a cost.
         self.assertTrue(self.char1.END < 100)
 
+    def test_one_handed(self):
+        """
+        test the unarmed command set.
+        """
+        # tests for the stab command
+        stab_rc = {self.char1: "You will be busy for 3 seconds.|Facing Char2 Char raises a sword preparing an attack.",
+                   self.char2: "Facing Char2 Char raises a sword preparing an attack.",
+                   self.obj1: "Facing Char2 Char raises a sword preparing an attack.|Char stabs at Char2 with their a sword and connects. Hitting Char2's "}
+        stab_post = ("stab \d+ VS evade \d+: You stab at Char2 with your a sword and connect\. Hitting Char2's",
+                     "Dealing \d+ damage\.|You are no longer busy\.",
+                     # defenders messages
+                     "evade \d+ VS stab \d+: Char stabs at you with their a sword and connects. Hitting your",
+                     "You take \d+ damage\.",
+                     # location messages
+                     "Hitting Char2's \w+\s*\w*\.")
+        stab_cmd = {
+                    'arg': f"= stab Char2 unit_test_succ, complete_cmd_early",
+                    'receivers': stab_rc,
+                    'post_reg_tests': stab_post
+                   }
+        # test a missed stab
+        stab_miss_rc = {self.char1: "You will be busy for 3 seconds.|Facing Char2 Char raises a sword preparing an attack.",
+                   self.char2: "Facing Char2 Char raises a sword preparing an attack.",
+                   self.obj1: "Facing Char2 Char raises a sword preparing an attack.|Char stabs at Char2 with their a sword and misses."}
+        stab_miss_post = ("stab \d+ VS evade \d+: You stab at Char2 with your a sword but miss\.",
+                     # defenders messages
+                     "evade \d+ VS stab \d+: Char stabs at you with their a sword but you successfully evade the stab\.")
+        stab_missed_cmd = {
+                    'arg': f"= stab Char2 unit_test_fail, complete_cmd_early",
+                    'receivers': stab_miss_rc,
+                    'post_reg_tests': stab_miss_post
+                   }
+
+        # give a rank in each move
+        for skill_name in self.char1.skills.one_handed.el_list:
+            setattr(self.char1.skills.one_handed, skill_name, 1)
+
+        # wield a sword for the command
+        command = developer_cmds.CmdMultiCmd
+        arg = "= get sword, complete_cmd_early, wield sword"
+        wnt_msg = "You wield a sword in your"
+        cmd_result = self.call(command(), arg)
+        self.assertRegex(cmd_result, wnt_msg)
+
+        # run the tests
+        self.loop_tests((stab_cmd, stab_missed_cmd))
+
+        # make certain commands have been taking a cost.
+        self.assertTrue(self.char1.END < 100)
+
     def test_get_body_part(self):
         """
             Test Command methods.
