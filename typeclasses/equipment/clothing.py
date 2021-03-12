@@ -81,6 +81,7 @@ from evennia.utils import evtable
 from typeclasses.objects import Object
 from commands.command import Command
 from world.rules.body import HUMANOID_BODY
+from utils.um_utils import highlighter
 
 # Options start here.
 # Maximum character length of 'wear style' strings, or None for unlimited.
@@ -467,6 +468,60 @@ class CmdWear(ClothingCommand):
 
     key = "wear"
 
+    def custom_req_met(self):
+        """
+        Verifies commands custom requirements are met.
+        If this method returns False the command will end.
+        This method must message the caller why the command failed.
+
+        self.target and self.targets will be available in this method.
+
+        This method is intended to be overwritten.
+
+        Automatically called at the end of self.at_pre_cmd.
+
+        Returns:
+            requirements_met=boolean
+            False: will stop the command
+            True: the command will continue
+        """
+        caller = self.caller
+        clothing = self.target
+        worn_clothes = get_worn_clothes(caller)
+
+        # Enforce overall clothing limit.
+        if CLOTHING_OVERALL_LIMIT and len(worn_clothes) >= CLOTHING_OVERALL_LIMIT:
+            caller.msg("You can't wear any more clothes.")
+            return False
+
+        # Apply individual clothing type limits.
+        if clothing.db.clothing_type and not clothing.db.worn:
+            type_count = single_type_count(worn_clothes, clothing.db.clothing_type)
+            if clothing.db.clothing_type in list(clothing.type_limit.keys()):
+                if type_count >= clothing.type_limit[clothing.db.clothing_type]:
+                    for worn_article in worn_clothes:
+                        if worn_article.db.clothing_type == clothing.db.clothing_type:
+                            worn_art_name = worn_article.usdesc
+                    remove_cmd = f"remove {worn_article.usdesc}"
+                    remove_sugg = highlighter(remove_cmd, click_cmd=remove_cmd)
+                    err_msg = f"You are wearing {worn_art_name} on your " \
+                              f"{clothing.db.clothing_type}. You will need to " \
+                              f"remove it first, try {remove_cmd}."
+                    caller.msg(err_msg)
+                    return False
+
+        # check if the player is already wearing the item
+        # if clothing.db.worn and len(self.arglist) == 1:
+        if clothing.db.worn:
+            caller.msg(f"You are already wearing {clothing.name}.")
+            return False
+
+        # If armor, check if the Character has the body type required for the armor.
+        if not (clothing.db.clothing_type in caller.body.parts or clothing.db.clothing_type in CLOTHING_TYPE_ORDER):
+            caller.msg(f"You do not have a {clothing.db.clothing_type} to equip {clothing.usdesc} to.")
+            return False
+        return True  # custom requirements met, allow command to run
+
     def start_message(self):
         """
         Display a message after a command has been successfully deffered.
@@ -484,34 +539,6 @@ class CmdWear(ClothingCommand):
         """The command completed, without receiving an attack."""
         caller = self.caller
         clothing = self.target
-
-        # is the object wearable?
-        if not clothing.is_typeclass(CLOTHING_OBJECT_CLASS, exact=False):
-            caller.msg(f'{clothing.usdesc} can not be worn.')
-            return
-
-        # Enforce overall clothing limit.
-        if CLOTHING_OVERALL_LIMIT and len(get_worn_clothes(caller)) >= CLOTHING_OVERALL_LIMIT:
-            caller.msg("You can't wear any more clothes.")
-            return
-
-        # Apply individual clothing type limits.
-        if clothing.db.clothing_type and not clothing.db.worn:
-            type_count = single_type_count(get_worn_clothes(caller), clothing.db.clothing_type)
-            if clothing.db.clothing_type in list(clothing.type_limit.keys()):
-                if type_count >= clothing.type_limit[clothing.db.clothing_type]:
-                    caller.msg(f"You can't wear any more clothes of the type 'clothing.db.clothing_type'.")
-                    return
-
-        # check if the player is already wearing the item
-        if clothing.db.worn and len(self.arglist) == 1:
-            caller.msg(f"You're already wearing {clothing.name}.")
-            return
-
-        # If armor, check if the Character has the body type required for the armor.
-        if not (clothing.db.clothing_type in caller.body.parts or clothing.db.clothing_type in CLOTHING_TYPE_ORDER):
-            caller.msg(f"You do not have a {clothing.db.clothing_type} to equip this to.")
-            return
 
         wearstyle = True  # removed support for wearstyle
         wear_successful = clothing.wear(caller, wearstyle)

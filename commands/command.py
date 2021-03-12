@@ -828,7 +828,10 @@ class Command(default_cmds.MuxCommand):
                     get a body part hit with Command.get_body_part()
                     get damage dealt with Command.dmg_after_dr(part_hit)
                     adjust target's hp if damage dealt was greater than 0
-                create a basic message to show caller, target and other in the room
+                create a basic message to show caller, target and other in the room.
+
+            The messages in this method automatically truncate weapon_desc by removing
+            "a " or "an " from the start of the weapon_desc string.
 
             combat_action intentionally does not accept a damage modifier
             Damage should be modified with Command.dmg_max
