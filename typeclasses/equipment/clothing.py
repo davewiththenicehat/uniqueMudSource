@@ -566,6 +566,40 @@ class CmdRemove(ClothingCommand):
 
     key = "remove"
 
+    def custom_req_met(self):
+        """
+        Verifies commands custom requirements are met.
+        If this method returns False the command will end.
+        This method must message the caller why the command failed.
+
+        self.target and self.targets will be available in this method.
+
+        This method is intended to be overwritten.
+
+        Automatically called at the end of self.at_pre_cmd.
+
+        Returns:
+            requirements_met=boolean
+            False: will stop the command
+            True: the command will continue
+        """
+        caller = self.caller
+        clothing = self.target
+
+        # is the character wearing the clothing
+        if not clothing.db.worn:
+            caller.msg(f"You are not wearing {clothing.usdesc}.")
+            return False
+        if clothing.db.covered_by:
+            remove_cmd = f"remove {clothing.db.covered_by.usdesc}"
+            remove_sugg = highlighter(remove_cmd, click_cmd=remove_cmd)
+            err_msg = f"You are wear {clothing.db.covered_by.usdesc} over " \
+                      f"{clothing.usdesc}. Try removing {clothing.db.covered_by.usdesc} " \
+                      f"first with {remove_sugg}."
+            caller.msg(err_msg)
+            return False
+        return True  # custom requirements met, allow command to run
+
     def start_message(self):
         """
         Display a message after a command has been successfully deffered.
@@ -583,15 +617,6 @@ class CmdRemove(ClothingCommand):
         """The command completed, without receiving an attack."""
         caller = self.caller
         clothing = self.target
-        if not clothing:
-            caller.msg("Thing to remove must be carried or worn.")
-            return
-        if not clothing.db.worn:
-            caller.msg("You're not wearing that.")
-            return
-        if clothing.db.covered_by:
-            caller.msg("You have to take off %s first." % clothing.db.covered_by.name)
-            return
         clothing.remove(caller)
 
 

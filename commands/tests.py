@@ -617,20 +617,23 @@ class TestCommands(UniqueMudCmdTest):
                 provides dr if item allows
             removing item reverses these changes
         """
-        # test clothing commands
+        # Create additional clothing to test with
         self.test_helmet.location = self.char1
         # give the helmet an armor rating
         self.test_helmet.dr.PRC = 2
         self.test_helmet.dr.ACD = 3
         self.assertEqual(self.test_helmet.attributes.get('dr_PRC'), 2)
         self.assertEqual(self.test_helmet.dr.PRC, 2)
-        # Test wear with no arguments.
-        command = developer_cmds.CmdMultiCmd
-        arg = "= wear"
-        wnt_msg = "What would you like to wear?|If you need help try help wear."
-        cmd_result = self.call(command(), arg, caller=self.char1)
-        self.assertRegex(cmd_result, wnt_msg)
-        # Test wearing an item
+        # Make a second helmet
+        self.test_helmet2 = create_object(clothing.HumanoidArmor, key="second helmet")
+        self.test_helmet2.db.clothing_type = "head"
+        self.test_helmet2.location = self.char1
+        # make an undershirt
+        test_undershirt = create_object(clothing.Clothing, key="test undershirt")
+        test_undershirt.db.clothing_type = "undershirt"
+        test_undershirt.location = self.char1
+
+        # Test wearing an item, test removing an item
         command = developer_cmds.CmdMultiCmd
         arg = "= get hat, complete_cmd_early"
         wnt_msg = "You pick up test hat"
@@ -696,10 +699,6 @@ class TestCommands(UniqueMudCmdTest):
         cmd_result = self.call(command(), arg, caller=self.char1)
         self.assertRegex(cmd_result, wnt_msg)
         # test clothing covering.
-        # Make a test shirt
-        test_undershirt = create_object(clothing.Clothing, key="test undershirt")
-        test_undershirt.db.clothing_type = "undershirt"
-        test_undershirt.location = self.char1
         # Test wearing the undershirt
         command = developer_cmds.CmdMultiCmd
         arg = "= wear undershirt, complete_cmd_early"
@@ -723,14 +722,19 @@ class TestCommands(UniqueMudCmdTest):
         self.assertEqual(self.char1.body.head.dr.PRC, 2)
         self.assertEqual(self.char1.body.head.dr.ACD, 3)
         self.assertEqual(self.char1.body.head.dr.BLG, 0)
+
+        # test wear command errors
+        # Test wear with no arguments.
+        command = developer_cmds.CmdMultiCmd
+        arg = "= wear"
+        wnt_msg = "What would you like to wear?|If you need help try help wear."
+        cmd_result = self.call(command(), arg, caller=self.char1)
+        self.assertRegex(cmd_result, wnt_msg)
         # test dropping a worn item
         arg = "= drop shirt"
         wnt_msg = 'You must remove test shirt to drop it.\r\nTry command remove test shirt to remove it.'
         self.call(command(), arg, wnt_msg, caller=self.char1)
         # test wearing a peace of clothing when the slot is occupied
-        self.test_helmet2 = create_object(clothing.HumanoidArmor, key="second helmet")
-        self.test_helmet2.db.clothing_type = "head"
-        self.test_helmet2.location = self.char1
         command = developer_cmds.CmdMultiCmd
         arg = "= wear second helmet"
         wnt_msg = "You are wearing test helmet on your head. You will need to remove it first, try remove test helmet."
@@ -748,6 +752,41 @@ class TestCommands(UniqueMudCmdTest):
         wnt_msg = "^You do not have a intentional\_fail to equip second helmet to\.$"
         cmd_result = self.call(command(), arg)
         self.assertRegex(cmd_result, wnt_msg)
+
+
+        # test remove command errors
+        command = developer_cmds.CmdMultiCmd
+        arg = "= remove"
+        wnt_msg = "What would you like to remove?|If you need help try help remove."
+        self.call(command(), arg, wnt_msg)
+        # remove can not target self
+        command = developer_cmds.CmdMultiCmd
+        arg = "= remove self"
+        wnt_msg = "You can not remove yourself."
+        self.call(command(), arg, wnt_msg)
+        # a Character can not wear an item that is not clothing
+        # test tring to wear an item that is not clothing, also tests target_inherits_from
+        command = developer_cmds.CmdMultiCmd
+        arg = "= get Obj, complete_cmd_early, remove Obj, drop Obj"
+        wnt_msg = "You can only remove clothing and armor\."
+        cmd_result = self.call(command(), arg)
+        self.assertRegex(cmd_result, wnt_msg)
+        self.assertEqual(self.obj1.location, self.room1)
+        # try to remove clothing that is not worn.
+        command = developer_cmds.CmdMultiCmd
+        arg = "= remove second helmet"
+        wnt_msg = "You are not wearing second helmet."
+        self.call(command(), arg, wnt_msg)
+        # test search caller only
+        command = developer_cmds.CmdMultiCmd
+        arg = "= remove Obj"
+        wnt_msg = "Try picking it up first with get Obj."
+        self.call(command(), arg, wnt_msg)
+        # test removing an object covered by another
+        command = developer_cmds.CmdMultiCmd
+        arg = "= remove hat"
+        wnt_msg = "You are wear test helmet over test hat. Try removing test helmet first with remove test helmet."
+        self.call(command(), arg, wnt_msg)
 
     def test_dmg(self):
         """
