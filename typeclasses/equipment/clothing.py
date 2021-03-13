@@ -288,8 +288,6 @@ class Clothing(Object):
         """
         # Set clothing as worn
         self.db.worn = wearstyle
-        # cache dr change for body parts, incase clothing is armor
-        wearer.cache_body_dr()
         # Auto-cover appropirate clothing types, as specified above
         to_cover = []
         if self.db.clothing_type and self.db.clothing_type in self.type_autocover:
@@ -304,13 +302,21 @@ class Clothing(Object):
         if quiet:
             return True
         # Echo a message to the room
-        message = f"{wearer.usdesc} puts on {self.usdesc}"
+        room_msg = f"{wearer.usdesc.capitalize()} wears {self.usdesc}"
+        wearer_msg = f"You wear {self.usdesc}"
         if wearstyle is not True:
-            message = "%s wears %s %s" % (wearer, self.name, wearstyle)
+            room_msg = f"{wearer.usdesc.capitalize()} wears {self.usdesc} {wearstyle}"
+            wearer_msg = f"You wear {self.usdesc} {wearstyle}"
         if to_cover:
-            message = message + ", covering %s" % list_to_string(to_cover)
-        wearer.location.msg_contents(message + ".")
-        return True
+            room_msg += f", covering {list_to_string(to_cover)}"
+            wearer_msg += f", covering {list_to_string(to_cover)}"
+        wearer.location.msg_contents(room_msg + ".", exclude=(wearer,))
+        wearer.msg(wearer_msg + ".")
+
+        # cache dr change for body parts, incase clothing is armor
+        wearer.cache_body_dr()
+
+        return True  # wear successful
 
     def remove(self, wearer, quiet=False):
         """
@@ -323,8 +329,6 @@ class Clothing(Object):
             quiet (bool): If false, does not message the room
         """
         self.db.worn = False
-        # cache dr change for body parts, incase clothing is armor
-        wearer.cache_body_dr()
 
         remove_message = "%s removes %s." % (wearer, self.name)
         uncovered_list = []
@@ -344,6 +348,9 @@ class Clothing(Object):
         # Echo a message to the room
         if not quiet:
             wearer.location.msg_contents(remove_message)
+
+        # cache dr change for body parts, incase clothing is armor
+        wearer.cache_body_dr()
 
     def at_get(self, getter):
         """

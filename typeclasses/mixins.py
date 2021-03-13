@@ -143,6 +143,13 @@ class CharExAndObjMixin:
 
         Unit test for this in commands.test
         """
+        # clear the previous cache
+        for part in self.body.parts:
+            part_inst = getattr(self.body, part, False)
+            if part_inst:
+                for dmg_type in DAMAGE_TYPES:
+                    if hasattr(part_inst.dr, dmg_type):
+                        delattr(part_inst.dr, dmg_type)
         for item in self.contents:
             if item.db.worn:
                 # if this item covers a body part
@@ -153,7 +160,7 @@ class CharExAndObjMixin:
                     setattr(body_part.dr, 'el_list', item.dr.el_list)
                     # for damage types in the dr element list
                     for dmg_type in item.dr.el_list:
-                        dmg_type_dr_rating = getattr(item.dr, dmg_type)
+                        dmg_type_dr_rating = getattr(item.dr, dmg_type, 0)
                         setattr(body_part.dr, dmg_type, dmg_type_dr_rating)
 
     def get_body_part(self, part_name=False, log=False):

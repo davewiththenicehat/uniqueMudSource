@@ -386,7 +386,8 @@ class UniqueMudCmdTest(UniqueMudTest):
         command = developer_cmds.CmdMultiCmd
         for cmd in cmds:
             cmd_result = self.call_multi_receivers(command(), cmd['arg'], cmd['receivers'])
-            for post_test in cmd['post_reg_tests']:
+            post_tests = cmd.get('post_reg_tests', tuple())
+            for post_test in post_tests:
                 try:
                     self.assertRegex(cmd_result, post_test)
                 # clean up the asserion message
