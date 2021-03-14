@@ -810,7 +810,89 @@ class TestCommands(UniqueMudCmdTest):
         self.assertEqual(test_undershirt.location, self.room1)
         self.assertEqual(self.test_shirt.location, self.room1)
 
-        # test wearing an article of clothing on each body part
+        # test wearing articles of clothing. NOT armor, armor is below
+        worn_list = list()
+        for type in clothing.CLOTHING_TYPE_ORDER:
+            setattr(self, type, create_object(clothing.HumanoidArmor, key=type))
+            item_inst = getattr(self, type, False)
+            if not item_inst:
+                err_msg = "commands.tests.TestCommands.test_wear_remove " \
+                          "wear remove test for all clothing types failed to " \
+                          f"find {type} in unit test."
+                raise AssertionError(err_msg)
+            # make certain Character does not have a body part of clothing type
+            try:
+                self.assertFalse(hasattr(self.char1.body, type))
+            except AssertionError:
+                err_msg = "commands.tests.TestCommands.test_wear_remove " \
+                          f"self.char1.body.{type} exists."
+                raise AssertionError(err_msg)
+            # set part attributes
+            item_inst.db.clothing_type = type
+            item_inst.location = self.char1
+            item_inst.usdesc = f"{type} item"
+            worn_list.append(item_inst)
+            # make the message that should be seen
+            if type == "fullbody":
+                covering = ", covering undershirt item"
+            elif type == "shoes":
+                covering = ", covering socks item"
+            else:
+                covering = ""
+            char1_msg = f"You will be busy for 1 second.|You begin to put on {item_inst.usdesc}.|You wear {item_inst.usdesc}{covering}.|You are no longer busy."
+            char2_msg = f"Char begins to put on {item_inst.usdesc}.|Char wears {item_inst.usdesc}{covering}."
+            # test wearing
+            wear_rc = {self.char1: char1_msg,
+                       self.char2: char2_msg}
+            wear_cmd = {
+                        'arg': f"= wear {type} item, complete_cmd_early",
+                        'receivers': wear_rc,
+                       }
+            # run the tests
+            self.loop_tests((wear_cmd,))
+        # verify Character appearance and clothing attributes
+        appear_self = self.char1.return_appearance(self.char1)
+        appear_other = self.char1.return_appearance(self.char2)
+        for worn_art in worn_list:
+            self.assertEqual(worn_art.location, self.char1)
+            self.assertTrue(worn_art.db.worn)
+            if worn_art.usdesc not in "undershirt item socks item":
+                # make certain item appears when the wearer is looked at.
+                try:
+                    self.assertTrue(worn_art.usdesc in appear_self)
+                except AssertionError:
+                    err_msg = f'"{worn_art.usdesc}" does not appear when a ' \
+                              "Character looks at themself. Their appearance " \
+                              f"is:\n{appear_self}."
+                    raise AssertionError(err_msg)
+                try:
+                    self.assertTrue(worn_art.usdesc in appear_other)
+                except AssertionError:
+                    err_msg = f'"{worn_art.usdesc}" does not appear when a ' \
+                              "Character looks at another. Their appearance " \
+                              f"is:\n{appear_self}."
+                    raise AssertionError(err_msg)
+            else:  # the item should be covered.
+                # covered item should not appear in return_appearance
+                try:
+                    self.assertFalse(worn_art.usdesc in appear_self)
+                except AssertionError:
+                    err_msg = f'"{worn_art.usdesc}" appears when a ' \
+                              "Character looks at themself. Their appearance " \
+                              f"is:\n{appear_self}."
+                    raise AssertionError(err_msg)
+                try:
+                    self.assertFalse(worn_art.usdesc in appear_other)
+                except AssertionError:
+                    err_msg = f'"{worn_art.usdesc}" appears when a ' \
+                              "Character looks at another. Their appearance " \
+                              f"is:\n{appear_self}."
+                    raise AssertionError(err_msg)
+            # remove the clothing
+            worn_art.remove(self.char1, True)
+            worn_art.location = self.room1
+
+        # test wearing an armor on each body part
         # body.part.dr, body.part
         worn_list = list()
         for part in HUMANOID_BODY:

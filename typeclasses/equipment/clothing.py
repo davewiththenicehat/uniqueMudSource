@@ -92,8 +92,10 @@ WEARSTYLE_MAXLENGTH = 50
 # can freely add, remove, or change clothing types to suit the needs of your game and use
 # the options below to affect their behavior.
 
-# The order in which clothing types appear on the description. Untyped clothing or clothing
-# with a type not given in this list goes last.
+# The order in which clothing types appear on the description. Untyped clothing
+# or clothing with a type not given in this list goes last.
+# Also used in misc loops. Place covered clothing type below types that get
+# covered.
 CLOTHING_TYPE_ORDER = [
     "hat",
     "jewelry",
@@ -111,10 +113,10 @@ CLOTHING_TYPE_ORDER = [
 CLOTHING_TYPE_LIMIT = {
     "hat": 1,
     "jewelry": 1,
+    "fullbody": 1,
     "top": 1,
     "undershirt": 1,
     "gloves": 1,
-    "fullbody": 1,
     "bottom": 1,
     "underpants": 1,
     "socks": 1,
@@ -123,7 +125,8 @@ CLOTHING_TYPE_LIMIT = {
 }
 
 # The maximum number of clothing items that can be worn, or None for unlimited.
-CLOTHING_OVERALL_LIMIT = 20
+# Support for this removed. Limit is supported per item.
+# CLOTHING_OVERALL_LIMIT = 20
 # What types of clothes will automatically cover what other types of clothes when worn.
 # Note that clothing only gets auto-covered if it's already worn when you put something
 # on that auto-covers it - for example, it's perfectly possible to have your underpants
@@ -503,10 +506,11 @@ class CmdWear(ClothingCommand):
         clothing = self.target
         worn_clothes = get_worn_clothes(caller)
 
+        # removed this, this is enforced per item type.
         # Enforce overall clothing limit.
-        if CLOTHING_OVERALL_LIMIT and len(worn_clothes) >= CLOTHING_OVERALL_LIMIT:
-            caller.msg("You can't wear any more clothes.")
-            return False
+        # if CLOTHING_OVERALL_LIMIT and len(worn_clothes) >= CLOTHING_OVERALL_LIMIT:
+        #    caller.msg("You can't wear any more clothes.")
+        #    return False
         # Apply individual clothing type limits.
         if clothing.db.clothing_type and not clothing.db.worn:
             type_count = single_type_count(worn_clothes, clothing.db.clothing_type)
