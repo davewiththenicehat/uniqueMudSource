@@ -1,6 +1,12 @@
 from typeclasses.characters import Character
 from world.rules.body import HUMANOID_BODY, HUMANOID_HANDS
 
+"""
+When adding a new race.
+
+If it's body differs from a base  type already tested
+Add it to the looped tests in commands.tests.CommandTests.test_wear_remove.
+"""
 
 class Humanoid(Character):
     """

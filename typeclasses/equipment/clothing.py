@@ -327,12 +327,16 @@ class Clothing(Object):
 
         Kwargs:
             quiet (bool): If false, does not message the room
+
+        Unit Tests:
+            commands.tests.TestCommands.test_remove_wear
         """
+        #remove the clothing
         self.db.worn = False
-
-        remove_message = "%s removes %s." % (wearer, self.name)
+        # message wearer and room
+        room_msg = f"{wearer.usdesc.capitalize()} removes {self.usdesc}"
+        wearer_msg = f"You remove {self.usdesc}"
         uncovered_list = []
-
         # Check to see if any other clothes are covered by this object.
         for thing in wearer.contents:
             # If anything is covered by
@@ -340,17 +344,17 @@ class Clothing(Object):
                 thing.db.covered_by = False
                 uncovered_list.append(thing.name)
         if len(uncovered_list) > 0:
-            remove_message = "%s removes %s, revealing %s." % (
-                wearer,
-                self.name,
-                list_to_string(uncovered_list),
-            )
+            uncov_msg = list_to_string(uncovered_list)
+            room_msg += f", revealing {uncov_msg}"
+            wearer_msg += f", revealing {uncov_msg}"
         # Echo a message to the room
         if not quiet:
-            wearer.location.msg_contents(remove_message)
-
+            wearer.location.msg_contents(room_msg + ".", exclude=(wearer,))
+            wearer.msg(wearer_msg + ".")
         # cache dr change for body parts, incase clothing is armor
         wearer.cache_body_dr()
+        # command run successful
+        return True
 
     def at_get(self, getter):
         """
@@ -438,7 +442,7 @@ class ClothedCharacter(DefaultCharacter):
         if worn_string_list:
             string += f"wearing {list_to_string(worn_string_list)}."
         else:
-            string += "|/|/%s is not wearing anything." % self
+            string += "not wearing anything."
         return string
 
 
@@ -503,7 +507,6 @@ class CmdWear(ClothingCommand):
         if CLOTHING_OVERALL_LIMIT and len(worn_clothes) >= CLOTHING_OVERALL_LIMIT:
             caller.msg("You can't wear any more clothes.")
             return False
-
         # Apply individual clothing type limits.
         if clothing.db.clothing_type and not clothing.db.worn:
             type_count = single_type_count(worn_clothes, clothing.db.clothing_type)
@@ -519,13 +522,11 @@ class CmdWear(ClothingCommand):
                               f"remove it first, try {remove_sugg}."
                     caller.msg(err_msg)
                     return False
-
         # check if the player is already wearing the item
         # if clothing.db.worn and len(self.arglist) == 1:
         if clothing.db.worn:
             caller.msg(f"You are already wearing {clothing.name}.")
             return False
-
         # If armor, check if the Character has the body type required for the armor.
         if not (clothing.db.clothing_type in caller.body.parts or clothing.db.clothing_type in CLOTHING_TYPE_ORDER):
             caller.msg(f"You do not have a {clothing.db.clothing_type} to equip {clothing.usdesc} to.")
@@ -595,7 +596,13 @@ class CmdRemove(ClothingCommand):
         """
         caller = self.caller
         clothing = self.target
-
+        # check if a hand is open to hold the removed clothing
+        open_hands = caller.open_hands()
+        # hands are full, stop the command
+        if not open_hands:
+            stop_message = f"Your hands are full."
+            caller.msg(stop_message)
+            return False
         # is the character wearing the clothing
         if not clothing.db.worn:
             caller.msg(f"You are not wearing {clothing.usdesc}.")
@@ -618,8 +625,8 @@ class CmdRemove(ClothingCommand):
         """
         caller = self.caller
         target = self.target
-        room_message = f'{caller.usdesc} begins to put on {target.usdesc}.'
-        caller_message = f'You begin to put on {target.usdesc}.'
+        room_message = f'{caller.usdesc} begins to remove {target.usdesc}.'
+        caller_message = f'You begin to remove {target.usdesc}.'
         caller.location.msg_contents(room_message, exclude=(caller))
         caller.msg(caller_message)
 
@@ -627,7 +634,22 @@ class CmdRemove(ClothingCommand):
         """The command completed, without receiving an attack."""
         caller = self.caller
         clothing = self.target
-        clothing.remove(caller)
+        success = clothing.remove(caller)
+        if success:
+            # get open hands
+            open_hands = caller.open_hands()
+            # hands are full, stop the command
+            # this repeat error checking is here itenetionally do not remove
+            if not open_hands:
+                caller.msg("Your hands are full.")
+                clothing.db.worn = True
+                return
+            else:
+                open_hand = open_hands[0]  # hand of the first open hand
+            # occupy the hand used to get the object
+            if open_hand:
+                # occupy with dbref to make it very easy to search for items in hand
+                open_hand.occupied = clothing.dbref
 
 
 class ClothedCharacterCmdSet(default_cmds.CharacterCmdSet):
