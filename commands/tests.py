@@ -796,8 +796,9 @@ class TestCommands(UniqueMudCmdTest):
         self.assertEqual(test_undershirt.location, self.room1)
         self.assertEqual(self.test_shirt.location, self.room1)
 
-        worn_list = list()
         # test wearing an article of clothing on each body part
+        # body.part.dr, body.part
+        worn_list = list()
         for part in HUMANOID_BODY:
             setattr(self, part, create_object(clothing.HumanoidArmor, key=part))
             armor_inst = getattr(self, part, False)
@@ -827,6 +828,7 @@ class TestCommands(UniqueMudCmdTest):
             armor_inst.db.clothing_type = part
             armor_inst.location = self.char1  #
             armor_inst.usdesc = f"{part} armor"
+            armor_inst.dr.PRC = 2
             worn_list.append(armor_inst)
 
             # test a punch that misses
@@ -837,15 +839,40 @@ class TestCommands(UniqueMudCmdTest):
                         'receivers': wear_rc,
                        }
 
-
-
             # run the tests
             self.loop_tests((wear_cmd,))
 
-        # make certain clothing attributes are correct
+        # make certain clothing and Character attributes are correct
+        appear_self = self.char1.return_appearance(self.char1)
+        appear_other = self.char1.return_appearance(self.char2)
         for worn_art in worn_list:
             self.assertEqual(worn_art.location, self.char1)
             self.assertTrue(worn_art.db.worn)
+            # Make certain the dr for the item was cached on wearer
+            part_type = worn_art.db.clothing_type
+            char_part = getattr(self.char1.body, part_type, False)
+            if char_part:
+                try:
+                    self.assertEqual(char_part.dr.PRC, 2)
+                except AssertionError:
+                    err_msg = f"self.char1.body.{part_type}.dr.PRC is " \
+                              f"{char_part.dr.PRC} when it should be 2."
+                    raise AssertionError(err_msg)
+            # make certain item appears when the wearer is looked at.
+            try:
+                self.assertTrue(worn_art.usdesc in appear_self)
+            except AssertionError:
+                err_msg = f'"{worn_art.usdesc}" does not appear when a ' \
+                          "Character looks at themself. Their appearance " \
+                          f"is:\n{appear_self}."
+                raise AssertionError(err_msg)
+            try:
+                self.assertTrue(worn_art.usdesc in appear_other)
+            except AssertionError:
+                err_msg = f'"{worn_art.usdesc}" does not appear when a ' \
+                          "Character looks at another. Their appearance " \
+                          f"is:\n{appear_self}."
+                raise AssertionError(err_msg)
 
 
     def test_dmg(self):

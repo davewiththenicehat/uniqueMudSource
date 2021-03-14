@@ -141,7 +141,8 @@ class CharExAndObjMixin:
         typeclasses.characters.at_init
         typeclasses.exits.at_init
 
-        Unit test for this in commands.test
+        Unit Test:
+            commands.test.TestCommands.test_wear_remove
         """
         # clear the previous cache
         for part in self.body.parts:
@@ -150,6 +151,7 @@ class CharExAndObjMixin:
                 for dmg_type in DAMAGE_TYPES:
                     if hasattr(part_inst.dr, dmg_type):
                         delattr(part_inst.dr, dmg_type)
+        # cache worn dr
         for item in self.contents:
             if item.db.worn:
                 # if this item covers a body part

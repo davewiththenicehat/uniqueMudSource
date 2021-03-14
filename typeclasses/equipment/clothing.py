@@ -412,6 +412,9 @@ class ClothedCharacter(DefaultCharacter):
             is set to True, only the name is appended, but if the value is a
             string, the string is appended to the end of the name, to allow
             characters to specify how clothing is worn.
+
+        Unit Tests:
+            commands.tests.TestCommands.test_wear_remove
         """
         if not looker:
             return ""
@@ -513,7 +516,7 @@ class CmdWear(ClothingCommand):
                     remove_sugg = highlighter(remove_cmd, click_cmd=remove_cmd)
                     err_msg = f"You are wearing {worn_art_name} on your " \
                               f"{clothing.db.clothing_type}. You will need to " \
-                              f"remove it first, try {remove_cmd}."
+                              f"remove it first, try {remove_sugg}."
                     caller.msg(err_msg)
                     return False
 
