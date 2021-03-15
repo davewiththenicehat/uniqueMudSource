@@ -77,7 +77,7 @@ class CmdStab(OneHandedCommand):
         message = f"Facing {self.target.usdesc} {self.caller.usdesc} raises " \
                   f"{self.weapon_desc} preparing an attack."
         self.caller.location.msg_contents(message)
-        self.desc = "stabs"  # a present tense description for the action of this command. IE: "kicks"
+        self.pres_tense_desc = "stabs"  # a present tense description for the action of this command. IE: "kicks"
 
     def deferred_action(self):
         """Causes the action of the stab command."""

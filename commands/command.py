@@ -197,8 +197,7 @@ class Command(default_cmds.MuxCommand):
         comp_diff = 2  # How difficult the command is to complete
             1: 'very easy', 2: 'easy', 3: 'moderate', 4: 'hard', 5: 'daunting'
             difficulty rules in world.rules.skills
-        skill_name = self.key  # the skill name this command uses of rank modification
-            This is essential and is used during unit testing
+        skill_name = self.key  # the skill name this command uses for rank modification
 
     Methods:
         All methods are fully documented in their docstrings.
@@ -258,7 +257,7 @@ class Command(default_cmds.MuxCommand):
             # Will not call automatically, here to pass between Command functions
         self.room_message_pass = None  # text to message the room.
             # Will not call automatically, here to pass between Command functions
-        self.desc = None  # a present tense description for the action of this command. IE: "kicks"
+        self.pres_tense_desc = None  # a present tense description for the action of this command. IE: "kicks"
         self.requires_ready = True  # if true this command requires the ready status before it can do anything.
             # deferal commands still require ready to defer
         self.requires_conscious = True  # if true this command requires the caller to be conscious
@@ -328,7 +327,7 @@ class Command(default_cmds.MuxCommand):
             "punch 2 droid", rather than "punch 2-droid full name"
         stops the command if targeting self an self.can_not_target_self is True
         stops the commnad if the targets self.targetable is False
-        sets the commands self.desc to self.key if desc was not set manually
+        sets the commands self.pres_tense_desc to self.key if desc was not set manually
         if Command.required_wielding is True
             collects an instance of wielded weapon of same type as command in Command.caller_weapon
                 IE: For an item to be accepted item.item_type == command.cmd_type
@@ -365,8 +364,8 @@ class Command(default_cmds.MuxCommand):
                 caller.msg(msg)
                 return True
         # give an action description if none was provided
-        if not self.desc:
-            self.desc = self.key
+        if not self.pres_tense_desc:
+            self.pres_tense_desc = self.key
         # self.parse was overriden to provide UM targeting system to commands that use only self.func
         # it has to be manually called now
         super().parse()
@@ -864,7 +863,7 @@ class Command(default_cmds.MuxCommand):
         # reference data types
         caller = self.caller
         target = self.target
-        cmd_desc = self.desc
+        cmd_desc = self.pres_tense_desc
         weapon_desc = self.weapon_desc
         passed_caller_msg = caller_msg
         passed_target_msg = target_msg

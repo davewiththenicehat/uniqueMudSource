@@ -113,8 +113,8 @@ class DeveloperCommand(Command):
                 self.target_message_pass = value
             elif key == 'room_message_pass':
                 self.room_message_pass = value
-            elif key == 'desc':
-                self.desc = value
+            elif key == 'pres_tense_desc':
+                self.pres_tense_desc = value
             elif key == 'requires_ready':
                 self.requires_ready = value
             elif key == 'requires_conscious':
