@@ -570,6 +570,25 @@ class TestCommands(UniqueMudCmdTest):
             wielded item
         Status requirments tested in test_cmd_struct
         """
+        # test Command.can_not_target_self
+        command = developer_cmds.CmdMultiCmd
+        arg = "= punch Char"
+        wnt_msg = 'You can not punch yourself.'
+        cmd_result = self.call(command(), arg, wnt_msg)
+        # test Command.target_inherits_from
+        command = developer_cmds.CmdMultiCmd
+        arg = "= get Obj, complete_cmd_early, wear Obj, drop Obj"
+        wnt_msg = "You can only wear clothing and armor\."
+        cmd_result = self.call(command(), arg, caller=self.char1)
+        self.assertRegex(cmd_result, wnt_msg)
+        # test Command.target_in_hand
+        self.test_shirt.location = self.char1
+        command = developer_cmds.CmdMultiCmd
+        arg = "= wear shirt"
+        wnt_msg = "^You have to hold an object you want to wear\.\r\nTry getting it with get test shirt\.$"
+        cmd_result = self.call(command(), arg)
+        self.assertRegex(cmd_result, wnt_msg)
+        self.test_shirt.location = self.room1
         # test using one_handed skillset
         command = developer_cmds.CmdMultiCmd
         arg = "= get sword, complete_cmd_early"
