@@ -618,7 +618,7 @@ class TestCommands(UniqueMudCmdTest):
             removing item reverses these changes
         """
         # Create additional clothing to test with
-        self.test_helmet.location = self.char1
+        self.test_helmet.location = self.room1
         # give the helmet an armor rating
         self.test_helmet.dr.PRC = 2
         self.test_helmet.dr.ACD = 3
@@ -627,11 +627,11 @@ class TestCommands(UniqueMudCmdTest):
         # Make a second helmet
         self.test_helmet2 = create_object(clothing.HumanoidArmor, key="second helmet")
         self.test_helmet2.db.clothing_type = "head"
-        self.test_helmet2.location = self.char1
+        self.test_helmet2.location = self.room1
         # make an undershirt
         test_undershirt = create_object(clothing.Clothing, key="test undershirt")
         test_undershirt.db.clothing_type = "undershirt"
-        test_undershirt.location = self.char1
+        test_undershirt.location = self.room1
 
         # Test wearing an item, test removing an item
         command = developer_cmds.CmdMultiCmd
@@ -680,7 +680,7 @@ class TestCommands(UniqueMudCmdTest):
         self.assertRegex(cmd_result, wnt_msg)
         # Test wearing a peace of armor
         command = developer_cmds.CmdMultiCmd
-        arg = "= wear helmet, complete_cmd_early"
+        arg = "= get helmet, complete_cmd_early, wear helmet, complete_cmd_early"
         wnt_msg = "You will be busy for 1 second.\nYou begin to put on test helmet.\nYou wear test helmet, covering test hat.\nYou are no longer busy.\nChar allowed you to complete your wear command early with their complete_cmd_early command."
         cmd_result = self.call(command(), arg)
         self.assertRegex(cmd_result, wnt_msg)
@@ -702,8 +702,8 @@ class TestCommands(UniqueMudCmdTest):
         # test clothing covering.
         # Test wearing the undershirt
         command = developer_cmds.CmdMultiCmd
-        arg = "= wear undershirt, complete_cmd_early"
-        wnt_msg = "You will be busy for 1 second.\nYou begin to put on test undershirt.\nYou wear test undershirt.\nYou are no longer busy.\nChar allowed you to complete your wear command early with their complete_cmd_early command."
+        arg = "= get undershirt, complete_cmd_early, wear undershirt, complete_cmd_early"
+        wnt_msg = "You will be busy for 1 second.\nYou begin to put on test undershirt.\nYou wear test undershirt.\nYou are no longer busy."
         cmd_result = self.call(command(), arg, caller=self.char1)
         self.assertRegex(cmd_result, wnt_msg)
         # get the test shirt
@@ -749,9 +749,10 @@ class TestCommands(UniqueMudCmdTest):
         self.call(command(), arg, wnt_msg, caller=self.char1)
         # test wearing a peace of clothing when the slot is occupied
         command = developer_cmds.CmdMultiCmd
-        arg = "= wear second helmet"
-        wnt_msg = "You are wearing test helmet on your head. You will need to remove it first, try remove test helmet."
-        cmd_result = self.call(command(), arg, wnt_msg)
+        arg = "= get second helmet, complete_cmd_early, wear second helmet"
+        wnt_msg = "You are wearing test helmet on your head\. You will need to remove it first, try remove test helmet\."
+        cmd_result = self.call(command(), arg)
+        self.assertRegex(cmd_result, wnt_msg)
         # test wearing an article already worn.
         command = developer_cmds.CmdMultiCmd
         arg = "= wear test helmet"
@@ -761,8 +762,8 @@ class TestCommands(UniqueMudCmdTest):
         # test wearing an article that the caller has no body part for
         self.test_helmet2.db.clothing_type = "intentional_fail"
         command = developer_cmds.CmdMultiCmd
-        arg = "= wear second helmet"
-        wnt_msg = "^You do not have a intentional\_fail to equip second helmet to\.$"
+        arg = "= wear second helmet, drop second helmet"
+        wnt_msg = "^You do not have a intentional\_fail to equip second helmet to\."
         cmd_result = self.call(command(), arg)
         self.assertRegex(cmd_result, wnt_msg)
 
@@ -786,9 +787,10 @@ class TestCommands(UniqueMudCmdTest):
         self.assertEqual(self.obj1.location, self.room1)
         # try to remove clothing that is not worn.
         command = developer_cmds.CmdMultiCmd
-        arg = "= remove second helmet"
+        arg = "= get second helmet, complete_cmd_early, remove second helmet, drop second helmet"
         wnt_msg = "You are not wearing second helmet."
-        self.call(command(), arg, wnt_msg)
+        cmd_result = self.call(command(), arg)
+        self.assertRegex(cmd_result, wnt_msg)
         # test search caller only
         command = developer_cmds.CmdMultiCmd
         arg = "= remove Obj"
@@ -830,6 +832,8 @@ class TestCommands(UniqueMudCmdTest):
             # set part attributes
             item_inst.db.clothing_type = type
             item_inst.location = self.char1
+            open_hands = self.char1.open_hands()
+            open_hands[0].occupied = item_inst.dbref
             item_inst.usdesc = f"{type} item"
             worn_list.append(item_inst)
             # make the message that should be seen
@@ -920,7 +924,9 @@ class TestCommands(UniqueMudCmdTest):
                 raise AssertionError(err_msg)
             # set part attributes
             armor_inst.db.clothing_type = part
-            armor_inst.location = self.char1  #
+            armor_inst.location = self.char1
+            open_hands = self.char1.open_hands()
+            open_hands[0].occupied = armor_inst.dbref
             armor_inst.usdesc = f"{part} armor"
             armor_inst.dr.PRC = 2
             worn_list.append(armor_inst)

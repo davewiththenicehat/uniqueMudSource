@@ -1025,7 +1025,7 @@ class Command(default_cmds.MuxCommand):
                 stop_msg = f"You have to hold an object you want to {self.cmdstring}.|/"
                 get_cmd = f"get {target.usdesc}"
                 get_suggestion = highlighter(get_cmd, click_cmd=get_cmd)
-                stop_msg += f"Try getting it with {get_suggestion}"
+                stop_msg += f"Try getting it with {get_suggestion}."
                 caller.msg(stop_msg)
                 return True
 

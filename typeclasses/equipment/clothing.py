@@ -484,6 +484,8 @@ class CmdWear(ClothingCommand):
     """
 
     key = "wear"
+    # self.target_in_hand = True  # has been manually written into
+    # custom_req_met so support showing an item is already worn
 
     def custom_req_met(self):
         """
@@ -531,6 +533,15 @@ class CmdWear(ClothingCommand):
         if clothing.db.worn:
             caller.msg(f"You are already wearing {clothing.name}.")
             return False
+        # if the Character is not holding the object to be wielded, stop the command
+        if not caller.is_holding(clothing):
+            stop_msg = f"You have to hold an object you want to " \
+                       f"{self.cmdstring}.|/"
+            get_cmd = f"get {clothing.usdesc}"
+            get_suggestion = highlighter(get_cmd, click_cmd=get_cmd)
+            stop_msg += f"Try getting it with {get_suggestion}."
+            caller.msg(stop_msg)
+            return True
         # If armor, check if the Character has the body type required for the armor.
         if not (clothing.db.clothing_type in caller.body.parts or clothing.db.clothing_type in CLOTHING_TYPE_ORDER):
             caller.msg(f"You do not have a {clothing.db.clothing_type} to equip {clothing.usdesc} to.")
@@ -600,13 +611,6 @@ class CmdRemove(ClothingCommand):
         """
         caller = self.caller
         clothing = self.target
-        # check if a hand is open to hold the removed clothing
-        open_hands = caller.open_hands()
-        # hands are full, stop the command
-        if not open_hands:
-            stop_message = f"Your hands are full."
-            caller.msg(stop_message)
-            return False
         # is the character wearing the clothing
         if not clothing.db.worn:
             caller.msg(f"You are not wearing {clothing.usdesc}.")
