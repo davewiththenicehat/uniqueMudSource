@@ -6,6 +6,12 @@ When adding a new race.
 
 If it's body differs from a base  type already tested
 Add it to the looped tests in commands.tests.CommandTests.test_wear_remove.
+To do this
+    add a parts and hands list to world.rules.body
+        Use those lists in the race class in this module as in Humanoid
+    Add a RaceArmor to typeclasses.equipment.clothing
+        Use HumanoidArmor as an example
+    add the race to commands.tests.CommandTest.test_wear_remove.race_list
 """
 
 class Humanoid(Character):

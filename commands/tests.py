@@ -766,6 +766,19 @@ class TestCommands(UniqueMudCmdTest):
         wnt_msg = "^You do not have a intentional\_fail to equip second helmet to\."
         cmd_result = self.call(command(), arg)
         self.assertRegex(cmd_result, wnt_msg)
+        self.test_helmet2.db.clothing_type = "head"
+        # test wearing an item on person, not in hand and not worn
+        # this should not trigger
+        command = developer_cmds.CmdMultiCmd
+        arg = "= drop shirt"
+        self.call(command(), arg)
+        self.assertEqual(self.test_shirt.location, self.room1)
+        self.test_shirt.location = self.char1
+        arg = "= wear shirt"
+        wnt_msg = "^You have to hold an object you want to wear\.\r\nTry getting it with get test shirt\.$"
+        cmd_result = self.call(command(), arg)
+        self.assertRegex(cmd_result, wnt_msg)
+        self.test_shirt.location = self.room1
 
         # test remove command errors
         command = developer_cmds.CmdMultiCmd
@@ -898,7 +911,10 @@ class TestCommands(UniqueMudCmdTest):
 
         # test wearing an armor on each body part, supports multiple races
         # body.part.dr, body.part
-        # add support for multiple races
+        # Add additional races to race_list
+        # tuple[0]: and instance of a character of tested race
+        # tuple[1]: the list of that races body parts from world.rules.body
+        # tuple[2]: class of armor that needs to be made for this race
         race_list = ((self.char1, HUMANOID_BODY, clothing.HumanoidArmor),)
         for char, body_parts, armor_class in race_list:
             worn_list = list()
@@ -1015,7 +1031,7 @@ class TestCommands(UniqueMudCmdTest):
         """
         # test method damage after damage reduction
         # get armor on
-        self.test_helmet.location = self.char1
+        self.test_helmet.location = self.room1
         # give the helmet an armor rating
         self.test_helmet.dr.PRC = 2
         self.test_helmet.dr.ACD = 3
@@ -1023,7 +1039,7 @@ class TestCommands(UniqueMudCmdTest):
         self.assertEqual(self.test_helmet.dr.PRC, 2)
         command = developer_cmds.CmdMultiCmd
         # put the armor on
-        arg = "= wear helmet, complete_cmd_early"
+        arg = "= get helmet, complete_cmd_early, wear helmet, complete_cmd_early"
         wnt_msg = "You wear test helmet\."
         cmd_result = self.call(command(), arg)
         self.assertRegex(cmd_result, wnt_msg)

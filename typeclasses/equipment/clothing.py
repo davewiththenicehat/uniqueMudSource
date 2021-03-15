@@ -541,7 +541,7 @@ class CmdWear(ClothingCommand):
             get_suggestion = highlighter(get_cmd, click_cmd=get_cmd)
             stop_msg += f"Try getting it with {get_suggestion}."
             caller.msg(stop_msg)
-            return True
+            return False
         # If armor, check if the Character has the body type required for the armor.
         if not (clothing.db.clothing_type in caller.body.parts or clothing.db.clothing_type in CLOTHING_TYPE_ORDER):
             caller.msg(f"You do not have a {clothing.db.clothing_type} to equip {clothing.usdesc} to.")
