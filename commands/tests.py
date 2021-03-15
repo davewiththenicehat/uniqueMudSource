@@ -896,116 +896,117 @@ class TestCommands(UniqueMudCmdTest):
             worn_art.remove(self.char1, True)
             worn_art.location = self.room1
 
-        # test wearing an armor on each body part
+        # test wearing an armor on each body part, supports multiple races
         # body.part.dr, body.part
-        worn_list = list()
-        for part in HUMANOID_BODY:
-            setattr(self, part, create_object(clothing.HumanoidArmor, key=part))
-            armor_inst = getattr(self, part, False)
-            if not armor_inst:
-                err_msg = "commands.tests.TestCommands.test_wear_remove " \
-                          "wear remove test for all body parts failed to " \
-                          f"find {part} in unit test."
-                raise AssertionError(err_msg)
-            # verify self.char1 prc armor rating is 0 for this part
-            char_part = getattr(self.char1.body, part, False)
-            if char_part:
-                try:
-                    self.assertFalse(hasattr(char_part.dr, 'PRC'))
-                except AssertionError:
+        # add support for multiple races
+        race_list = ((self.char1, HUMANOID_BODY, clothing.HumanoidArmor),)
+        for char, body_parts, armor_class in race_list:
+            worn_list = list()
+            for part in body_parts:
+                setattr(self, part, create_object(armor_class, key=part))
+                armor_inst = getattr(self, part, False)
+                if not armor_inst:
                     err_msg = "commands.tests.TestCommands.test_wear_remove " \
-                              f"self.char1.{part}.dr.PRC is " \
-                              f"{char_part.dr.PRC} when is should be Falsey."
+                              "wear remove test for all body parts failed to " \
+                              f"find {part} in unit test."
                     raise AssertionError(err_msg)
-            else:
-                err_msg = "commands.tests.TestCommands.test_wear_remove " \
-                          "wear remove test for all body parts failed to " \
-                          f"find {part} in self.char1."
-                raise AssertionError(err_msg)
-            # set part attributes
-            armor_inst.db.clothing_type = part
-            armor_inst.location = self.char1
-            open_hands = self.char1.open_hands()
-            open_hands[0].occupied = armor_inst.dbref
-            armor_inst.usdesc = f"{part} armor"
-            armor_inst.dr.PRC = 2
-            worn_list.append(armor_inst)
-            # test wearing
-            wear_rc = {self.char1: f"You will be busy for 1 second.|You begin to put on {armor_inst.usdesc}.|You wear {armor_inst.usdesc}.|You are no longer busy.",
-                       self.char2: f"Char begins to put on {armor_inst.usdesc}.|Char wears {armor_inst.usdesc}."}
-            wear_cmd = {
-                        'arg': f"= wear {part} armor, complete_cmd_early",
-                        'receivers': wear_rc,
-                       }
-            # run the tests
-            self.loop_tests((wear_cmd,))
-        # make certain clothing and Character attributes are correct
-        appear_self = self.char1.return_appearance(self.char1)
-        appear_other = self.char1.return_appearance(self.char2)
-        for worn_art in worn_list:
-            self.assertEqual(worn_art.location, self.char1)
-            self.assertTrue(worn_art.db.worn)
-            # Make certain the dr for the item was cached on wearer
-            part_type = worn_art.db.clothing_type
-            char_part = getattr(self.char1.body, part_type, False)
-            if char_part:
+                # verify char prc armor rating is 0 for this part
+                char_part = getattr(char.body, part, False)
+                if char_part:
+                    try:
+                        self.assertFalse(hasattr(char_part.dr, 'PRC'))
+                    except AssertionError:
+                        err_msg = "commands.tests.TestCommands.test_wear_remove " \
+                                  f"char.{part}.dr.PRC is " \
+                                  f"{char_part.dr.PRC} when is should be Falsey."
+                        raise AssertionError(err_msg)
+                else:
+                    err_msg = "commands.tests.TestCommands.test_wear_remove " \
+                              "wear remove test for all body parts failed to " \
+                              f"find {part} in char."
+                    raise AssertionError(err_msg)
+                # set part attributes
+                armor_inst.db.clothing_type = part
+                armor_inst.location = char
+                open_hands = char.open_hands()
+                open_hands[0].occupied = armor_inst.dbref
+                armor_inst.usdesc = f"{part} armor"
+                armor_inst.dr.PRC = 2
+                worn_list.append(armor_inst)
+                # test wearing
+                wear_rc = {char: f"You will be busy for 1 second.|You begin to put on {armor_inst.usdesc}.|You wear {armor_inst.usdesc}.|You are no longer busy.",
+                           self.char2: f"Char begins to put on {armor_inst.usdesc}.|Char wears {armor_inst.usdesc}."}
+                wear_cmd = {'arg': f"= wear {part} armor, complete_cmd_early",
+                            'receivers': wear_rc}
+                # run the tests
+                self.loop_tests((wear_cmd,))
+            # make certain clothing and Character attributes are correct
+            appear_self = char.return_appearance(char)
+            appear_other = char.return_appearance(self.char2)
+            for worn_art in worn_list:
+                self.assertEqual(worn_art.location, char)
+                self.assertTrue(worn_art.db.worn)
+                # Make certain the dr for the item was cached on wearer
+                part_type = worn_art.db.clothing_type
+                char_part = getattr(char.body, part_type, False)
+                if char_part:
+                    try:
+                        self.assertEqual(char_part.dr.PRC, 2)
+                    except AssertionError:
+                        err_msg = f"char.body.{part_type}.dr.PRC is " \
+                                  f"{char_part.dr.PRC} when it should be 2."
+                        raise AssertionError(err_msg)
+                # make certain item appears when the wearer is looked at.
                 try:
-                    self.assertEqual(char_part.dr.PRC, 2)
+                    self.assertTrue(worn_art.usdesc in appear_self)
                 except AssertionError:
-                    err_msg = f"self.char1.body.{part_type}.dr.PRC is " \
-                              f"{char_part.dr.PRC} when it should be 2."
+                    err_msg = f'"{worn_art.usdesc}" does not appear when a ' \
+                              "Character looks at themself. Their appearance " \
+                              f"is:\n{appear_self}."
                     raise AssertionError(err_msg)
-            # make certain item appears when the wearer is looked at.
-            try:
-                self.assertTrue(worn_art.usdesc in appear_self)
-            except AssertionError:
-                err_msg = f'"{worn_art.usdesc}" does not appear when a ' \
-                          "Character looks at themself. Their appearance " \
-                          f"is:\n{appear_self}."
-                raise AssertionError(err_msg)
-            try:
-                self.assertTrue(worn_art.usdesc in appear_other)
-            except AssertionError:
-                err_msg = f'"{worn_art.usdesc}" does not appear when a ' \
-                          "Character looks at another. Their appearance " \
-                          f"is:\n{appear_self}."
-                raise AssertionError(err_msg)
+                try:
+                    self.assertTrue(worn_art.usdesc in appear_other)
+                except AssertionError:
+                    err_msg = f'"{worn_art.usdesc}" does not appear when a ' \
+                              "Character looks at another. Their appearance " \
+                              f"is:\n{appear_self}."
+                    raise AssertionError(err_msg)
 
-        # test removing an article of clothing from each body part
-        for part in HUMANOID_BODY:
-            armor_desc = f"{part} armor"
-            # test remove
-            remove_rc = {self.char1: f"You will be busy for 1 second.|You begin to remove {armor_desc}.|You remove {armor_desc}.|You are no longer busy.",
-                         self.char2: f"Char begins to remove {armor_desc}.|Char removes {armor_desc}."}
-            remove_cmd = {
-                        'arg': f"= remove {part} armor, complete_cmd_early, " \
-                               f"drop {part} armor",
-                        'receivers': remove_rc,
-                       }
-            # run the tests
-            self.loop_tests((remove_cmd,))
-        # test Character and clothing after removal
-        # Character appearance
-        appear_self = self.char1.return_appearance(self.char1)
-        appear_other = self.char1.return_appearance(self.char2)
-        self.assertEqual(appear_self, "You are not wearing anything.")
-        self.assertEqual(appear_other, "Char is not wearing anything.")
-        # character should have open hands after dropping the items
-        self.assertTrue(self.char1.open_hands())
-        # test Character and clothing misc attributes
-        for worn_art in worn_list:
-            self.assertEqual(worn_art.location, self.room1)
-            self.assertFalse(worn_art.db.worn)
-            # Make certain the dr for the item was cached on wearer
-            part_type = worn_art.db.clothing_type
-            char_part = getattr(self.char1.body, part_type, False)
-            if char_part:
-                try:
-                    self.assertFalse(hasattr(char_part.dr, 'PRC'))
-                except AssertionError:
-                    err_msg = f"self.char1.body.{part_type}.dr.PRC is " \
-                              f"{char_part.dr.PRC} when it should not exist."
-                    raise AssertionError(err_msg)
+            # test removing an article of clothing from each body part
+            for part in body_parts:
+                armor_desc = f"{part} armor"
+                # test remove
+                remove_rc = {char: f"You will be busy for 1 second.|You begin to remove {armor_desc}.|You remove {armor_desc}.|You are no longer busy.",
+                             self.char2: f"Char begins to remove {armor_desc}.|Char removes {armor_desc}."}
+                remove_cmd = {
+                            'arg': f"= remove {part} armor, complete_cmd_early, " \
+                                   f"drop {part} armor",
+                            'receivers': remove_rc,
+                           }
+                # run the tests
+                self.loop_tests((remove_cmd,))
+            # test Character and clothing after removal
+            # Character appearance
+            appear_self = char.return_appearance(char)
+            appear_other = char.return_appearance(self.char2)
+            self.assertEqual(appear_self, "You are not wearing anything.")
+            self.assertEqual(appear_other, "Char is not wearing anything.")
+            # character should have open hands after dropping the items
+            self.assertTrue(char.open_hands())
+            # test Character and clothing misc attributes
+            for worn_art in worn_list:
+                self.assertEqual(worn_art.location, self.room1)
+                self.assertFalse(worn_art.db.worn)
+                # Make certain the dr for the item was cached on wearer
+                part_type = worn_art.db.clothing_type
+                char_part = getattr(char.body, part_type, False)
+                if char_part:
+                    try:
+                        self.assertFalse(hasattr(char_part.dr, 'PRC'))
+                    except AssertionError:
+                        err_msg = f"char.body.{part_type}.dr.PRC is " \
+                                  f"{char_part.dr.PRC} when it should not exist."
+                        raise AssertionError(err_msg)
 
     def test_dmg(self):
         """
