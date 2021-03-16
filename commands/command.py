@@ -185,9 +185,9 @@ class Command(default_cmds.MuxCommand):
                     Even if the key is a negative number.
         caller_message_pass = None  # text to message the caller.
             Will not call automatically, here to pass between Command functions
-        target_message = None  # text to message the target.
+        target_message_pass = None  # text to message the target.
             Will not call automatically, here to pass between Command functions
-        room_message = None  # text to message the room.
+        room_message_pass = None  # text to message the room.
             Will not call automatically, here to pass between Command functions
         log = False  # set to true to info logging should be enabled.
             Error and warning messages are always enabled.

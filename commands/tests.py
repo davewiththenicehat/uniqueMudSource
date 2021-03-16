@@ -1884,3 +1884,35 @@ class TestCommands(UniqueMudCmdTest):
                     # make certain cost stat and modifier stat are still Elements
                     self.assertIsInstance(cost_stat_instance, Element)
                     self.assertIsInstance(cost_mod_stat_inst, Element)
+
+    def test_combat_action(self):
+        """
+        combat_action is tested many times in
+        test_dmg and test_rolls
+
+        These test is for the arguments that are not used in those tests.
+        """
+        # test hitting with replacement messages.
+        command = developer_cmds.CmdCmdFuncTest
+        arg = "/r/d combat_action, Char2, weapon_desc:weapon_name, cmd_type:unarmed, unit_test_succ:None = False, caller_message, target_message, room_message"
+        receivers = {
+            self.char1: None,
+            self.char2: None,
+            self.obj1: None
+        }
+        cmd_result = self.call_multi_receivers(command(), arg, receivers)
+        self.assertRegex(cmd_result, ": caller_message and connect\. Hitting Char2's ")
+        self.assertRegex(cmd_result, ": target_message and connects\. Hitting your ")
+        self.assertRegex(cmd_result, "room_message and connects\. Hitting Char2's ")
+        # test missing with replacement arguments
+        command = developer_cmds.CmdCmdFuncTest
+        arg = "/r/d combat_action, Char2, weapon_desc:weapon_name, cmd_type:unarmed, unit_test_fail:None = False, caller_message, target_message, room_message"
+        receivers = {
+            self.char1: None,
+            self.char2: None,
+            self.obj1: None
+        }
+        cmd_result = self.call_multi_receivers(command(), arg, receivers)
+        self.assertRegex(cmd_result, ": caller_message but miss\.")
+        self.assertRegex(cmd_result, ": target_message but you successfully evade the cmd_func_test\.")
+        self.assertRegex(cmd_result, "room_message and misses\.")
