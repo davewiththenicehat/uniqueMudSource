@@ -1916,3 +1916,42 @@ class TestCommands(UniqueMudCmdTest):
         self.assertRegex(cmd_result, ": caller_message but miss\.")
         self.assertRegex(cmd_result, ": target_message but you successfully evade the cmd_func_test\.")
         self.assertRegex(cmd_result, "room_message and misses\.")
+
+    def test_look(self):
+        """
+        test the look command
+
+        Clothing appearances is tested in test_wear_remove
+        """
+        from commands.standard_cmds import CmdLook
+
+        # using aliases
+        for aliase in CmdLook.aliases:
+            # run a standard look at a room
+            command = developer_cmds.CmdMultiCmd
+            arg = f"= {aliase}"
+            receivers = {
+                self.char1: "Room(#1) \nroom_desc\nExits: out(#3)\n Obj(#4) \n Obj2(#5) \n Char2(#7) is here.\n a sword(#8) \n test hat(#9) \n test shirt(#10) \n test helmet(#11)",
+                self.char2: None
+            }
+            self.call_multi_receivers(command(), arg, receivers)
+            # look at a character
+            command = developer_cmds.CmdMultiCmd
+            arg = f"= {aliase} Char2"
+            wnt_msg = "Char2 is not wearing anything."
+            cmd_result = self.call(command(), arg, wnt_msg)
+
+            # test when the Character has no location
+            self.char1.location = None
+            command = developer_cmds.CmdMultiCmd
+            arg = f"= {aliase}"
+            wnt_msg = "You have no location to look at!"
+            cmd_result = self.call(command(), arg, wnt_msg)
+            self.assertRegex(cmd_result, "caller has no location")
+            self.char1.location =  self.room1
+            # test a bad target name
+            command = developer_cmds.CmdMultiCmd
+            arg = f"= {aliase} intentional fail"
+            wnt_msg = "You do not see intentional fail here."
+            cmd_result = self.call(command(), arg, wnt_msg)
+            self.char1.location =  self.room1

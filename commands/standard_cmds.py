@@ -1,6 +1,6 @@
 import re
 from evennia.utils import evtable, evmore
-from evennia.utils.utils import fill, dedent
+from evennia.utils.utils import fill, dedent, inherits_from
 from evennia import default_cmds
 from evennia.contrib import rpsystem
 from evennia import CmdSet
@@ -10,6 +10,7 @@ from evennia.commands.default.system import CmdObjects
 from evennia.commands.default.general import CmdLook as EvCmdLook
 from world.rules import stats
 from utils.um_utils import highlighter, error_report, objs_sdesc_str
+from typeclasses.exits import STANDARD_EXITS
 
 
 class StandardCmdsCmdSet(default_cmds.CharacterCmdSet):
@@ -149,22 +150,55 @@ class CmdLook(EvCmdLook, Command):
         """
         self.requires_ready = False  # if true this command requires the ready status before it can do anything. deferal commands still require ready to defer
 
+    def custom_req_met(self):
+        """
+        Verifies commands custom requirements are met.
+        If this method returns False the command will end.
+        This method must message the caller why the command failed.
+
+        self.target and self.targets will be available in this method.
+
+        This method is intended to be overwritten.
+
+        Automatically called at the end of self.at_pre_cmd.
+
+        Returns:
+            requirements_met=boolean
+            False: will stop the command
+            True: the command will continue
+        """
+        caller = self.caller
+        if self.args:  # a target was provided in command
+            if not self.target:  # no target found
+                caller.msg(f"You do not see {self.args} here.")
+                return False
+        else:  # no target was provided in command
+            if not caller.location:  # caller has no location
+                caller.msg("You have no location to look at!")
+                err_msg = f"Command look, caller: {caller.id} | " \
+                           "caller has no location."
+                error_report(err_msg, caller)
+                return False
+            else:  # set the command's target to the caller's location
+                self.target = caller.location
+        return True  # custom requirements met, allow command to run
+
     def func(self):
         """
         Handle the looking.
         """
         caller = self.caller
-        if not self.args:
-            target = caller.location
-            if not target:
-                caller.msg("You have no location to look at!")
-                return
-        else:
-            # target = caller.search(self.args)  # evennia's default search method
-            target = self.target  # use the target collected in UM Command.parse
-            if not target:
-                return
+        target = self.target
+        if not target:
+            err_msg = f"Command look, caller: {caller.id} | " \
+                       "caller has no location. After func call."
+            error_report(err_msg, caller)
+            return False
+        # process the look
         self.msg((caller.at_look(target), {"type": "look"}), options=None)
+        # if the character is looking at something other than the room.
+        if inherits_from(target, "typeclasses.rooms.Room"):
+
 
 
 # separator used to format help cmd
