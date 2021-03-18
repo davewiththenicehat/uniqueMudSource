@@ -197,9 +197,23 @@ class CmdLook(EvCmdLook, Command):
         # process the look
         self.msg((caller.at_look(target), {"type": "look"}), options=None)
         # if the character is looking at something other than the room.
-        if inherits_from(target, "typeclasses.rooms.Room"):
-
-
+        if not inherits_from(target, "typeclasses.rooms.Room"):
+            if inherits_from(target, "typeclasses.rooms.Exit"):
+                if target.usdesc in STANDARD_EXITS:  # if the target is a standard exit
+                    room_msg = f"{caller.usdesc.capitalize()} looks {target.usdesc}."
+                else:
+                    room_msg = f"{caller.usdesc.capitalize()} looks through {target.usdesc}."
+                caller.location.msg_contents(room_msg, exclude=(caller,))
+            else:
+                if target is caller: # |o
+                    room_msg = f"{caller.usdesc.capitalize()} looks at " \
+                               f"{caller.get_pronoun('|o')}self."
+                    caller.location.msg_contents(room_msg, exclude=(caller,))
+                else:
+                    room_msg = f"{caller.usdesc.capitalize()} looks at {target.usdesc}."
+                    target_msg = f"{caller.usdesc.capitalize()} looks at you."
+                    caller.location.msg_contents(room_msg, exclude=(caller, target))
+                    target.msg(target_msg)
 
 # separator used to format help cmd
 from django.conf import settings

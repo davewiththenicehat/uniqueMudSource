@@ -1935,11 +1935,23 @@ class TestCommands(UniqueMudCmdTest):
                 self.char2: None
             }
             self.call_multi_receivers(command(), arg, receivers)
-            # look at a character
+            # Character looks at another Character
             command = developer_cmds.CmdMultiCmd
             arg = f"= {aliase} Char2"
-            wnt_msg = "Char2 is not wearing anything."
-            cmd_result = self.call(command(), arg, wnt_msg)
+            receivers = {
+                self.char1: "Char2 is not wearing anything.",
+                self.char2: "Char looks at you.",
+                self.obj1: "Char looks at Char2"
+            }
+            self.call_multi_receivers(command(), arg, receivers)
+            # Character looks at self
+            command = developer_cmds.CmdMultiCmd
+            arg = f"= {aliase} me"
+            receivers = {
+                self.char1: "You are not wearing anything.",
+                self.char2: "Char looks at themself."
+            }
+            self.call_multi_receivers(command(), arg, receivers)
 
             # test when the Character has no location
             self.char1.location = None
