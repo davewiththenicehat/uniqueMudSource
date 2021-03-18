@@ -198,7 +198,7 @@ class CmdLook(EvCmdLook, Command):
         self.msg((caller.at_look(target), {"type": "look"}), options=None)
         # if the character is looking at something other than the room.
         if not inherits_from(target, "typeclasses.rooms.Room"):
-            if inherits_from(target, "typeclasses.rooms.Exit"):
+            if inherits_from(target, "typeclasses.exits.Exit"):
                 if target.usdesc in STANDARD_EXITS:  # if the target is a standard exit
                     room_msg = f"{caller.usdesc.capitalize()} looks {target.usdesc}."
                 else:

@@ -115,4 +115,18 @@ class Exit(ExObjAndRoomMixin, AllObjectsMixin, CharExAndObjMixin, DefaultExit):
 
     exit_command = UMExitCommand
 
-    pass
+    def return_appearance(self, looker, **kwargs):
+        """
+        This formats a description. It is the hook a 'look' command
+        should call.
+
+        Args:
+            looker (Object): Object doing the looking.
+            **kwargs (dict): Arbitrary, optional arguments for users
+                overriding the call (unused by default).
+
+        """
+        exit_desc = super().return_appearance(looker, **kwargs)
+        dest = self.destination
+        exit_desc += '|/' + dest.return_appearance(looker, **kwargs)
+        return exit_desc

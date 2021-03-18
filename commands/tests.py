@@ -8,6 +8,7 @@ from world.rules.stats import STATS, STAT_MAP_DICT
 from world.rules.body import HUMANOID_BODY
 from world.rules.actions import COST_LEVELS
 from utils.element import Element
+from evennia.utils import create
 
 
 class TestCommands(UniqueMudCmdTest):
@@ -1924,6 +1925,9 @@ class TestCommands(UniqueMudCmdTest):
         Clothing appearances is tested in test_wear_remove
         """
         from commands.standard_cmds import CmdLook
+        self.obj3 = create.create_object(
+            self.object_typeclass, key="Obj3", location=self.room2, home=self.room2
+        )
 
         # using aliases
         for aliase in CmdLook.aliases:
@@ -1950,6 +1954,15 @@ class TestCommands(UniqueMudCmdTest):
             receivers = {
                 self.char1: "You are not wearing anything.",
                 self.char2: "Char looks at themself."
+            }
+            self.call_multi_receivers(command(), arg, receivers)
+            # character looks at an exit
+            self.room2.db.desc = "Room2 description"
+            command = developer_cmds.CmdMultiCmd
+            arg = f"= {aliase} out"
+            receivers = {
+                self.char1: "out(#3)\n\r\nRoom2(#2) \nRoom2 description\n Obj3(#12)",
+                self.char2: "Char looks through out."
             }
             self.call_multi_receivers(command(), arg, receivers)
 
