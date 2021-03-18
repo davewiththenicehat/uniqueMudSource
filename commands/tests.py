@@ -1928,6 +1928,10 @@ class TestCommands(UniqueMudCmdTest):
         self.obj3 = create.create_object(
             self.object_typeclass, key="Obj3", location=self.room2, home=self.room2
         )
+        self.room2.db.desc = "Room2 description"
+        self.exit2 = create.create_object(
+            self.exit_typeclass, key="a door", location=self.room1, destination=None
+        )
 
         # using aliases
         for aliase in CmdLook.aliases:
@@ -1935,7 +1939,7 @@ class TestCommands(UniqueMudCmdTest):
             command = developer_cmds.CmdMultiCmd
             arg = f"= {aliase}"
             receivers = {
-                self.char1: "Room(#1) \nroom_desc\nExits: out(#3)\n Obj(#4) \n Obj2(#5) \n Char2(#7) is here.\n a sword(#8) \n test hat(#9) \n test shirt(#10) \n test helmet(#11)",
+                self.char1: "Room(#1) \nroom_desc\nExits: out(#3), a door(#13)\n Obj(#4) \n Obj2(#5) \n Char2(#7) is here.\n a sword(#8) \n test hat(#9) \n test shirt(#10) \n test helmet(#11)",
                 self.char2: None
             }
             self.call_multi_receivers(command(), arg, receivers)
@@ -1957,12 +1961,19 @@ class TestCommands(UniqueMudCmdTest):
             }
             self.call_multi_receivers(command(), arg, receivers)
             # character looks at an exit
-            self.room2.db.desc = "Room2 description"
             command = developer_cmds.CmdMultiCmd
             arg = f"= {aliase} out"
             receivers = {
-                self.char1: "out(#3)\n\r\nRoom2(#2) \nRoom2 description\n Obj3(#12)",
+                self.char1: 'Through out(#3) you see:\r\nRoom2(#2) \nRoom2 description\n Obj3(#12)',
                 self.char2: "Char looks through out."
+            }
+            self.call_multi_receivers(command(), arg, receivers)
+            # now look at an exit with no destination
+            command = developer_cmds.CmdMultiCmd
+            arg = f"= {aliase} door"
+            receivers = {
+                self.char1: "A door(#13) does not appear to lead anywhere.",
+                self.char2: "Char looks through a door."
             }
             self.call_multi_receivers(command(), arg, receivers)
 

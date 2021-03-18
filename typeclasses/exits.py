@@ -127,6 +127,12 @@ class Exit(ExObjAndRoomMixin, AllObjectsMixin, CharExAndObjMixin, DefaultExit):
 
         """
         exit_desc = super().return_appearance(looker, **kwargs)
-        dest = self.destination
-        exit_desc += '|/' + dest.return_appearance(looker, **kwargs)
+        exit_desc = exit_desc.replace('\n', '')
+        if self.destination is self.location:  # the exit has no destination
+            exit_desc = exit_desc.replace('|c', '')  # remove clearing tag to capitalize
+            exit_desc = f"{exit_desc.capitalize()} does not appear to lead anywhere."
+            exit_desc = f'|c{exit_desc}'  # put the clearing tag back
+        else:  # the exit has a destination
+            exit_desc = f"Through {exit_desc} you see:|/"
+            exit_desc += self.destination.return_appearance(looker, **kwargs)
         return exit_desc
