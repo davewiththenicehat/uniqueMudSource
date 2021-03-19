@@ -1990,6 +1990,10 @@ class TestCommands(UniqueMudCmdTest):
                 self.char2: "Char looks through a door."
             }
             self.call_multi_receivers(command(), arg, receivers)
+            # look at an object
+            # look in an object
+            # look at a container
+            # look in a container
 
             # test when the Character has no location
             self.char1.location = None
@@ -2004,4 +2008,3 @@ class TestCommands(UniqueMudCmdTest):
             arg = f"= {aliase} intentional fail"
             wnt_msg = "You do not see intentional fail here."
             cmd_result = self.call(command(), arg, wnt_msg)
-            self.char1.location =  self.room1
