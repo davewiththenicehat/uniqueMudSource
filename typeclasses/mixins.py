@@ -342,4 +342,3 @@ class ExObjAndRoomMixin:
     def usdesc(self, value):
         """Setter property for usdesc"""
         self.key = value
-        self.attributes.usdesc = value
