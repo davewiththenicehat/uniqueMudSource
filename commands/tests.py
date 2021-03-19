@@ -1946,6 +1946,17 @@ class TestCommands(UniqueMudCmdTest):
                 self.char2: None
             }
             cmd_result = self.call_multi_receivers(command(), arg, receivers)
+            # look at a room with no description.
+            old_room_desc = self.room1.db.desc
+            self.room1.db.desc = None
+            command = developer_cmds.CmdMultiCmd
+            arg = f"= {aliase}"
+            receivers = {
+                self.char1: 'You are in a space devoid of description.\nOn the ground are an Obj(#4), an Obj2(#5), a sword(#8), a test hat(#9), a test helmet(#11) and a test shirt(#10).\nChar2(#7) is here. A normal person(#14) is here.\nYou may leave by out(#3) or a door(#13).',
+                self.char2: None
+            }
+            cmd_result = self.call_multi_receivers(command(), arg, receivers)
+            self.room1.db.desc = old_room_desc
             # Character looks at another Character
             command = developer_cmds.CmdMultiCmd
             arg = f"= {aliase} Char2"
