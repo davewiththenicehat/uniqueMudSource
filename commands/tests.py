@@ -1932,6 +1932,9 @@ class TestCommands(UniqueMudCmdTest):
         self.exit2 = create.create_object(
             self.exit_typeclass, key="a door", location=self.room1, destination=None
         )
+        self.char3 = create.create_object(
+            self.character_typeclass, key="Char3", location=self.room1, home=self.room1
+        )
 
         # using aliases
         for aliase in CmdLook.aliases:
@@ -1939,10 +1942,10 @@ class TestCommands(UniqueMudCmdTest):
             command = developer_cmds.CmdMultiCmd
             arg = f"= {aliase}"
             receivers = {
-                self.char1: "Room(#1) \nroom_desc\nExits: out(#3), a door(#13)\n Obj(#4) \n Obj2(#5) \n Char2(#7) is here.\n a sword(#8) \n test hat(#9) \n test shirt(#10) \n test helmet(#11)",
+                self.char1: 'Room_desc\nOn the ground are an Obj(#4), an Obj2(#5), a sword(#8), a test hat(#9), a test helmet(#11) and a test shirt(#10).\nChar2(#7) is here. A normal person(#14) is here.\nYou may leave by out(#3) or a door(#13).',
                 self.char2: None
             }
-            self.call_multi_receivers(command(), arg, receivers)
+            cmd_result = self.call_multi_receivers(command(), arg, receivers)
             # Character looks at another Character
             command = developer_cmds.CmdMultiCmd
             arg = f"= {aliase} Char2"
@@ -1964,7 +1967,7 @@ class TestCommands(UniqueMudCmdTest):
             command = developer_cmds.CmdMultiCmd
             arg = f"= {aliase} out"
             receivers = {
-                self.char1: 'Through out(#3) you see:\r\nRoom2(#2) \nRoom2 description\n Obj3(#12)',
+                self.char1: 'Through out(#3) you see:\r\nRoom2 description\nOn the ground is an Obj3(#12)',
                 self.char2: "Char looks through out."
             }
             self.call_multi_receivers(command(), arg, receivers)
