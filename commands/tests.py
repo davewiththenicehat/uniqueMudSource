@@ -1990,10 +1990,74 @@ class TestCommands(UniqueMudCmdTest):
                 self.char2: "Char looks through a door."
             }
             self.call_multi_receivers(command(), arg, receivers)
-            # look at an object
-            # look in an object
+            # look at an object without a description
+            command = developer_cmds.CmdMultiCmd
+            arg = f"= {aliase} Obj"
+            receivers = {
+                self.char1: "Obj(#4) is devoid of description.",
+                self.char2: "Char looks at Obj.",
+                self.obj1: "Char looks at you."
+            }
+            self.call_multi_receivers(command(), arg, receivers)
+            # give the object a description.
+            self.obj1.db.desc = 'This is a plain object.'
+            command = developer_cmds.CmdMultiCmd
+            arg = f"= {aliase} Obj"
+            receivers = {
+                self.char1: "This is a plain object.",
+                self.char2: "Char looks at Obj.",
+                self.obj1: "Char looks at you."
+            }
+            self.call_multi_receivers(command(), arg, receivers)
             # look at a container
-            # look in a container
+            self.obj1.container = True
+            command = developer_cmds.CmdMultiCmd
+            arg = f"= {aliase} Obj"
+            receivers = {
+                self.char1: "This is a plain object.\nIt contains nothing.",
+                self.char2: "Char looks at Obj.",
+                self.obj1: "Char looks at you."
+            }
+            cmd_result = self.call_multi_receivers(command(), arg, receivers)
+            self.assertRegex(cmd_result, "^This is a plain object\.\nIt contains nothing\.Char looks at Obj\.Char looks at you\.$")
+            # look at a container with an object in it
+            self.obj3.location = self.obj1
+            command = developer_cmds.CmdMultiCmd
+            arg = f"= {aliase} Obj"
+            receivers = {
+                self.char1: "This is a plain object.\nIt contains an Obj3(#12).",
+                self.char2: "Char looks at Obj.",
+                self.obj1: "Char looks at you."
+            }
+            cmd_result = self.call_multi_receivers(command(), arg, receivers)
+            self.assertRegex(cmd_result, '^This is a plain object\.\\nIt contains an Obj3\(\#12\)\.Char looks')
+            # look at a container with multiple objects in it
+            self.test_shirt.location = self.obj1
+            command = developer_cmds.CmdMultiCmd
+            arg = f"= {aliase} Obj"
+            receivers = {
+                self.char1: "This is a plain object.\nIt contains an Obj3(#12) and a test shirt(#10).",
+                self.char2: "Char looks at Obj.",
+                self.obj1: "Char looks at you."
+            }
+            cmd_result = self.call_multi_receivers(command(), arg, receivers)
+            self.assertRegex(cmd_result, '^This is a plain object\.\\nIt contains an Obj3\(\#12\) and a test shirt\(\#10\)\.Char looks at Obj\.Char looks at you\.')
+            # look at object in a container
+            self.test_shirt.location = self.obj1
+            command = developer_cmds.CmdMultiCmd
+            arg = f"= {aliase} Obj3 in Obj"
+            receivers = {
+                self.char1: "Obj3(#12) is devoid of description.",
+                self.char2: "Char looks at something in Obj.",
+                self.obj3: "Char looks at you."
+            }
+            cmd_result = self.call_multi_receivers(command(), arg, receivers)
+            # put objects in self.obj1 back and reset settings changed
+            self.test_shirt.location = self.room1
+            self.obj1.db.desc = None
+            self.obj1.container = False
+            self.obj3.location = self.room2
+
 
             # test when the Character has no location
             self.char1.location = None

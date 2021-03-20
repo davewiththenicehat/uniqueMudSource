@@ -10,9 +10,13 @@ the other types, you can do so by adding this as a multiple
 inheritance.
 
 """
+
+from collections import defaultdict
+
 from evennia.contrib.rpsystem import ContribRPObject
-from evennia.utils import inherits_from
+from evennia.utils import inherits_from, list_to_string
 from typeclasses.mixins import CharExAndObjMixin, AllObjectsMixin, ExObjAndRoomMixin
+
 from utils.um_utils import error_report
 
 
@@ -246,3 +250,54 @@ class Object(ExObjAndRoomMixin, AllObjectsMixin, CharExAndObjMixin, ContribRPObj
             return True
         else:
             return False
+
+    def return_appearance(self, looker):
+        """
+        This formats a description. It is the hook a 'look' command
+        should call.
+
+        Args:
+            looker (Object): Object doing the looking.
+        """
+        string = ""
+        if not looker:
+            return ""
+
+        # get description, build string
+        desc = self.db.desc
+        if desc:
+            string += f"{desc.capitalize()}"
+        else:
+            string += f"{self.get_display_name(looker)} is devoid of description."
+        if self.container and self.access(looker, "view"):  # this object is a container.
+            # get and identify all objects
+            visible = (con for con in self.contents if con != looker and con.access(looker, "view"))
+            exits, users, things = [], [], defaultdict(list)
+            for con in visible:
+                key = con.get_display_name(looker, pose=True)
+                if con.destination:
+                    exits.append(key)
+                elif inherits_from(con, "typeclasses.characters.Character"):
+                    users.append(key)
+                else:
+                    # things can be pluralized
+                    things[key].append(con)
+            string += "\nIt contains "
+            if things or users:
+                if things:
+                    # handle pluralization of things (never pluralize users)
+                    thing_strings = []
+                    for key, itemlist in sorted(things.items()):
+                        nitem = len(itemlist)
+                        if nitem == 1:
+                            key, _ = itemlist[0].get_numbered_name(nitem, looker, key=key)
+                        else:
+                            key = [item.get_numbered_name(nitem, looker, key=key)[1] for item in itemlist][0]
+                        thing_strings.append(key.strip())
+                    string += f"{list_to_string(thing_strings)}"
+                if users:
+                    string += f"\n{' '.join(users)}"
+                string += "."
+            else:
+                string += "nothing."
+        return string

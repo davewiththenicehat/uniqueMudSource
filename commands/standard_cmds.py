@@ -186,6 +186,27 @@ class CmdLook(EvCmdLook, Command):
     def func(self):
         """
         Handle the looking.
+
+        Obj.at_look, evennia.objects.objects.DefaultObject:
+            Called when this object performs a look. It allows to
+            customize just what this means. It will not itself
+            send any data.
+
+            Args:
+                target (Object): The target being looked at. This is
+                    commonly an object or the current location. It will
+                    be checked for the "view" type access.
+                **kwargs (dict): Arbitrary, optional arguments for users
+                    overriding the call. This will be passed into
+                    return_appearance, get_display_name and at_desc but is not used
+                    by default.
+
+            Returns:
+                lookstring (str): A ready-processed look string
+                    potentially ready to return to the looker.
+
+        Obj.return_appearance in typeclasses.objects.Object
+           called in the at_look method. Used to get proper rp names.
         """
         caller = self.caller
         target = self.target
@@ -210,7 +231,12 @@ class CmdLook(EvCmdLook, Command):
                                f"{caller.get_pronoun('|o')}self."
                     caller.location.msg_contents(room_msg, exclude=(caller,))
                 else:
-                    room_msg = f"{caller.usdesc.capitalize()} looks at {target.usdesc}."
+                    # target location is not caller or caller location
+                    if target.location not in (caller, caller.location):
+                        at_msg = f"something in {target.location.usdesc}"
+                    else:
+                        at_msg = f"{target.usdesc}"
+                    room_msg = f"{caller.usdesc.capitalize()} looks at {at_msg}."
                     target_msg = f"{caller.usdesc.capitalize()} looks at you."
                     caller.location.msg_contents(room_msg, exclude=(caller, target))
                     target.msg(target_msg)
