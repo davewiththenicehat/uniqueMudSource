@@ -72,6 +72,7 @@ class DeveloperCommand(Command):
             key, value = attribute.split(':')
             value = string_to_data(value)
             key = key.strip()
+            # print(f"key: {key} | value: {value}")
             # set know local attributes
             if key == 'requires_wielding':
                 self.requires_wielding = value
@@ -582,6 +583,10 @@ class CmdCmdFuncTest(DeveloperCommand):
         /d, deffer this command after setting its attributes.
             Functions that use attributes from self.caller.deffered_command will be using attributes
             on this command.
+        /unit_test_succ, if caller is a developer Command.combat_action will
+            always hit
+        /unit_test_fail, if caller is a developer Command.combat_action will
+            always miss
         char, the name of the character the command will target
         requires_wielding:True,
             requires_wielding refers to Command.requires_wielding
@@ -609,32 +614,41 @@ class CmdCmdFuncTest(DeveloperCommand):
         self.dmg_types = {"ACD": 1, "PRC": 0}  # dictionary of damage types this command can manipulate.
 
     def at_pre_cmd(self):
+        caller = self.caller
+        func_args = False  # used to detect if function arguments are present
         cmd_args = self.args.split('=')
-        if len(cmd_args) > 1:
-            cmd_args = cmd_args[0]
-            cmd_args = cmd_args.split(',')
-            if len(cmd_args) > 2:
-                self.set_inst_attrs(cmd_args[2:])
+        cmd_attrs = cmd_args[0]  # attributes are left of =
+        cmd_attrs = cmd_attrs.split(',')
+        if not cmd_attrs:
+            caller.msg("A function name is required.")
+            return True
+        else:
+            # switches and funcation name are left of the first comma
+            switch_func_name = cmd_attrs[0].split(' ')
+            self.func_name = switch_func_name[-1].strip()  # get func name
+            target_name = cmd_attrs[1]  # get target name from args
+            if len(cmd_args) > 1:  # if there are arugments for the function
+                func_args = cmd_args[1]  # collect function arguments
+            # create self.args to support UM targeting
+            if self.func_name == switch_func_name[0]:  # cmd has no switches
+                if func_args:
+                    self.args = f"{target_name} = {func_args}"
+                else:
+                    self.args = f"{target_name}"
+            else:  # command has switches
+                switches = switch_func_name[0]
+                if func_args:
+                    self.args = f"{switches} {target_name} = {func_args}"
+                else:
+                    self.args = f"{switches} {target_name}"
+            # if there are attributes after function and command target
+            if len(cmd_attrs) > 2:
+                self.set_inst_attrs(cmd_attrs[2:])  # set local cmd attrs
         super().at_pre_cmd()
 
     def func(self):
         caller = self.caller
-        cmd_args = self.lhslist
-        if not cmd_args:
-            caller.msg("A function name is required.")
-        func_name = cmd_args[0]
-        # set variables pass in command argument
-        if len(cmd_args) > 1:
-            target_name = cmd_args[1]
-            target = None
-            if target_name:
-                target = caller.search(target_name, quiet=True)
-                if target:
-                    target = target[0]
-                    self.target = target
-                else:
-                    caller.msg(f'{target_name} is not here.')
-                    return
+        func_name = self.func_name
         # if the defer switch is set, defer this command.
         if 'd' in self.switches:
             # defer the command
@@ -657,7 +671,7 @@ class CmdCmdFuncTest(DeveloperCommand):
         else:
             caller.msg(f'No function {func_name} found.')
             # Do not return here
-        if 'd' in self.switches:  # if this had the defer switch set, stop the defferal
+        if 'd' in self.switches:  # if cmd was deferred, stop it
             self.stop_forced()
 
 

@@ -1661,7 +1661,7 @@ class TestCommands(UniqueMudCmdTest):
                      # location messages
                      "Hitting Char2's \w+\s*\w*\.")
         kick_cmd = {
-                    'arg': f"= kick Char2 unit_test_succ, complete_cmd_early",
+                    'arg': f"= kick/unit_test_succ Char2, complete_cmd_early",
                     'receivers': kick_rc,
                     'post_reg_tests': kick_post
                    }
@@ -1674,7 +1674,7 @@ class TestCommands(UniqueMudCmdTest):
                      "You may want to dodge\.",
                      "evade \d+ VS kick \d+: Char kicks at you with their foot but you successfully evade the kick\.")
         kick_missed_cmd = {
-                    'arg': f"= kick Char2 unit_test_fail, complete_cmd_early",
+                    'arg': f"= kick/unit_test_fail Char2 , complete_cmd_early",
                     'receivers': kick_miss_rc,
                     'post_reg_tests': kick_miss_post
                    }
@@ -1691,7 +1691,7 @@ class TestCommands(UniqueMudCmdTest):
                      # location messages
                      "Hitting Char2's \w+\s*\w*\.")
         punch_cmd = {
-                    'arg': f"= punch Char2 unit_test_succ, complete_cmd_early",
+                    'arg': f"= punch/unit_test_succ Char2, complete_cmd_early",
                     'receivers': punch_rc,
                     'post_reg_tests': punch_post
                    }
@@ -1704,7 +1704,7 @@ class TestCommands(UniqueMudCmdTest):
                      # defenders messages
                      "evade \d+ VS punch \d+: Char punches at you with their fist but you successfully evade the punch\.")
         punch_missed_cmd = {
-                    'arg': f"= punch Char2 unit_test_fail, complete_cmd_early",
+                    'arg': f"= punch/unit_test_fail Char2, complete_cmd_early",
                     'receivers': punch_miss_rc,
                     'post_reg_tests': punch_miss_post
                    }
@@ -1731,7 +1731,7 @@ class TestCommands(UniqueMudCmdTest):
                      # location messages
                      "Hitting Char2's \w+\s*\w*\.")
         stab_cmd = {
-                    'arg': f"= stab Char2 unit_test_succ, complete_cmd_early",
+                    'arg': f"= stab/unit_test_succ Char2 , complete_cmd_early",
                     'receivers': stab_rc,
                     'post_reg_tests': stab_post
                    }
@@ -1743,7 +1743,7 @@ class TestCommands(UniqueMudCmdTest):
                      # defenders messages
                      "evade \d+ VS stab \d+: Char stabs at you with their sword but you successfully evade the stab\.")
         stab_missed_cmd = {
-                    'arg': f"= stab Char2 unit_test_fail, complete_cmd_early",
+                    'arg': f"= stab/unit_test_fail Char2, complete_cmd_early",
                     'receivers': stab_miss_rc,
                     'post_reg_tests': stab_miss_post
                    }
@@ -1895,7 +1895,7 @@ class TestCommands(UniqueMudCmdTest):
         """
         # test hitting with replacement messages.
         command = developer_cmds.CmdCmdFuncTest
-        arg = "/r/d combat_action, Char2, weapon_desc:weapon_name, cmd_type:unarmed, unit_test_succ:None = False, caller_message, target_message, room_message"
+        arg = "/r/d/unit_test_succ combat_action, Char2, weapon_desc:weapon_name, cmd_type:unarmed = False, caller_message, target_message, room_message"
         receivers = {
             self.char1: None,
             self.char2: None,
@@ -1907,7 +1907,7 @@ class TestCommands(UniqueMudCmdTest):
         self.assertRegex(cmd_result, "room_message and connects\. Hitting Char2's ")
         # test missing with replacement arguments
         command = developer_cmds.CmdCmdFuncTest
-        arg = "/r/d combat_action, Char2, weapon_desc:weapon_name, cmd_type:unarmed, unit_test_fail:None = False, caller_message, target_message, room_message"
+        arg = "/r/d combat_action, Char2, weapon_desc:weapon_name, cmd_type:unarmed = False, caller_message, target_message, room_message"
         receivers = {
             self.char1: None,
             self.char2: None,
@@ -2072,3 +2072,76 @@ class TestCommands(UniqueMudCmdTest):
             arg = f"= {aliase} intentional fail"
             wnt_msg = "You do not see intentional fail here."
             cmd_result = self.call(command(), arg, wnt_msg)
+
+    def test_send_emote(self):
+        self.char3 = create.create_object(
+            self.character_typeclass, key="Character Three", location=self.room1, home=self.room1
+        )
+        self.char4 = create.create_object(
+            self.character_typeclass, key="Character Four", location=self.room1, home=self.room1
+        )
+        self.char5 = create.create_object(
+            self.character_typeclass, key="Character Five", location=self.room1, home=self.room1
+        )
+        self.char5.usdesc ='a normal parson'  # parson intentional
+        #general message
+        command = developer_cmds.CmdCmdFuncTest
+        arg = "send_emote, Char2 = test message"
+        receivers = {
+            self.char1: "test message",
+            self.char2: "test message",
+            self.obj1: "test message"
+        }
+        cmd_result = self.call_multi_receivers(command(), arg, receivers)
+        # test /me switch
+        command = developer_cmds.CmdCmdFuncTest
+        arg = "send_emote, Char2 = /me message"
+        receivers = {
+            self.char1: "You message",
+            self.char2: "Char message",
+            self.obj1: "Char message"
+        }
+        cmd_result = self.call_multi_receivers(command(), arg, receivers)
+        # test /target switch
+        command = developer_cmds.CmdCmdFuncTest
+        arg = f"send_emote, normal = /target message"
+        receivers = {
+            self.char1: "A normal person message",
+            self.char3: "you message",
+            self.obj1: "A normal person message"
+        }
+        cmd_result = self.call_multi_receivers(command(), arg, receivers)
+        # test /target switch, with a number
+        command = developer_cmds.CmdCmdFuncTest
+        arg = f"send_emote, 2 person = /target message"
+        receivers = {
+            self.char1: "A normal person message",
+            self.char2: "A normal person message",
+            self.char3: "A normal person message",
+            self.char4: "you message",
+            self.char5: "A normal person message",
+            self.obj1: "A normal person message"
+        }
+        cmd_result = self.call_multi_receivers(command(), arg, receivers)
+        # search for multi word desc
+        command = developer_cmds.CmdCmdFuncTest
+        arg = f"send_emote, normal person = /target message"
+        receivers = {
+            self.char1: "A normal person message",
+            self.char2: "A normal person message",
+            self.char3: "you message",
+            self.char4: "A normal person message",
+            self.char5: "A normal person message",
+            self.obj1: "A normal person message"
+        }
+        cmd_result = self.call_multi_receivers(command(), arg, receivers)
+        arg = f"send_emote, normal parson = /target message"
+        receivers = {
+            self.char1: "a normal parson message",
+            self.char2: "a normal parson message",
+            self.char3: "a normal parson message",
+            self.char4: "a normal parson message",
+            self.char5: "you message",
+            self.obj1: "a normal parson message"
+        }
+        cmd_result = self.call_multi_receivers(command(), arg, receivers)

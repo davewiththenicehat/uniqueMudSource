@@ -10,8 +10,10 @@ from evennia import default_cmds
 from world import status_functions
 from evennia import utils
 from evennia.utils.logger import log_info
+from evennia.contrib import rpsystem
+
 from world.rules import damage, actions, body
-from utils.um_utils import highlighter
+from utils.um_utils import highlighter, objs_sdesc_str
 
 
 class Command(default_cmds.MuxCommand):
@@ -839,10 +841,10 @@ class Command(default_cmds.MuxCommand):
 
         Unit Test:
             If called by a character attached to a developer account. Arguments
-            'unit_test_succ' and 'unit_test_fail' can be added anywhere in the
-            commands arguments.
-                'unit_test_succ': combat_action will always succeed.
-                'unit_test_fail': combat_action will always fail.
+            '/unit_test_succ' and '/unit_test_fail' are switches that cause
+            a combat_action to always fail or succeed.
+                '/unit_test_succ': combat_action will always succeed.
+                '/unit_test_fail': combat_action will always fail.
 
             in commands.test.TestCommands.test_ most any command set.
 
@@ -882,11 +884,11 @@ class Command(default_cmds.MuxCommand):
             if hasattr(caller.account, 'permissions'):
                 perm_str = str(caller.account.permissions)
             if 'developer' in perm_str:  # if the caller is a developer
-                if 'unit_test_succ' in self.args:  # attack always succeeds
+                if 'unit_test_succ' in self.switches:  # attack always succeeds
                     result = 95
                     action_result = 100
                     evade_result = 5
-                elif 'unit_test_fail' in self.args:  # attack always fails
+                elif 'unit_test_fail' in self.switches:  # attack always fails
                     result = -95
                     action_result = 5
                     evade_result = 100
@@ -1195,3 +1197,73 @@ class Command(default_cmds.MuxCommand):
             skill_ranks = int(skill_ranks)
             return skill_ranks
         return 0
+
+    def send_emote(self, emote, sender=None, receivers=None, anonymous_add=None):
+        """
+        Distribute an emote.
+
+        Arguments:
+            sender (Object): The one sending the emote.
+            receivers (iterable): Receivers of the emote. These
+                will also form the basis for which sdescs are
+                'valid' to use in the emote.
+            emote (str): The raw emote string as input by emoter.
+            anonymous_add (str or None, optional): If `sender` is not
+                self-referencing in the emote, this will auto-add
+                `sender`'s data to the emote. Possible values are
+                - None: No auto-add at anonymous emote
+                - 'last': Add sender to the end of emote as [sender]
+                - 'first': Prepend sender to start of emote.
+
+        """
+        caller = self.caller
+        target = self.target
+        if not sender:
+            sender = caller
+        if not receivers:
+            receivers = caller.location.contents
+        sender_emote = False
+        target_emote = False
+        targets_emote = {}
+        # print(f"\nself.args: {self.args}")
+        if '/me' in emote:
+            receivers.remove(caller)
+            sender_emote = emote.replace('/me', 'you')
+            sender_emote = sender_emote.capitalize()
+        if '/target' in emote:
+            #if self.targets:
+            #    for target in self.targets:
+            #        receivers.remove(target)
+            #        target_names = objs_sdesc_str(self.targets, target)
+            #        target_emote = emote.replace('/target', target_names)
+            #        rpsystem.send_emote(sender, self.targets, target_emote, anonymous_add)
+            if target:
+                target_search = rpsystem.parse_sdescs_and_recogs(caller, self.caller.location.contents, f'/{target.usdesc}', search_mode=True)
+                # print(f"target_search: {target_search}")
+                receivers.remove(target)
+                # print(f"receivers: {receivers}")
+                target_emote = emote.replace('/target', 'you')
+                if len(target_search) < 2:
+                    # print("length less than 2")
+                    if sender_emote:
+                        targ_name = target.get_display_name(caller)
+                        sender_emote = sender_emote.replace('/target', f"{targ_name}")
+                else:
+                    # print("length 2 or more")
+                    # print(f"target.dbref: {target.dbref}")
+                    target_num = target_search.index(target)
+                    target_num += 1
+                    if sender_emote:
+                        targ_name = target.get_display_name(caller)
+                        sender_emote = sender_emote.replace('/target', f"{targ_name}")
+        # send the emotes
+        if sender_emote:
+            rpsystem.send_emote(sender, (caller,), sender_emote, anonymous_add)
+        if target_emote:
+            # print(f"target_emote: {target_emote}")
+            rpsystem.send_emote(sender, (target,), target_emote, anonymous_add)
+        # print(f"emote: {emote}")
+        for receiver in receivers:
+            targ_name = target.get_display_name(receiver)
+            emote = emote.replace('/target', f"{targ_name}")
+            rpsystem.send_emote(sender, (receiver,), emote, anonymous_add)
