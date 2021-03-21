@@ -1225,11 +1225,10 @@ class Command(default_cmds.MuxCommand):
         sender_emote = False
         target_emote = False
         targets_emote = {}
-        # print(f"\nself.args: {self.args}")
-        if '/me' in emote:
+        if '/me' in emote:  # replace me for caller
             receivers.remove(caller)
             sender_emote = emote.replace('/me', 'you')
-            sender_emote = sender_emote.capitalize()
+            sender_emote = sender_emote
         if '/target' in emote:
             #if self.targets:
             #    for target in self.targets:
@@ -1237,33 +1236,21 @@ class Command(default_cmds.MuxCommand):
             #        target_names = objs_sdesc_str(self.targets, target)
             #        target_emote = emote.replace('/target', target_names)
             #        rpsystem.send_emote(sender, self.targets, target_emote, anonymous_add)
-            if target:
-                target_search = rpsystem.parse_sdescs_and_recogs(caller, self.caller.location.contents, f'/{target.usdesc}', search_mode=True)
-                # print(f"target_search: {target_search}")
-                receivers.remove(target)
-                # print(f"receivers: {receivers}")
+            if target:  # if the command has a single target
+                receivers.remove(target)  # target will receive it's own emote
+                # make target's emote replacing /target with 'you'
                 target_emote = emote.replace('/target', 'you')
-                if len(target_search) < 2:
-                    # print("length less than 2")
-                    if sender_emote:
-                        targ_name = target.get_display_name(caller).lower()
-                        sender_emote = sender_emote.replace('/target', f"{targ_name}")
-                else:
-                    # print("length 2 or more")
-                    # print(f"target.dbref: {target.dbref}")
-                    target_num = target_search.index(target)
-                    target_num += 1
-                    if sender_emote:
-                        targ_name = target.get_display_name(caller).lower()
-                        sender_emote = sender_emote.replace('/target', f"{targ_name}")
+                if sender_emote:  # if there is a sender specific emote
+                    targ_name = target.get_display_name(caller).lower()
+                    # replace /target with target's name from sender's view
+                    sender_emote = sender_emote.replace('/target', f"{targ_name}")
         # send the emotes
         if sender_emote:
             rpsystem.send_emote(sender, (caller,), sender_emote, anonymous_add)
         if target_emote:
-            # print(f"target_emote: {target_emote}")
             rpsystem.send_emote(sender, (target,), target_emote, anonymous_add)
-        # print(f"emote: {emote}")
-        for receiver in receivers:
+        for receiver in receivers:  # process receivers separately
             targ_name = target.get_display_name(receiver).lower()
             emote = emote.replace('/target', f"{targ_name}")
+            # replace /target with target's name from receiver's view
             rpsystem.send_emote(sender, (receiver,), emote, anonymous_add)

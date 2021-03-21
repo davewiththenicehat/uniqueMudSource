@@ -2097,7 +2097,7 @@ class TestCommands(UniqueMudCmdTest):
         command = developer_cmds.CmdCmdFuncTest
         arg = "send_emote, Char2 = /me message"
         receivers = {
-            self.char1: "You message",
+            self.char1: "you message",
             self.char2: "Char message",
             self.obj1: "Char message"
         }
