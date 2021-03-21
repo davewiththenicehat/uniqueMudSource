@@ -1246,7 +1246,7 @@ class Command(default_cmds.MuxCommand):
                 if len(target_search) < 2:
                     # print("length less than 2")
                     if sender_emote:
-                        targ_name = target.get_display_name(caller)
+                        targ_name = target.get_display_name(caller).lower()
                         sender_emote = sender_emote.replace('/target', f"{targ_name}")
                 else:
                     # print("length 2 or more")
@@ -1254,7 +1254,7 @@ class Command(default_cmds.MuxCommand):
                     target_num = target_search.index(target)
                     target_num += 1
                     if sender_emote:
-                        targ_name = target.get_display_name(caller)
+                        targ_name = target.get_display_name(caller).lower()
                         sender_emote = sender_emote.replace('/target', f"{targ_name}")
         # send the emotes
         if sender_emote:
@@ -1264,6 +1264,6 @@ class Command(default_cmds.MuxCommand):
             rpsystem.send_emote(sender, (target,), target_emote, anonymous_add)
         # print(f"emote: {emote}")
         for receiver in receivers:
-            targ_name = target.get_display_name(receiver)
+            targ_name = target.get_display_name(receiver).lower()
             emote = emote.replace('/target', f"{targ_name}")
             rpsystem.send_emote(sender, (receiver,), emote, anonymous_add)
