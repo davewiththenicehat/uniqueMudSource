@@ -1,6 +1,7 @@
 """
 This module contains misc small functions
 """
+import string
 
 from evennia.utils.logger import log_info, log_warn, log_err
 
@@ -176,3 +177,34 @@ def objs_sdesc_str(objects, you_object=None):
             return objects_names
     else:
         return ""
+
+
+def cap_msg(msg):
+    """
+    Capitalize the first word of a message, as well as the first word of each
+    sentence within the message.
+
+    Arguments:
+        msg: string, a message to capitalize at the start of the string
+            and the start of each sentence.
+
+    Returns:
+        string, with proper capitalization for sentences.
+    """
+    for punc in '.?!':
+        punc += ' '
+        if punc in msg:
+            sentences = msg.split(punc)
+            # Normally the last punctuation will not have a space after it.
+            # use construction to detect first run. Otherwise the punc string
+            # would get added to the end of the construction. Resulting in
+            # double punctuation.
+            construction = False
+            # in reverse to easily sort last sentence
+            for sentence in reversed(sentences):
+                if construction:
+                    construction = sentence.capitalize() + punc + construction
+                else:
+                    construction = sentence.capitalize()
+            msg = construction
+    return msg

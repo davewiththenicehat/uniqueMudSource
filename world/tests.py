@@ -158,6 +158,13 @@ class TestUtils(UniqueMudCmdTest):
     Objects in EvenniaTest
         self.obj1 self.obj2 self.char1 self.char2 self.exit
     """
+
+    def cap_msg(self):
+        for punc in '.?!':
+            sentence = um_utils.cap_msg(f'this is a sentence{punc} sec{punc}ond sentence{punc}')
+            exp_sentence = f'This is a sentence{punc} Sec{punc}ond sentence{punc}'
+            self.assertEqual(sentence, exp_sentence)
+
     def test_element(self):
         """
         test utils.element.Element
