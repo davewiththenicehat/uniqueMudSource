@@ -179,38 +179,37 @@ def objs_sdesc_str(objects, you_object=None):
         return ""
 
 
-def cap_msg(msg):
+def replace_cap(msg, switch, rep_txt, cap=True):
     """
-    Capitalize the first word of a message, as well as the first word of each
-    sentence within the message.
+    Replace a sequence of characters in a string with another.
+    Automatically capitalizing the first letter of the replacement
+    string if it is the first word in a sentence.
 
     Arguments:
         msg: string, a message to capitalize at the start of the string
             and the start of each sentence.
+        switch: string, the switch to replace
+            example: "/target"
+        rep_txt: string, replacement text, to replace the switch with.
+        cap=True: bool, Capitalize the first character of the passed msg.
 
     Returns:
         string, with proper capitalization for sentences.
+
     """
-    for punc in '.?!':
-        punc += ' '
-        if punc in msg:
-            sentences = msg.split(punc)
-            # Normally the last punctuation will not have a space after it.
-            # use construction to detect first run. Otherwise the punc string
-            # would get added to the end of the construction. Resulting in
-            # double punctuation.
-            construction = False
-            # in reverse to easily sort last sentence
-            for sentence in reversed(sentences):
-                # capizalize first the first letter
-                sentence = sentence.strip()
-                sentence = sentence[0].upper() + sentence[1:]
-                # assemble the sentence
-                if construction:
-                    construction = sentence + punc + construction
-                else:
-                    construction = sentence
-            msg = construction
-    if not msg[0].isupper():
+    msg = msg.strip()
+    count = 0  # used to prevent infinite looping
+    while switch in msg:  # loop if switch exists in msg
+        count += 1
+        i = msg.find(switch)
+        # If the switch is the first word in a sentence.
+        if i > 1 and msg[i-1] == ' ' and (msg[i-2] in '.?!'):
+            msg = msg.replace(switch, rep_txt[0].upper() + rep_txt[1:], 1)
+        else:  # the switch is not the first word in a sentence.
+            msg = msg.replace(switch, rep_txt, 1)
+        if count > 100:  # stop if has looped more than 100 times
+            error_report("utils.um_utils.emote_cap reached 100 cycles.")
+            break
+    if cap:  # capitalize the first letter of the message.
         msg = msg[0].upper() + msg[1:]
     return msg

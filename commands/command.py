@@ -13,7 +13,7 @@ from evennia.utils.logger import log_info
 from evennia.contrib import rpsystem
 
 from world.rules import damage, actions, body
-from utils.um_utils import highlighter, objs_sdesc_str, cap_msg
+from utils.um_utils import highlighter, objs_sdesc_str, error_report, replace_cap
 
 
 class Command(default_cmds.MuxCommand):
@@ -1227,7 +1227,7 @@ class Command(default_cmds.MuxCommand):
         targets_emote = {}
         if '/me' in emote:  # replace me for caller
             receivers.remove(caller)
-            sender_emote = emote.replace('/me', 'you')
+            sender_emote = replace_cap(emote, '/me', 'you')
             sender_emote = sender_emote
         if '/target' in emote:
             #if self.targets:
@@ -1240,18 +1240,18 @@ class Command(default_cmds.MuxCommand):
             if target:  # if the command has a single target
                 receivers.remove(target)  # target will receive it's own emote
                 # make target's emote replacing /target with 'you'
-                target_emote = emote.replace('/target', 'you')
+                target_emote = replace_cap(emote, '/target', 'you')
                 if sender_emote:  # if there is a sender specific emote
                     targ_name = target.get_display_name(caller).lower()
                     # replace /target with target's name from sender's view
-                    sender_emote = sender_emote.replace('/target', f"{targ_name}")
+                    sender_emote = replace_cap(sender_emote, '/target', targ_name)
         # send the emotes
         if sender_emote:
-            rpsystem.send_emote(sender, (caller,), cap_msg(sender_emote), anonymous_add)
+            rpsystem.send_emote(sender, (caller,), sender_emote, anonymous_add)
         if target_emote:
-            rpsystem.send_emote(sender, (target,), cap_msg(target_emote), anonymous_add)
+            rpsystem.send_emote(sender, (target,), target_emote, anonymous_add)
         for receiver in receivers:  # process receivers separately
             targ_name = target.get_display_name(receiver).lower()
-            emote = emote.replace('/target', f"{targ_name}")
+            emote = replace_cap(emote, '/target', targ_name)
             # replace /target with target's name from receiver's view
-            rpsystem.send_emote(sender, (receiver,), cap_msg(emote), anonymous_add)
+            rpsystem.send_emote(sender, (receiver,), emote, anonymous_add)
