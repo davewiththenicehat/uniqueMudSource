@@ -202,9 +202,15 @@ def cap_msg(msg):
             construction = False
             # in reverse to easily sort last sentence
             for sentence in reversed(sentences):
+                # capizalize first the first letter
+                sentence = sentence.strip()
+                sentence = sentence[0].upper() + sentence[1:]
+                # assemble the sentence
                 if construction:
-                    construction = sentence.capitalize() + punc + construction
+                    construction = sentence + punc + construction
                 else:
-                    construction = sentence.capitalize()
+                    construction = sentence
             msg = construction
+    if not msg[0].isupper():
+        msg = msg[0].upper() + msg[1:]
     return msg

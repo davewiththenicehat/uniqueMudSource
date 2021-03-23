@@ -13,7 +13,7 @@ from evennia.utils.logger import log_info
 from evennia.contrib import rpsystem
 
 from world.rules import damage, actions, body
-from utils.um_utils import highlighter, objs_sdesc_str
+from utils.um_utils import highlighter, objs_sdesc_str, cap_msg
 
 
 class Command(default_cmds.MuxCommand):
@@ -1231,6 +1231,7 @@ class Command(default_cmds.MuxCommand):
             sender_emote = sender_emote
         if '/target' in emote:
             #if self.targets:
+            # utils.iter_to_string(initer, endsep="and", addquote=False):
             #    for target in self.targets:
             #        receivers.remove(target)
             #        target_names = objs_sdesc_str(self.targets, target)
@@ -1246,11 +1247,11 @@ class Command(default_cmds.MuxCommand):
                     sender_emote = sender_emote.replace('/target', f"{targ_name}")
         # send the emotes
         if sender_emote:
-            rpsystem.send_emote(sender, (caller,), sender_emote, anonymous_add)
+            rpsystem.send_emote(sender, (caller,), cap_msg(sender_emote), anonymous_add)
         if target_emote:
-            rpsystem.send_emote(sender, (target,), target_emote, anonymous_add)
+            rpsystem.send_emote(sender, (target,), cap_msg(target_emote), anonymous_add)
         for receiver in receivers:  # process receivers separately
             targ_name = target.get_display_name(receiver).lower()
             emote = emote.replace('/target', f"{targ_name}")
             # replace /target with target's name from receiver's view
-            rpsystem.send_emote(sender, (receiver,), emote, anonymous_add)
+            rpsystem.send_emote(sender, (receiver,), cap_msg(emote), anonymous_add)

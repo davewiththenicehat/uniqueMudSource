@@ -1099,6 +1099,40 @@ class Character(AllObjectsMixin, CharExAndObjMixin, ClothedCharacter, GenderChar
                         return hand
         return False
 
+    def get_display_name(self, looker, **kwargs):
+        """
+        Displays the name of the object in a viewer-aware manner.
+
+        Args:
+            looker (TypedObject): The object or account that is looking
+                at/getting inforamtion for this object.
+
+        Keyword Args:
+            pose (bool): Include the pose (if available) in the return.
+
+        Returns:
+            name (str): A string of the sdesc containing the name of the object,
+            if this is defined.
+                including the DBREF if this user is privileged to control
+                said object.
+
+        Notes:
+            The RPCharacter version of this method colors its display to make
+            characters stand out from other objects.
+
+        """
+        idstr = "(#%s)" % self.id if self.access(looker, access_type="control") else ""
+        if looker == self:
+            sdesc = self.key
+        else:
+            try:
+                recog = looker.recog.get(self)
+            except AttributeError:
+                recog = None
+            sdesc = recog or (hasattr(self, "sdesc") and self.sdesc.get()) or self.key
+        pose = " %s" % (self.db.pose or "is here.") if kwargs.get("pose", False) else ""
+        return f"{sdesc}{idstr}{pose}"
+
 class NaturalHealing(DefaultScript):
     """
     Script to control when Character's natural healing
