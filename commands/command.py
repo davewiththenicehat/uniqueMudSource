@@ -1215,6 +1215,7 @@ class Command(default_cmds.MuxCommand):
                 - 'last': Add sender to the end of emote as [sender]
                 - 'first': Prepend sender to start of emote.
 
+        # change color codes in object.process_sdesc
         """
         caller = self.caller
         target = self.target

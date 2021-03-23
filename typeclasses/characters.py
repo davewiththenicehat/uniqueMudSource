@@ -1133,6 +1133,25 @@ class Character(AllObjectsMixin, CharExAndObjMixin, ClothedCharacter, GenderChar
         pose = " %s" % (self.db.pose or "is here.") if kwargs.get("pose", False) else ""
         return f"{sdesc}{idstr}{pose}"
 
+    def process_sdesc(self, sdesc, obj, **kwargs):
+        """
+        Allows to customize how your sdesc is displayed (primarily by
+        changing colors).
+
+        Args:
+            sdesc (str): The sdesc to display.
+            obj (Object): The object to which the adjoining sdesc
+                belongs. If this object is equal to yourself, then
+                you are viewing yourself (and sdesc is your key).
+                This is not used by default.
+
+        Returns:
+            sdesc (str): The processed sdesc ready
+                for display.
+
+        """
+        return sdesc
+
 class NaturalHealing(DefaultScript):
     """
     Script to control when Character's natural healing

@@ -2092,16 +2092,16 @@ class TestCommands(UniqueMudCmdTest):
             self.char2: "Test message",
             self.obj1: "Test message"
         }
-        cmd_result = self.call_multi_receivers(command(), arg, receivers, noansi=True)
-        # test /me switch
+        cmd_result = self.call_multi_receivers(command(), arg, receivers, noansi=False)
+        # test /me switchm /me is self.char1 command caller
         command = developer_cmds.CmdCmdFuncTest
-        arg = "send_emote, Char2 = /me message"
+        arg = "send_emote, char2 = /me message"
         receivers = {
             self.char1: "You message",
             self.char2: "Char message",
             self.obj1: "Char message"
         }
-        cmd_result = self.call_multi_receivers(command(), arg, receivers, noansi=True)
+        cmd_result = self.call_multi_receivers(command(), arg, receivers, noansi=False)
         # test /target switch
         command = developer_cmds.CmdCmdFuncTest
         arg = f"send_emote, normal = /target message"
@@ -2110,7 +2110,7 @@ class TestCommands(UniqueMudCmdTest):
             self.char3: "You message",
             self.obj1: "A normal person message"
         }
-        cmd_result = self.call_multi_receivers(command(), arg, receivers, noansi=True)
+        cmd_result = self.call_multi_receivers(command(), arg, receivers, noansi=False)
         # when target is not the first thing in the emote
         command = developer_cmds.CmdCmdFuncTest
         arg = f"send_emote, normal = pre message /target message"
@@ -2119,7 +2119,7 @@ class TestCommands(UniqueMudCmdTest):
             self.char3: "Pre message you message",
             self.obj1: "Pre message a normal person message"
         }
-        cmd_result = self.call_multi_receivers(command(), arg, receivers, noansi=True)
+        cmd_result = self.call_multi_receivers(command(), arg, receivers, noansi=False)
         # test /target switch, with a number
         command = developer_cmds.CmdCmdFuncTest
         arg = f"send_emote, 2 person = /target message"
@@ -2131,7 +2131,7 @@ class TestCommands(UniqueMudCmdTest):
             self.char5: "A normal person message",
             self.obj1: "A normal person message"
         }
-        cmd_result = self.call_multi_receivers(command(), arg, receivers, noansi=True)
+        cmd_result = self.call_multi_receivers(command(), arg, receivers, noansi=False)
         # search for multi word desc
         command = developer_cmds.CmdCmdFuncTest
         arg = f"send_emote, normal person = /target message"
@@ -2143,7 +2143,7 @@ class TestCommands(UniqueMudCmdTest):
             self.char5: "A normal person message",
             self.obj1: "A normal person message"
         }
-        cmd_result = self.call_multi_receivers(command(), arg, receivers, noansi=True)
+        cmd_result = self.call_multi_receivers(command(), arg, receivers, noansi=False)
         arg = f"send_emote, normal giant = /target message"
         receivers = {
             self.char1: "A normal giant message",
@@ -2153,4 +2153,16 @@ class TestCommands(UniqueMudCmdTest):
             self.char5: "You message",
             self.obj1: "A normal giant message"
         }
-        cmd_result = self.call_multi_receivers(command(), arg, receivers, noansi=True)
+        cmd_result = self.call_multi_receivers(command(), arg, receivers, noansi=False)
+        # target an object
+        command = developer_cmds.CmdCmdFuncTest
+        arg = f"send_emote, obj2 = /target message"
+        receivers = {
+            self.char1: "Obj2 message",
+            self.char2: "Obj2 message",
+            self.char3: "Obj2 message",
+            self.char4: "Obj2 message",
+            self.char5: "Obj2 message",
+            self.obj2: "You message"
+        }
+        cmd_result = self.call_multi_receivers(command(), arg, receivers, noansi=False)
