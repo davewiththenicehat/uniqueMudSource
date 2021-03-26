@@ -1,9 +1,11 @@
 """
 This module contains misc small functions
 """
-import string, re
+import re
 
-from evennia.utils.logger import log_info, log_warn, log_err
+from evennia.utils.logger import log_err
+from evennia.contrib import rpsystem
+
 
 def string_to_data(value=None):
     """
@@ -26,7 +28,7 @@ def string_to_data(value=None):
         ValueError, if the argument was not passed or is None.
             Not the string 'None' but the data variable None
     """
-    if value == None:
+    if value is None:
         raise ValueError("utils.um_utils.string_to_data, argument 1 must be passed and can " \
                          "not equal None. Not the string 'None' but the data variable None.")
     try:
@@ -42,6 +44,7 @@ def string_to_data(value=None):
         elif value == 'True':
             value = True
     return value
+
 
 def highlighter(message, highlight_color=None, **kwargs):
     """
@@ -191,9 +194,8 @@ def replace_cap(msg, switch, rep_txt, upper=False, lower=False):
         switch: string, the switch to replace
             example: "/target"
         rep_txt: string, replacement text, to replace the switch with.
-        cap=True: bool, Capitalize the first character of the passed msg.
-        upper=False: bool, all replacements show start with a upper case
-        lower=False: bool, all replacements show start with a lower case
+        upper=False: bool, all replacements start with a upper case
+        lower=False: bool, all replacements start with a lower case
 
     Returns:
         string, with proper capitalization for sentences.
@@ -221,3 +223,59 @@ def replace_cap(msg, switch, rep_txt, upper=False, lower=False):
     if switch in msg:
         msg = msg.replace(switch, rep_txt)
     return msg
+
+
+def um_emote(emote, sender, receivers=None, target=None, anonymous_add=None):
+    """
+    Distribute an emote.
+
+    Arguments:
+        sender (Object): The one sending the emote.
+        receivers (iterable): Receivers of the emote. These
+            will also form the basis for which sdescs are
+            'valid' to use in the emote.
+        emote (str): The raw emote string as input by emoter.
+        anonymous_add (str or None, optional): If `sender` is not
+            self-referencing in the emote, this will auto-add
+            `sender`'s data to the emote. Possible values are
+            - None: No auto-add at anonymous emote
+            - 'last': Add sender to the end of emote as [sender]
+            - 'first': Prepend sender to start of emote.
+
+    # change color codes in object.process_sdesc
+    """
+    if not receivers:
+        receivers = sender.location.contents
+    sender_emote = False
+    target_emote = False
+    targets_emote = {}
+    if '/me' in emote:  # replace me for sender
+        receivers.remove(sender)
+        sender_emote = replace_cap(emote, '/me', 'you')
+        sender_emote = sender_emote
+    if '/target' in emote:
+        #if self.targets:
+        # utils.iter_to_string(initer, endsep="and", addquote=False):
+        #    for target in self.targets:
+        #        receivers.remove(target)
+        #        target_names = objs_sdesc_str(self.targets, target)
+        #        target_emote = emote.replace('/target', target_names)
+        #        rpsystem.send_emote(sender, self.targets, target_emote, anonymous_add)
+        if target:  # if the command has a single target
+            receivers.remove(target)  # target will receive it's own emote
+            # make target's emote replacing /target with 'you'
+            target_emote = replace_cap(emote, '/target', 'you')
+            if sender_emote:  # if there is a sender specific emote
+                targ_name = target.get_display_name(sender).lower()
+                # replace /target with target's name from sender's view
+                sender_emote = replace_cap(sender_emote, '/target', targ_name)
+    # send the emotes
+    if sender_emote:
+        rpsystem.send_emote(sender, (sender,), sender_emote, anonymous_add)
+    if target_emote:
+        rpsystem.send_emote(sender, (target,), target_emote, anonymous_add)
+    for receiver in receivers:  # process receivers separately
+        targ_name = target.get_display_name(receiver).lower()
+        rec_emote = replace_cap(emote, '/target', targ_name)
+        # replace /target with target's name from receiver's view
+        rpsystem.send_emote(sender, (receiver,), rec_emote, anonymous_add)
