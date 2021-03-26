@@ -2250,6 +2250,18 @@ class TestCommands(UniqueMudCmdTest):
             self.obj2: "You message"
         }
         cmd_result = self.call_multi_receivers(command(), arg, receivers, noansi=False)
+        # the command has no target, but the /target switch appears in the msg
+        command = developer_cmds.CmdCmdFuncTest
+        arg = f"send_emote, None = /target message"
+        receivers = {
+            self.char1: f"{ANSI_RED}nothing{ANSI_NORMAL} message",
+            self.char2: f"{ANSI_RED}nothing{ANSI_NORMAL} message",
+            self.char3: f"{ANSI_RED}nothing{ANSI_NORMAL} message",
+            self.char4: f"{ANSI_RED}nothing{ANSI_NORMAL} message",
+            self.char5: f"{ANSI_RED}nothing{ANSI_NORMAL} message",
+            self.obj1: f"{ANSI_RED}nothing{ANSI_NORMAL} message"
+        }
+        cmd_result = self.call_multi_receivers(command(), arg, receivers, noansi=False)
         # test the upper switch.
         result = replace_cap("/target test /target test. /target", "/target", "name", upper=True, lower=False)
         self.assertEqual(result, "Name test Name test. Name")

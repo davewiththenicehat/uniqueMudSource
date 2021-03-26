@@ -275,7 +275,12 @@ def um_emote(emote, sender, receivers=None, target=None, anonymous_add=None):
     if target_emote:
         rpsystem.send_emote(sender, (target,), target_emote, anonymous_add)
     for receiver in receivers:  # process receivers separately
-        targ_name = target.get_display_name(receiver).lower()
-        rec_emote = replace_cap(emote, '/target', targ_name)
+        rec_emote = emote
+        if '/target' in emote:
+            if target:
+                targ_name = target.get_display_name(receiver).lower()
+                rec_emote = replace_cap(emote, '/target', targ_name)
+            else:
+                rec_emote = rec_emote.replace("/target", "|rnothing|n")
         # replace /target with target's name from receiver's view
         rpsystem.send_emote(sender, (receiver,), rec_emote, anonymous_add)
