@@ -1253,6 +1253,6 @@ class Command(default_cmds.MuxCommand):
             rpsystem.send_emote(sender, (target,), target_emote, anonymous_add)
         for receiver in receivers:  # process receivers separately
             targ_name = target.get_display_name(receiver).lower()
-            emote = replace_cap(emote, '/target', targ_name)
+            rec_emote = replace_cap(emote, '/target', targ_name)
             # replace /target with target's name from receiver's view
-            rpsystem.send_emote(sender, (receiver,), emote, anonymous_add)
+            rpsystem.send_emote(sender, (receiver,), rec_emote, anonymous_add)

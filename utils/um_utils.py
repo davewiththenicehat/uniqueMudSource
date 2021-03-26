@@ -1,7 +1,7 @@
 """
 This module contains misc small functions
 """
-import string
+import string, re
 
 from evennia.utils.logger import log_info, log_warn, log_err
 
@@ -179,7 +179,7 @@ def objs_sdesc_str(objects, you_object=None):
         return ""
 
 
-def replace_cap(msg, switch, rep_txt, cap=True):
+def replace_cap(msg, switch, rep_txt, upper=False, lower=False):
     """
     Replace a sequence of characters in a string with another.
     Automatically capitalizing the first letter of the replacement
@@ -192,24 +192,32 @@ def replace_cap(msg, switch, rep_txt, cap=True):
             example: "/target"
         rep_txt: string, replacement text, to replace the switch with.
         cap=True: bool, Capitalize the first character of the passed msg.
+        upper=False: bool, all replacements show start with a upper case
+        lower=False: bool, all replacements show start with a lower case
 
     Returns:
         string, with proper capitalization for sentences.
 
+    Unit tests:
+        commands.test.TestCommands.test_emote
     """
     msg = msg.strip()
-    count = 0  # used to prevent infinite looping
-    while switch in msg:  # loop if switch exists in msg
-        count += 1
-        i = msg.find(switch)
-        # If the switch is the first word in a sentence.
-        if i > 1 and msg[i-1] == ' ' and (msg[i-2] in '.?!'):
-            msg = msg.replace(switch, rep_txt[0].upper() + rep_txt[1:], 1)
-        else:  # the switch is not the first word in a sentence.
-            msg = msg.replace(switch, rep_txt, 1)
-        if count > 100:  # stop if has looped more than 100 times
-            error_report("utils.um_utils.emote_cap reached 100 cycles.")
-            break
-    if cap:  # capitalize the first letter of the message.
-        msg = msg[0].upper() + msg[1:]
+    if upper:
+        return msg.replace(switch, rep_txt[0].upper() + rep_txt[1:])
+    if lower:
+        return msg.replace(switch, rep_txt[0].lower() + rep_txt[1:])
+    # Replace the swtiches with standard sentence capitalization.
+    for pattern in ("(?:^|(?:[.!?]\s))\|*\S*", "(?:[.!?]\|+\S+\s)\|*\S*"):
+        pat_match = re.search(pattern + switch, msg)
+        if pat_match:
+            pat_matches = pat_match.groups()
+            if not pat_matches:
+                pat_matches = pat_match.group(0)
+                pat_matches = (pat_matches,)
+            for match in pat_matches:
+                rep_match = match.replace(switch, rep_txt[0].upper() + rep_txt[1:])
+                msg = msg.replace(match, rep_match)
+    # replace all other switches
+    if switch in msg:
+        msg = msg.replace(switch, rep_txt)
     return msg
