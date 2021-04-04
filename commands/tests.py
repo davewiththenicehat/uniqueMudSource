@@ -2262,6 +2262,36 @@ class TestCommands(UniqueMudCmdTest):
             self.obj1: f"{ANSI_RED}nothing{ANSI_NORMAL} message"
         }
         cmd_result = self.call_multi_receivers(command(), arg, receivers, noansi=False)
+        # test multiple targets
+        command = developer_cmds.CmdCmdFuncTest
+        arg = f"send_emote, to person and 2 person = /target message. /target"
+        receivers = {
+            self.char1: "A normal person(#12) and a normal person(#13) message. A normal person(#12) and a normal person(#13)",
+            self.char2: "A normal person and a normal person message. A normal person and a normal person",
+            self.char3: "A normal person and you message. A normal person and you",
+            self.char4: "A normal person and you message. A normal person and you",
+            self.char5: "A normal person and a normal person message. A normal person and a normal person",
+            self.obj1: "A normal person and a normal person message. A normal person and a normal person"
+        }
+        cmd_result = self.call_multi_receivers(command(), arg, receivers, noansi=False)
+        # test multi targets with recog's set
+        command = developer_cmds.CmdCmdFuncTest
+        arg = f"send_emote, obj2 = /target message"
+        self.char1.recog.add(self.char3, "char3 char1")
+        self.char2.recog.add(self.char3, "char3 char2")
+        self.char3.recog.add(self.char3, "char3 char3")
+        self.char4.recog.add(self.char3, "char3 char4")
+        self.char5.recog.add(self.char3, "char3 char5")
+        arg = f"send_emote, to person and 2 person = /target message. /target"
+        receivers = {
+            self.char1: "Char3 char1(#12) and a normal person(#13) message. Char3 char1(#12) and a normal person(#13)",
+            self.char2: "Char3 char2 and a normal person message. Char3 char2 and a normal person",
+            self.char3: "A normal person and you message. A normal person and you",
+            self.char4: "Char3 char4 and you message. Char3 char4 and you",
+            self.char5: "Char3 char5 and a normal person message. Char3 char5 and a normal person",
+            self.obj1: "A normal person and a normal person message. A normal person and a normal person"
+        }
+        cmd_result = self.call_multi_receivers(command(), arg, receivers, noansi=False)
         # test the upper switch.
         result = replace_cap("/target test /target test. /target", "/target", "name", upper=True, lower=False)
         self.assertEqual(result, "Name test Name test. Name")

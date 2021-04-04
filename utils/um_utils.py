@@ -4,6 +4,7 @@ This module contains misc small functions
 import re
 
 from evennia.utils.logger import log_err
+from evennia.utils import utils
 from evennia.contrib import rpsystem
 
 
@@ -248,39 +249,51 @@ def um_emote(emote, sender, receivers=None, target=None, anonymous_add=None):
         receivers = sender.location.contents
     sender_emote = False
     target_emote = False
-    targets_emote = {}
     if '/me' in emote:  # replace me for sender
         receivers.remove(sender)
         sender_emote = replace_cap(emote, '/me', 'you')
-        sender_emote = sender_emote
     if '/target' in emote:
-        #if self.targets:
-        # utils.iter_to_string(initer, endsep="and", addquote=False):
-        #    for target in self.targets:
-        #        receivers.remove(target)
-        #        target_names = objs_sdesc_str(self.targets, target)
-        #        target_emote = emote.replace('/target', target_names)
-        #        rpsystem.send_emote(sender, self.targets, target_emote, anonymous_add)
-        if target:  # if the command has a single target
-            receivers.remove(target)  # target will receive it's own emote
-            # make target's emote replacing /target with 'you'
-            target_emote = replace_cap(emote, '/target', 'you')
-            if sender_emote:  # if there is a sender specific emote
-                targ_name = target.get_display_name(sender).lower()
-                # replace /target with target's name from sender's view
-                sender_emote = replace_cap(sender_emote, '/target', targ_name)
+        if target:
+            if utils.is_iter(target):  # target is multiple targets
+                for targ in target:
+                    receivers.remove(targ)  # targ receives emote here
+                    # remove target receiving emote from name replacement
+                    targets = list(target)
+                    targets.remove(targ)
+                    # replace /target with all other command targets recog
+                    target_names = list()
+                    for other_targ in targets:
+                        target_names.append(other_targ.get_display_name(targ).lower())
+                    target_names = utils.iter_to_string(target_names, endsep="")
+                    target_names += " and you"
+                    target_emote = replace_cap(emote, '/target', target_names)
+                    rpsystem.send_emote(sender, (targ,), target_emote, anonymous_add)
+            else:  # if the command has a single target
+                receivers.remove(target)  # target will receive it's own emote
+                # make target's emote replacing /target with 'you'
+                target_emote = replace_cap(emote, '/target', 'you')
+                rpsystem.send_emote(sender, (target,), target_emote, anonymous_add)
+                if sender_emote:  # if there is a sender specific emote
+                    targ_name = target.get_display_name(sender).lower()
+                    # replace /target with target's name from sender's view
+                    sender_emote = replace_cap(sender_emote, '/target', targ_name)
     # send the emotes
     if sender_emote:
         rpsystem.send_emote(sender, (sender,), sender_emote, anonymous_add)
-    if target_emote:
-        rpsystem.send_emote(sender, (target,), target_emote, anonymous_add)
     for receiver in receivers:  # process receivers separately
         rec_emote = emote
+        # replace /target with target's name from receiver's recog fields
         if '/target' in emote:
             if target:
-                targ_name = target.get_display_name(receiver).lower()
-                rec_emote = replace_cap(emote, '/target', targ_name)
+                if utils.is_iter(target):  # target is multiple targets
+                    target_names = list()
+                    for targ in target:  # get recieivers recog of the target
+                        target_names.append(targ.get_display_name(receiver).lower())
+                    target_names = utils.iter_to_string(target_names, endsep="and")
+                    rec_emote = replace_cap(emote, '/target', target_names)
+                else:  # only a single target
+                    targ_name = target.get_display_name(receiver).lower()
+                    rec_emote = replace_cap(emote, '/target', targ_name)
             else:
                 rec_emote = rec_emote.replace("/target", "|rnothing|n")
-        # replace /target with target's name from receiver's view
         rpsystem.send_emote(sender, (receiver,), rec_emote, anonymous_add)

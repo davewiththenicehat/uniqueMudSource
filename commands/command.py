@@ -471,8 +471,7 @@ class Command(default_cmds.MuxCommand):
 
     def custom_req_met(self):
         """
-        Verifies commands custom requirements are met.
-        If this method returns False the command will end.
+        Verifies commands custom requirements are met. this method returns False the command will end.
         This method must message the caller why the command failed.
 
         self.target and self.targets will be available in this method.
@@ -1217,5 +1216,5 @@ class Command(default_cmds.MuxCommand):
         # change color codes in object.process_sdesc
         """
         caller = self.caller
-        target = self.target
+        target = self.targets if self.targets else self.target
         um_emote(emote, caller, receivers, target, anonymous_add)
