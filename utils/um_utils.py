@@ -244,6 +244,13 @@ def um_emote(emote, sender, receivers=None, target=None, anonymous_add=None):
             - 'last': Add sender to the end of emote as [sender]
             - 'first': Prepend sender to start of emote.
 
+    Notes:
+        All switches are automatically upper or lower cased for sentence
+        position.
+        Using /me switch results in sender's message having me rather than the
+        sender's recog for self.
+        /target switch is replaced with target(s) recog(s) for each receiver.
+
     # change color codes in object.process_sdesc
     """
     if not receivers:

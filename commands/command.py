@@ -948,7 +948,7 @@ class Command(default_cmds.MuxCommand):
         # only show message to target if it is a Character
         # should be switched to if controlled by a session
         if utils.inherits_from(target, 'typeclasses.characters.Character'):
-            self.send_emote(target_msg, receivers=(target,))
+            self.send_emote(target_msg, receivers=target)
         # message the location
         caller.location.emote_contents(room_msg, caller, target, exclude=(target, caller))
         # make the action cost something
@@ -1203,11 +1203,11 @@ class Command(default_cmds.MuxCommand):
         Distribute an emote.
 
         Arguments:
+            emote (str): The raw emote string as input by emoter.
             sender (Object): The one sending the emote.
             receivers (iterable): Receivers of the emote. These
                 will also form the basis for which sdescs are
                 'valid' to use in the emote.
-            emote (str): The raw emote string as input by emoter.
             anonymous_add (str or None, optional): If `sender` is not
                 self-referencing in the emote, this will auto-add
                 `sender`'s data to the emote. Possible values are
@@ -1215,7 +1215,12 @@ class Command(default_cmds.MuxCommand):
                 - 'last': Add sender to the end of emote as [sender]
                 - 'first': Prepend sender to start of emote.
 
-        # change color codes in object.process_sdesc
+        Notes:
+            All switches are automatically upper or lower cased for sentence
+            position.
+            Using /me switch results in sender's message having me rather than the
+            sender's recog for self.
+            /target switch is replaced with target(s) recog(s) for each receiver.
         """
         caller = self.caller
         target = self.targets if self.targets else self.target

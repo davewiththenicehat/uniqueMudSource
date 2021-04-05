@@ -325,6 +325,13 @@ class AllObjectsMixin:
                 - None: No auto-add at anonymous emote
                 - 'last': Add sender to the end of emote as [sender]
                 - 'first': Prepend sender to start of emote.
+
+        Notes:
+            All switches are automatically upper or lower cased for sentence
+            position.
+            Using /me switch results in sender's message having me rather than the
+            sender's recog for self.
+            /target switch is replaced with target(s) recog(s) for each receiver.
         """
         receivers = self.contents
         if exclude:
