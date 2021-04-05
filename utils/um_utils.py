@@ -231,11 +231,12 @@ def um_emote(emote, sender, receivers=None, target=None, anonymous_add=None):
     Distribute an emote.
 
     Arguments:
+        emote (str): The raw emote string as input by emoter.
         sender (Object): The one sending the emote.
         receivers (iterable): Receivers of the emote. These
             will also form the basis for which sdescs are
             'valid' to use in the emote.
-        emote (str): The raw emote string as input by emoter.
+        target (iterable): objects to replace /target switch with.
         anonymous_add (str or None, optional): If `sender` is not
             self-referencing in the emote, this will auto-add
             `sender`'s data to the emote. Possible values are
@@ -247,6 +248,8 @@ def um_emote(emote, sender, receivers=None, target=None, anonymous_add=None):
     """
     if not receivers:
         receivers = sender.location.contents
+    else:
+        receivers = utils.make_iter(receivers)
     sender_emote = False
     target_emote = False
     if '/me' in emote:  # replace me for sender

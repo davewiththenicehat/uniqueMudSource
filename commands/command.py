@@ -6,6 +6,7 @@ Commands describe the input the account can do to the game.
 """
 
 import re
+
 from evennia import default_cmds
 from world import status_functions
 from evennia import utils
@@ -943,14 +944,13 @@ class Command(default_cmds.MuxCommand):
             self.successful(False)  # record the failure
 
         # display messages to caller, target and everyone else in the room
-        self.send_emote(caller_msg, receivers=[caller,])
+        self.send_emote(caller_msg, receivers=caller)
         # only show message to target if it is a Character
         # should be switched to if controlled by a session
         if utils.inherits_from(target, 'typeclasses.characters.Character'):
-            self.send_emote(target_msg, receivers=[target,])
+            self.send_emote(target_msg, receivers=(target,))
         # message the location
         caller.location.emote_contents(room_msg, caller, target, exclude=(target, caller))
-        #caller.location.msg_contents(room_msg, exclude=(target, caller))
         # make the action cost something
         self.cost(self.cost_level, self.cost_stat)
         if log:

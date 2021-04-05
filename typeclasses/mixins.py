@@ -312,13 +312,25 @@ class AllObjectsMixin:
         self.attributes.remove('container')
 
     def emote_contents(self, text, sender, target=None, anonymous_add=None, exclude=None):
+        """
+        send emote to contents of an object.
+
+        Arguments:
+            text (str): The raw emote string as input by emoter.
+            sender (Object): The one sending the emote.
+            target (iterable): objects to replace /target switch with.
+            anonymous_add (str or None, optional): If `sender` is not
+                self-referencing in the emote, this will auto-add
+                `sender`'s data to the emote. Possible values are
+                - None: No auto-add at anonymous emote
+                - 'last': Add sender to the end of emote as [sender]
+                - 'first': Prepend sender to start of emote.
+        """
         receivers = self.contents
         if exclude:
             exclude = make_iter(exclude)
             receivers = [obj for obj in receivers if obj not in exclude]
         um_emote(text, sender, receivers, target, anonymous_add)
-
-
 
 
 class ExObjAndRoomMixin:
