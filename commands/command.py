@@ -916,7 +916,7 @@ class Command(default_cmds.MuxCommand):
         if passed_room_msg:  # if a custom room message was passed
             room_msg = passed_room_msg
         else:  # no custom room message was passed
-            room_msg = f"{caller.usdesc} {cmd_desc} at {target.usdesc}"
+            room_msg = f"/me {cmd_desc} at /target"
             if weapon_desc:  # if the Command instance has a weapon_desc saved
                 room_msg += f" with {caller.get_pronoun('|p')} {weapon_desc}"
         if result > 0:  # the action hit
@@ -932,7 +932,7 @@ class Command(default_cmds.MuxCommand):
                 part_hit_name = part_hit.name.replace('_', ' ')  # change "side_name" to "side name"
                 caller_msg += f" Hitting /target's {part_hit_name}."
                 target_msg += f" Hitting your {part_hit_name}."
-                room_msg += f" Hitting {target.usdesc}'s {part_hit_name}."
+                room_msg += f" Hitting /target's {part_hit_name}."
             caller_msg += f" Dealing {dmg_dealt} damage."
             target_msg += f" You take {dmg_dealt} damage."
             self.successful(True)  # record the success
@@ -947,9 +947,10 @@ class Command(default_cmds.MuxCommand):
         # only show message to target if it is a Character
         # should be switched to if controlled by a session
         if utils.inherits_from(target, 'typeclasses.characters.Character'):
-            #target.msg(target_msg, force_on_unconscious=True)
             self.send_emote(target_msg, receivers=[target,])
-        caller.location.msg_contents(room_msg, exclude=(target, caller))
+        # message the location
+        caller.location.emote_contents(room_msg, caller, target, exclude=(target, caller))
+        #caller.location.msg_contents(room_msg, exclude=(target, caller))
         # make the action cost something
         self.cost(self.cost_level, self.cost_stat)
         if log:

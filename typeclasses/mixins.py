@@ -1,5 +1,8 @@
+from evennia.utils.utils import make_iter
+
 from world.rules.damage import TYPES as DAMAGE_TYPES
 from utils.element import Element, ListElement
+from utils.um_utils import um_emote
 from world.rules.body import PART_STATUS
 from world.rules import body
 
@@ -307,6 +310,15 @@ class AllObjectsMixin:
     def container(self):
         """Delete method for container"""
         self.attributes.remove('container')
+
+    def emote_contents(self, text, sender, target=None, anonymous_add=None, exclude=None):
+        receivers = self.contents
+        if exclude:
+            exclude = make_iter(exclude)
+            receivers = [obj for obj in receivers if obj not in exclude]
+        um_emote(text, sender, receivers, target, anonymous_add)
+
+
 
 
 class ExObjAndRoomMixin:
