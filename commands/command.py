@@ -910,7 +910,7 @@ class Command(default_cmds.MuxCommand):
         if passed_target_msg:  # if a custom target message was pssed
             target_msg += passed_target_msg
         else:  # no custom target message was passed
-            target_msg += f"{caller.usdesc} {cmd_desc} at you"
+            target_msg += f"/me {cmd_desc} at you"
             if weapon_desc:  # if the Command instance has a weapon_desc saved
                 target_msg += f" with {caller.get_pronoun('|p')} {weapon_desc}"
         if passed_room_msg:  # if a custom room message was passed
@@ -947,7 +947,8 @@ class Command(default_cmds.MuxCommand):
         # only show message to target if it is a Character
         # should be switched to if controlled by a session
         if utils.inherits_from(target, 'typeclasses.characters.Character'):
-            target.msg(target_msg, force_on_unconscious=True)
+            #target.msg(target_msg, force_on_unconscious=True)
+            self.send_emote(target_msg, receivers=[target,])
         caller.location.msg_contents(room_msg, exclude=(target, caller))
         # make the action cost something
         self.cost(self.cost_level, self.cost_stat)
