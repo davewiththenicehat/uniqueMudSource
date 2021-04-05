@@ -183,7 +183,7 @@ def objs_sdesc_str(objects, you_object=None):
         return ""
 
 
-def replace_cap(msg, switch, rep_txt, upper=False, lower=False):
+def replace_cap(msg, switch, rep_txt, upper=False, lower=False, allow_upper=False):
     """
     Replace a sequence of characters in a string with another.
     Automatically capitalizing the first letter of the replacement
@@ -197,6 +197,7 @@ def replace_cap(msg, switch, rep_txt, upper=False, lower=False):
         rep_txt: string, replacement text, to replace the switch with.
         upper=False: bool, all replacements start with a upper case
         lower=False: bool, all replacements start with a lower case
+        allow_upper: bool, allows replacement in middle of sentence to be upper.
 
     Returns:
         string, with proper capitalization for sentences.
@@ -222,6 +223,8 @@ def replace_cap(msg, switch, rep_txt, upper=False, lower=False):
                 msg = msg.replace(match, rep_match)
     # replace all other switches
     if switch in msg:
+        if not allow_upper:
+            rep_txt = rep_txt[0].lower() + rep_txt[1:]
         msg = msg.replace(switch, rep_txt)
     return msg
 
@@ -267,14 +270,29 @@ def um_emote(emote, sender, receivers=None, target=None, anonymous_add=None):
                 if target:
                     if utils.is_iter(target):  # target is multiple targets
                         target_names = list()
-                        for targ in target:  # get recieivers recog of the target
-                            target_names.append(targ.get_display_name(sender).lower())
+                        allow_upper = False
+                        for targ in target:
+                            targ_name = targ.get_display_name(sender)
+                            # if sender has a recog for target, allow uppercase
+                            if targ_name.startswith(targ.usdesc):
+                                targ_name = targ_name.lower
+                            else:
+                                allow_upper = True
+                            target_names.append(targ_name)
                         target_names = utils.iter_to_string(target_names, endsep="and")
-                        sender_emote = replace_cap(sender_emote, '/target', target_names)
+                        sender_emote = replace_cap(sender_emote, '/target',
+                                                   target_names,
+                                                   allow_upper=allow_upper)
                 else:
-                    targ_name = target.get_display_name(sender).lower()
+                    allow_upper = False
+                    targ_name = target.get_display_name(sender)
+                    if targ_name.startswith(targ.usdesc):
+                        targ_name = targ_name.lower
+                    else:
+                        allow_upper = True
                     # replace /target with target's name from sender's view
-                    sender_emote = replace_cap(sender_emote, '/target', targ_name)
+                    sender_emote = replace_cap(sender_emote, '/target',
+                                               targ_name, allow_upper=allow_upper)
             # send the emote
             rpsystem.send_emote(sender, (sender,), sender_emote, anonymous_add)
     if '/target' in emote:
@@ -289,7 +307,12 @@ def um_emote(emote, sender, receivers=None, target=None, anonymous_add=None):
                         # replace /target with all other command targets recog
                         target_names = list()
                         for other_targ in targets:
-                            target_names.append(other_targ.get_display_name(targ).lower())
+                            ot_targ_name = other_targ.get_display_name(targ)
+                            if ot_targ_name.startswith(other_targ.usdesc):
+                                ot_targ_name = ot_targ_name.lower()
+                            else:
+                                allow_upper = True
+                            target_names.append(ot_targ_name)
                         target_names = utils.iter_to_string(target_names, endsep="")
                         target_names += " and you"
                         target_emote = replace_cap(emote, '/target', target_names)
@@ -308,13 +331,26 @@ def um_emote(emote, sender, receivers=None, target=None, anonymous_add=None):
             if target:
                 if utils.is_iter(target):  # target is multiple targets
                     target_names = list()
+                    allow_upper = False
                     for targ in target:  # get recieivers recog of the target
-                        target_names.append(targ.get_display_name(receiver).lower())
+                        targ_name = targ.get_display_name(receiver)
+                        if targ_name.startswith(targ.usdesc):
+                            targ_name = targ_name.lower()
+                        else:
+                            allow_upper = True
+                        target_names.append(targ_name)
                     target_names = utils.iter_to_string(target_names, endsep="and")
-                    rec_emote = replace_cap(emote, '/target', target_names)
+                    rec_emote = replace_cap(emote, '/target', target_names,
+                                            allow_upper=allow_upper)
                 else:  # only a single target
-                    targ_name = target.get_display_name(receiver).lower()
-                    rec_emote = replace_cap(emote, '/target', targ_name)
+                    allow_upper = False
+                    targ_name = target.get_display_name(receiver)
+                    if targ_name.startswith(target.usdesc):
+                        targ_name = targ_name.lower()
+                    else:
+                        allow_upper = True
+                    rec_emote = replace_cap(emote, '/target', targ_name,
+                                            allow_upper=allow_upper)
             else:
                 rec_emote = rec_emote.replace("/target", "|rnothing|n")
         rpsystem.send_emote(sender, (receiver,), rec_emote, anonymous_add)

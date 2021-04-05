@@ -2252,6 +2252,28 @@ class TestCommands(UniqueMudCmdTest):
             self.obj2: "You message"
         }
         cmd_result = self.call_multi_receivers(command(), arg, receivers, noansi=False)
+        # test with upper cased recog
+        command = developer_cmds.CmdCmdFuncTest
+        arg = f"send_emote, normal = /target message /target"
+        self.char1.recog.add(self.char3, "Char3 for char1")
+        self.char2.recog.add(self.char3, "Char3 for char2")
+        self.char3.recog.add(self.char3, "Char3 for char3")
+        self.char4.recog.add(self.char3, "Char3 for char4")
+        self.char5.recog.add(self.char3, "Char3 for char5")
+        receivers = {
+            self.char1: "Char3 for char1(#12) message Char3 for char1(#12)",
+            self.char2: "Char3 for char2 message Char3 for char2",
+            self.char3: "You message You",
+            self.char4: "Char3 for char4 message Char3 for char4",
+            self.char5: "Char3 for char5 message Char3 for char5",
+            self.obj2: "A normal person message A normal person"
+        }
+        cmd_result = self.call_multi_receivers(command(), arg, receivers, noansi=False)
+        self.char1.recog.remove(self.char3)
+        self.char2.recog.remove(self.char3)
+        self.char3.recog.remove(self.char3)
+        self.char4.recog.remove(self.char3)
+        self.char5.recog.remove(self.char3)
         # the command has no target, but the /target switch appears in the msg
         command = developer_cmds.CmdCmdFuncTest
         arg = f"send_emote, None = /target message"
@@ -2291,6 +2313,28 @@ class TestCommands(UniqueMudCmdTest):
             self.char3: "A normal person and you message. A normal person and you",
             self.char4: "Char3 char4 and you message. Char3 char4 and you",
             self.char5: "Char3 char5 and a normal person message. Char3 char5 and a normal person",
+            self.obj1: "A normal person and a normal person message. A normal person and a normal person"
+        }
+        cmd_result = self.call_multi_receivers(command(), arg, receivers, noansi=False)
+        # test where recog has an upper case
+        command = developer_cmds.CmdCmdFuncTest
+        self.char1.recog.add(self.char3, "char3 char1")
+        self.char2.recog.add(self.char3, "char3 char2")
+        self.char3.recog.add(self.char3, "char3 char3")
+        self.char4.recog.add(self.char3, "char3 char4")
+        self.char5.recog.add(self.char3, "char3 char5")
+        self.char1.recog.add(self.char4, "Char4 char1")
+        self.char2.recog.add(self.char4, "Char4 char2")
+        self.char3.recog.add(self.char4, "Char4 char3")
+        self.char4.recog.add(self.char4, "Char4 char4")
+        self.char5.recog.add(self.char4, "Char4 char5")
+        arg = f"send_emote, to person and 2 person = /target message. /target"
+        receivers = {
+            self.char1: "Char3 char1(#12) and Char4 char1(#13) message. Char3 char1(#12) and Char4 char1(#13)",
+            self.char2: "Char3 char2 and Char4 char2 message. Char3 char2 and Char4 char2",
+            self.char3: "Char4 char3 and you message. Char4 char3 and you",
+            self.char4: "Char3 char4 and you message. Char3 char4 and you",
+            self.char5: "Char3 char5 and Char4 char5 message. Char3 char5 and Char4 char5",
             self.obj1: "A normal person and a normal person message. A normal person and a normal person"
         }
         cmd_result = self.call_multi_receivers(command(), arg, receivers, noansi=False)
