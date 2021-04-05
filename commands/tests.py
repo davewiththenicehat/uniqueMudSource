@@ -13,6 +13,8 @@ from utils.element import Element
 
 ANSI_RED = "\033[1m" + "\033[31m"
 ANSI_NORMAL = "\033[0m"
+ANSI_BLUE = "\033[1m" + "\033[34m"
+#r"|b", ANSI_HILITE + ANSI_BLUE
 
 
 class TestCommands(UniqueMudCmdTest):
@@ -314,7 +316,7 @@ class TestCommands(UniqueMudCmdTest):
         # to make certain the stop request to an object causes no issues
         command = developer_cmds.CmdMultiCmd
         arg = "= kick Obj, complete_cmd_early"
-        wnt_msg = "You will be busy for \\d+ seconds.\nFacing Obj Char lifts theirs knee up preparing an attack.\nkick \\d+ VS evade 5: You kick at Obj"
+        wnt_msg = "You will be busy for \\d+ seconds.\nFacing Obj Char lifts theirs knee up preparing an attack.\nkick \\d+ VS evade 5: You kick at obj"
         cmd_result = self.call(command(), arg)
         self.assertRegex(cmd_result, wnt_msg)
         # test a target leaving melee range
@@ -620,7 +622,7 @@ class TestCommands(UniqueMudCmdTest):
         self.char1.skills.one_handed.stab = 1
         command = developer_cmds.CmdMultiCmd
         arg = "= stab char2, complete_cmd_early"
-        wnt_msg = 'You will be busy for \\d+ seconds.\nFacing Char2 Char raises a sword preparing an attack.\nstab \\d+ VS evade \\d+: You stab at Char2.*'
+        wnt_msg = 'You will be busy for \\d+ seconds.\nFacing Char2 Char raises a sword preparing an attack.\nstab \\d+ VS evade \\d+: You stab at char2\(#7\)\.*'
         cmd_result = self.call(command(), arg)
         self.assertRegex(cmd_result, wnt_msg)
         arg = "= drop sword"
@@ -1656,7 +1658,7 @@ class TestCommands(UniqueMudCmdTest):
         kick_rc = {self.char1: "You will be busy for 5 seconds.|Facing Char2 Char lifts theirs knee up preparing an attack.",
                    self.char2: "Facing Char2 Char lifts theirs knee up preparing an attack.",
                    self.obj1: "Facing Char2 Char lifts theirs knee up preparing an attack.|Char kicks at Char2 with their foot and connects. Hitting Char2's "}
-        kick_post = ("kick \d+ VS evade \d+: You kick at Char2 with your foot and connect\. Hitting Char2's",
+        kick_post = ("kick \d+ VS evade \d+: You kick at char2\(#7\) with your foot and connect\. Hitting Char2's",
                      "Dealing \d+ damage\.|You are no longer busy\.",
                      # defenders messages
                      "You may want to dodge\.",
@@ -1673,7 +1675,7 @@ class TestCommands(UniqueMudCmdTest):
         kick_miss_rc = {self.char1: "You will be busy for 5 seconds.|Facing Char2 Char lifts theirs knee up preparing an attack.",
                    self.char2: "Facing Char2 Char lifts theirs knee up preparing an attack.",
                    self.obj1: "Facing Char2 Char lifts theirs knee up preparing an attack.|Char kicks at Char2 with their foot and misses."}
-        kick_miss_post = ("kick \d+ VS evade \d+: You kick at Char2 with your foot but miss\.",
+        kick_miss_post = ("kick \d+ VS evade \d+: You kick at char2\(#7\) with your foot but miss\.",
                      # defenders messages
                      "You may want to dodge\.",
                      "evade \d+ VS kick \d+: Char kicks at you with their foot but you successfully evade the kick\.")
@@ -1687,7 +1689,7 @@ class TestCommands(UniqueMudCmdTest):
         punch_rc = {self.char1: "You will be busy for 3 seconds.|Facing Char2 Char pulls theirs hand back preparing an attack.",
                    self.char2: "Facing Char2 Char pulls theirs hand back preparing an attack.",
                    self.obj1: "Facing Char2 Char pulls theirs hand back preparing an attack.|Char punches at Char2 with their fist and connects. Hitting Char2's "}
-        punch_post = ("punch \d+ VS evade \d+: You punch at Char2 with your fist and connect\. Hitting Char2's ",
+        punch_post = ("punch \d+ VS evade \d+: You punch at char2\(#7\) with your fist and connect\. Hitting Char2's ",
                      "Dealing \d+ damage\.|You are no longer busy\.",
                      # defenders messages
                      "evade \d+ VS punch \d+: Char punches at you with their fist and connects. Hitting your ",
@@ -1703,7 +1705,7 @@ class TestCommands(UniqueMudCmdTest):
         punch_miss_rc = {self.char1: "You will be busy for 3 seconds.|Facing Char2 Char pulls theirs hand back preparing an attack.",
                    self.char2: "Facing Char2 Char pulls theirs hand back preparing an attack.",
                    self.obj1: "Facing Char2 Char pulls theirs hand back preparing an attack.|Char punches at Char2 with their fist and misses."}
-        punch_miss_post = ("punch \d+ VS evade \d+: You punch at Char2 with your fist but miss.",
+        punch_miss_post = ("punch \d+ VS evade \d+: You punch at char2\(#7\) with your fist but miss.",
                      "Dealing \d+ damage\.|You are no longer busy\.",
                      # defenders messages
                      "evade \d+ VS punch \d+: Char punches at you with their fist but you successfully evade the punch\.")
@@ -1727,7 +1729,7 @@ class TestCommands(UniqueMudCmdTest):
         stab_rc = {self.char1: "You will be busy for 3 seconds.|Facing Char2 Char raises a sword preparing an attack.",
                    self.char2: "Facing Char2 Char raises a sword preparing an attack.",
                    self.obj1: "Facing Char2 Char raises a sword preparing an attack.|Char stabs at Char2 with their sword and connects. Hitting Char2's "}
-        stab_post = ("stab \d+ VS evade \d+: You stab at Char2 with your sword and connect\. Hitting Char2's",
+        stab_post = ("stab \d+ VS evade \d+: You stab at char2\(#7\) with your sword and connect\. Hitting Char2's",
                      "Dealing \d+ damage\.|You are no longer busy\.",
                      # defenders messages
                      "evade \d+ VS stab \d+: Char stabs at you with their sword and connects. Hitting your",
@@ -1743,7 +1745,7 @@ class TestCommands(UniqueMudCmdTest):
         stab_miss_rc = {self.char1: "You will be busy for 3 seconds.|Facing Char2 Char raises a sword preparing an attack.",
                    self.char2: "Facing Char2 Char raises a sword preparing an attack.",
                    self.obj1: "Facing Char2 Char raises a sword preparing an attack.|Char stabs at Char2 with their sword and misses."}
-        stab_miss_post = ("stab \d+ VS evade \d+: You stab at Char2 with your sword but miss\.",
+        stab_miss_post = ("stab \d+ VS evade \d+: You stab at char2\(#7\) with your sword but miss\.",
                      # defenders messages
                      "evade \d+ VS stab \d+: Char stabs at you with their sword but you successfully evade the stab\.")
         stab_missed_cmd = {
@@ -2102,15 +2104,15 @@ class TestCommands(UniqueMudCmdTest):
         arg = "send_emote, char2 = /me message"
         receivers = {
             self.char1: "You message",
-            self.char2: "Char message",
-            self.obj1: "Char message"
+            self.char2: f"{ANSI_BLUE}Char{ANSI_NORMAL} message",
+            self.obj1: f"Char message"
         }
         cmd_result = self.call_multi_receivers(command(), arg, receivers, noansi=False)
         # test /target switch
         command = developer_cmds.CmdCmdFuncTest
         arg = f"send_emote, normal = /target message"
         receivers = {
-            self.char1: "A normal person(#12) message",
+            self.char1: f"A normal person(#12) message",
             self.char3: "You message",
             self.obj1: "A normal person message"
         }

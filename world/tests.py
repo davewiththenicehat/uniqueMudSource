@@ -145,7 +145,7 @@ class TestRules(CommandTest):
         # Complete the deffered punch
         command = developer_cmds.CmdMultiCmd
         arg = "= complete_cmd_early"
-        wanted_message = 'punch \\d+ VS evade \\d+: You punch at Char2.*'
+        wanted_message = 'punch \\d+ VS evade \\d+: You punch at char2\(#7\)\.*'
         cmd_result = self.call(command(), arg)
         self.assertRegex(cmd_result, wanted_message)
         self.char1.skills.unarmed.punch = 0

@@ -904,7 +904,7 @@ class Command(default_cmds.MuxCommand):
         if passed_caller_msg:  # if a custom caller message was passed
             caller_msg += passed_caller_msg
         else:  # no custom caller message was passed
-            caller_msg += f"You {self.key} at {target.usdesc}"
+            caller_msg += f"You {self.key} at /target"
             if weapon_desc:  # if the Command instance has a weapon_desc saved
                 caller_msg += f" with your {weapon_desc}"
         if passed_target_msg:  # if a custom target message was pssed
@@ -943,7 +943,8 @@ class Command(default_cmds.MuxCommand):
             self.successful(False)  # record the failure
 
         # display messages to caller, target and everyone else in the room
-        caller.msg(caller_msg)
+        #caller.msg(caller_msg)
+        self.send_emote(caller_msg, receivers=[caller,])
         # only show message to target if it is a Character
         # should be switched to if controlled by a session
         if utils.inherits_from(target, 'typeclasses.characters.Character'):

@@ -1150,7 +1150,7 @@ class Character(AllObjectsMixin, CharExAndObjMixin, ClothedCharacter, GenderChar
                 for display.
 
         """
-        return sdesc
+        return f"|b{sdesc}|n"
 
 class NaturalHealing(DefaultScript):
     """
