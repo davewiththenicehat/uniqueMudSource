@@ -1658,7 +1658,7 @@ class TestCommands(UniqueMudCmdTest):
         kick_rc = {self.char1: "You will be busy for 5 seconds.|Facing Char2 Char lifts theirs knee up preparing an attack.",
                    self.char2: "Facing Char2 Char lifts theirs knee up preparing an attack.",
                    self.obj1: "Facing Char2 Char lifts theirs knee up preparing an attack.|Char kicks at Char2 with their foot and connects. Hitting Char2's "}
-        kick_post = ("kick \d+ VS evade \d+: You kick at char2\(#7\) with your foot and connect\. Hitting Char2's",
+        kick_post = ("kick \d+ VS evade \d+: You kick at char2\(#7\) with your foot and connect\. Hitting char2\(#7\)'s",
                      "Dealing \d+ damage\.|You are no longer busy\.",
                      # defenders messages
                      "You may want to dodge\.",
@@ -1689,7 +1689,7 @@ class TestCommands(UniqueMudCmdTest):
         punch_rc = {self.char1: "You will be busy for 3 seconds.|Facing Char2 Char pulls theirs hand back preparing an attack.",
                    self.char2: "Facing Char2 Char pulls theirs hand back preparing an attack.",
                    self.obj1: "Facing Char2 Char pulls theirs hand back preparing an attack.|Char punches at Char2 with their fist and connects. Hitting Char2's "}
-        punch_post = ("punch \d+ VS evade \d+: You punch at char2\(#7\) with your fist and connect\. Hitting Char2's ",
+        punch_post = ("punch \d+ VS evade \d+: You punch at char2\(#7\) with your fist and connect\. Hitting char2\(#7\)'s ",
                      "Dealing \d+ damage\.|You are no longer busy\.",
                      # defenders messages
                      "evade \d+ VS punch \d+: Char punches at you with their fist and connects. Hitting your ",
@@ -1729,7 +1729,7 @@ class TestCommands(UniqueMudCmdTest):
         stab_rc = {self.char1: "You will be busy for 3 seconds.|Facing Char2 Char raises a sword preparing an attack.",
                    self.char2: "Facing Char2 Char raises a sword preparing an attack.",
                    self.obj1: "Facing Char2 Char raises a sword preparing an attack.|Char stabs at Char2 with their sword and connects. Hitting Char2's "}
-        stab_post = ("stab \d+ VS evade \d+: You stab at char2\(#7\) with your sword and connect\. Hitting Char2's",
+        stab_post = ("stab \d+ VS evade \d+: You stab at char2\(#7\) with your sword and connect\. Hitting char2\(#7\)'s",
                      "Dealing \d+ damage\.|You are no longer busy\.",
                      # defenders messages
                      "evade \d+ VS stab \d+: Char stabs at you with their sword and connects. Hitting your",
@@ -1908,7 +1908,7 @@ class TestCommands(UniqueMudCmdTest):
             self.obj1: None
         }
         cmd_result = self.call_multi_receivers(command(), arg, receivers)
-        self.assertRegex(cmd_result, ": caller_message and connect\. Hitting Char2's ")
+        self.assertRegex(cmd_result, ": caller_message and connect\. Hitting char2\(#7\)'s ")
         self.assertRegex(cmd_result, ": target_message and connects\. Hitting your ")
         self.assertRegex(cmd_result, "room_message and connects\. Hitting Char2's ")
         # test missing with replacement arguments

@@ -930,7 +930,7 @@ class Command(default_cmds.MuxCommand):
             room_msg += " and connects."
             if part_hit:  # if that target had parts to hit, add it to the action's messages
                 part_hit_name = part_hit.name.replace('_', ' ')  # change "side_name" to "side name"
-                caller_msg += f" Hitting {target.usdesc}'s {part_hit_name}."
+                caller_msg += f" Hitting /target's {part_hit_name}."
                 target_msg += f" Hitting your {part_hit_name}."
                 room_msg += f" Hitting {target.usdesc}'s {part_hit_name}."
             caller_msg += f" Dealing {dmg_dealt} damage."
@@ -943,7 +943,6 @@ class Command(default_cmds.MuxCommand):
             self.successful(False)  # record the failure
 
         # display messages to caller, target and everyone else in the room
-        #caller.msg(caller_msg)
         self.send_emote(caller_msg, receivers=[caller,])
         # only show message to target if it is a Character
         # should be switched to if controlled by a session
