@@ -1239,6 +1239,10 @@ class Command(default_cmds.MuxCommand):
                 with proper names.
             This method is a very light wrapper for utils.um_utils.um_emote.
             If a feature is supported there, it will be supported here.
+
+        Unit tests:
+            commands.tests.TestCommands.test_um_emote, indirectly
+            There are many commands that use this resulting in direct tests.
         """
         caller = self.caller
         target = self.targets if self.targets else self.target

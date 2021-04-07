@@ -321,8 +321,11 @@ def um_emote(emote, sender, receivers=None, target=None, anonymous_add=None):
                         rpsystem.send_emote(sender, (targ,), target_emote, anonymous_add)
             else:  # if the command has a single target
                 if target in receivers: # process message only if needed
+                    # make target's emote replacing /target's with 'your'
+                    target_emote = replace_cap(emote, "/target's", 'your')
+                    target_emote = replace_cap(target_emote, "/Target's", 'your')
                     # make target's emote replacing /target with 'you'
-                    target_emote = replace_cap(emote, '/target', 'you')
+                    target_emote = replace_cap(target_emote, '/target', 'you')
                     target_emote = replace_cap(target_emote, '/Target', 'you')
                     # this target receives a custom emote, remove from standard
                     receivers.remove(target)

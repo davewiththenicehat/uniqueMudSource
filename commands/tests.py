@@ -2079,7 +2079,7 @@ class TestCommands(UniqueMudCmdTest):
             wnt_msg = "You do not see intentional fail here."
             cmd_result = self.call(command(), arg, wnt_msg)
 
-    def test_send_emote(self):
+    def test_um_emote(self):
         self.char3 = create.create_object(
             self.character_typeclass, key="Character Three", location=self.room1, home=self.room1
         )
@@ -2138,6 +2138,18 @@ class TestCommands(UniqueMudCmdTest):
             self.char4: "You message",
             self.char5: "A normal person message",
             self.obj1: "A normal person message"
+        }
+        cmd_result = self.call_multi_receivers(command(), arg, receivers, noansi=False)
+        # test /target's switch
+        command = developer_cmds.CmdCmdFuncTest
+        arg = f"send_emote, 2 person = /Target's message"
+        receivers = {
+            self.char1: "A normal person(#13)'s message",
+            self.char2: "A normal person's message",
+            self.char3: "A normal person's message",
+            self.char4: "Your message",
+            self.char5: "A normal person's message",
+            self.obj1: "A normal person's message"
         }
         cmd_result = self.call_multi_receivers(command(), arg, receivers, noansi=False)
         # search for multi word desc
