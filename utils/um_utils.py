@@ -1,8 +1,6 @@
 """
 This module contains misc small functions
 """
-import re
-
 from evennia.utils.logger import log_err
 from evennia.utils import utils
 from evennia.contrib import rpsystem
@@ -193,39 +191,33 @@ def replace_cap(msg, switch, rep_txt, upper=False, lower=False, allow_upper=Fals
         msg: string, a message to capitalize at the start of the string
             and the start of each sentence.
         switch: string, the switch to replace
-            example: "/target"
+            example: "/target", "/Target", "/me", "/Me"
         rep_txt: string, replacement text, to replace the switch with.
         upper=False: bool, all replacements start with a upper case
         lower=False: bool, all replacements start with a lower case
-        allow_upper: bool, allows replacement in middle of sentence to be upper.
+        allow_upper: bool, allows replacement in middle of sentence to be upper
+            This only occurs if the rep_txt starts with an upper case character
 
     Returns:
         string, with proper capitalization for sentences.
 
-    Unit tests:
-        commands.test.TestCommands.test_emote
+    Unit Tests:
+        commands.tests.TestCommands.test_um_emote
     """
     msg = msg.strip()
+    if switch not in msg:
+        return msg
     if upper:
         return msg.replace(switch, rep_txt[0].upper() + rep_txt[1:])
     if lower:
         return msg.replace(switch, rep_txt[0].lower() + rep_txt[1:])
-    # Replace the swtiches with standard sentence capitalization.
-    for pattern in ("(?:^|(?:[.!?]\s))\|*\S*", "(?:[.!?]\|+\S+\s)\|*\S*"):
-        pat_match = re.search(pattern + switch, msg)
-        if pat_match:
-            pat_matches = pat_match.groups()
-            if not pat_matches:
-                pat_matches = pat_match.group(0)
-                pat_matches = (pat_matches,)
-            for match in pat_matches:
-                rep_match = match.replace(switch, rep_txt[0].upper() + rep_txt[1:])
-                msg = msg.replace(match, rep_match)
-    # replace all other switches
-    if switch in msg:
-        if not allow_upper:
-            rep_txt = rep_txt[0].lower() + rep_txt[1:]
-        msg = msg.replace(switch, rep_txt)
+    if switch[1].isupper():
+        return msg.replace(switch, rep_txt[0].upper() + rep_txt[1:])
+    else:
+        if allow_upper:
+            return msg.replace(switch, rep_txt[0] + rep_txt[1:])
+        else:
+            return msg.replace(switch, rep_txt[0].lower() + rep_txt[1:])
     return msg
 
 
@@ -247,12 +239,31 @@ def um_emote(emote, sender, receivers=None, target=None, anonymous_add=None):
             - 'last': Add sender to the end of emote as [sender]
             - 'first': Prepend sender to start of emote.
 
+    Example:
+        "/Me punches at /target "
+        from a by stander: "A tall man punches at a short name "
+        from the target of the attach: "A tall man punches at you "
+        from the sender (or command caller) "You punches at a short man "
+            Normally the command caller and target get custom messages.
+
     Notes:
-        All switches are automatically upper or lower cased for sentence
-        position.
-        Using /me switch results in sender's message having me rather than the
-        sender's recog for self.
-        /target switch is replaced with target(s) recog(s) for each receiver.
+        All standard evennia switches are supported.
+        /me will be replaced with "you" for the sender.
+        /target will be replaced with the display name of the target.
+            From the receivers recog attribute for the target.
+            For example if they recog a friend with a proper name.
+        Capitalization of /Me or /Target results in the name being upper cased.
+            This does NOT work as string.capitalize(), ONLY the first character
+            is adjusted. Meaning following character's in the string can be
+            upper cased.
+            Example: /Target may be replaced with "A big fish flops"
+                     where /target would show "a big fish flops"
+        If a receiver has a recog for a /target or /me entry, it will have the
+            potential of being upper case. This allows for players to recog
+            with proper names.
+
+    Unit Tests:
+        commands.tests.TestCommands.test_um_emote
 
     # change color codes in object.process_sdesc
     """
@@ -262,95 +273,103 @@ def um_emote(emote, sender, receivers=None, target=None, anonymous_add=None):
         receivers = utils.make_iter(receivers)
     sender_emote = False
     target_emote = False
-    if '/me' in emote:  # replace me for sender
+    # If me is in msg, create custom message for sender
+    if '/me' in emote.lower():
         if sender in receivers:
             receivers.remove(sender)
-            sender_emote = replace_cap(emote, '/me', 'you')
-            if '/target' in emote:
-                if target:
-                    if utils.is_iter(target):  # target is multiple targets
-                        target_names = list()
-                        allow_upper = False
-                        for targ in target:
-                            targ_name = targ.get_display_name(sender)
-                            # if sender has a recog for target, allow uppercase
-                            if targ_name.startswith(targ.usdesc):
-                                targ_name = targ_name.lower
-                            else:
-                                allow_upper = True
-                            target_names.append(targ_name)
-                        target_names = utils.iter_to_string(target_names, endsep="and")
-                        sender_emote = replace_cap(sender_emote, '/target',
-                                                   target_names,
-                                                   allow_upper=allow_upper)
-                else:
-                    allow_upper = False
-                    targ_name = target.get_display_name(sender)
-                    if targ_name.startswith(targ.usdesc):
-                        targ_name = targ_name.lower
-                    else:
-                        allow_upper = True
-                    # replace /target with target's name from sender's view
-                    sender_emote = replace_cap(sender_emote, '/target',
-                                               targ_name, allow_upper=allow_upper)
-            # send the emote
-            rpsystem.send_emote(sender, (sender,), sender_emote, anonymous_add)
-    if '/target' in emote:
+            if '/Me' in emote:
+                sender_emote = replace_cap(emote, '/Me', 'you')
+            if '/me' in emote:
+                sender_emote = replace_cap(sender_emote, '/me', 'you')
+    if '/target' in emote.lower():
         if target:
             if utils.is_iter(target):  # target is multiple targets
                 # send a message to each target
                 for targ in target:
                     if targ in receivers:  # process message only if needed
+                        if targ == sender and sender_emote:
+                            targ_emote = sender_emote
+                            # sender's emote will send with target's emotes
+                            sender_emote = False
+                        else:
+                            targ_emote = emote
                         # remove target receiving emote from name replacement
                         targets = list(target)
                         targets.remove(targ)
-                        # replace /target with all other command targets recog
+                        # Capitalized recog support
+                        allow_upper = False
+                        # create a list of recog names
                         target_names = list()
                         for other_targ in targets:
                             ot_targ_name = other_targ.get_display_name(targ)
+                            # if the receiver has a custom recog for the receiver
+                            # do not force it to be lower cased
                             if ot_targ_name.startswith(other_targ.usdesc):
                                 ot_targ_name = ot_targ_name.lower()
                             else:
-                                allow_upper = True
+                                allow_upper = True  # Capitalized recog support
                             target_names.append(ot_targ_name)
+                        # turn names list into a string
                         target_names = utils.iter_to_string(target_names, endsep="")
                         target_names += " and you"
-                        target_emote = replace_cap(emote, '/target', target_names)
-                        receivers.remove(targ)  # targ receives emote here
+                        # replace target switches with target names string
+                        target_emote = replace_cap(targ_emote, '/target', target_names, allow_upper=allow_upper)
+                        target_emote = replace_cap(target_emote, '/Target', target_names)
+                        # this target receives a custom emote, remove from standard
+                        receivers.remove(targ)
+                        # send the emote to the target
                         rpsystem.send_emote(sender, (targ,), target_emote, anonymous_add)
             else:  # if the command has a single target
                 if target in receivers: # process message only if needed
                     # make target's emote replacing /target with 'you'
                     target_emote = replace_cap(emote, '/target', 'you')
-                    receivers.remove(target)  # target will receive it's own emote
+                    target_emote = replace_cap(target_emote, '/Target', 'you')
+                    # this target receives a custom emote, remove from standard
+                    receivers.remove(target)
+                    # send the emote to the target
                     rpsystem.send_emote(sender, (target,), target_emote, anonymous_add)
-    for receiver in receivers:  # process receivers separately
+    # if there is a custom emote for the sender, send it now.
+    if sender_emote:
+        rpsystem.send_emote(sender, (sender,), sender_emote, anonymous_add)
+    # process message for receivers
+    for receiver in receivers:
         rec_emote = emote
-        # replace /target with target's name from receiver's recog fields
-        if '/target' in emote:
+        if '/target' in emote.lower():
             if target:
                 if utils.is_iter(target):  # target is multiple targets
+                    allow_upper = False  # Capitalized recog support
+                    # create a list of recog names
                     target_names = list()
-                    allow_upper = False
                     for targ in target:  # get recieivers recog of the target
                         targ_name = targ.get_display_name(receiver)
+                        # if the receiver has a custom recog for the receiver
+                        # do not force it to be lower cased
                         if targ_name.startswith(targ.usdesc):
                             targ_name = targ_name.lower()
                         else:
-                            allow_upper = True
+                            allow_upper = True  # Capitalized recog support
                         target_names.append(targ_name)
+                    # turn names list into a string
                     target_names = utils.iter_to_string(target_names, endsep="and")
+                    # replace target switches with target names string
                     rec_emote = replace_cap(emote, '/target', target_names,
                                             allow_upper=allow_upper)
+                    rec_emote = replace_cap(rec_emote, '/Target', target_names)
                 else:  # only a single target
-                    allow_upper = False
+                    allow_upper = False  # Capitalized recog support
                     targ_name = target.get_display_name(receiver)
+                    # if the receiver has a custom recog for the receiver
+                    # do not force it to be lower cased
                     if targ_name.startswith(target.usdesc):
                         targ_name = targ_name.lower()
                     else:
-                        allow_upper = True
+                        allow_upper = True  # Capitalized recog support
+                    # replace /target with the receivers recog for target
                     rec_emote = replace_cap(emote, '/target', targ_name,
                                             allow_upper=allow_upper)
-            else:
+                    rec_emote = replace_cap(rec_emote, '/Target', targ_name)
+            else:  # there is no target but is in the switch.
                 rec_emote = rec_emote.replace("/target", "|rnothing|n")
+                rec_emote = rec_emote.replace("/Target", "|rnothing|n")
+        # send the emote to the receiver
         rpsystem.send_emote(sender, (receiver,), rec_emote, anonymous_add)

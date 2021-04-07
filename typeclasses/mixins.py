@@ -326,12 +326,34 @@ class AllObjectsMixin:
                 - 'last': Add sender to the end of emote as [sender]
                 - 'first': Prepend sender to start of emote.
 
+        Example:
+            "/Me punches at /target "
+            from a by stander: "A tall man punches at a short name "
+            from the target of the attach: "A tall man punches at you "
+            from the sender (or command caller) "You punches at a short man "
+                Normally the command caller and target get custom messages.
+
         Notes:
-            All switches are automatically upper or lower cased for sentence
-            position.
-            Using /me switch results in sender's message having me rather than the
-            sender's recog for self.
-            /target switch is replaced with target(s) recog(s) for each receiver.
+            All standard evennia switches are supported.
+            /me will be replaced with "you" for the sender.
+            /target will be replaced with the display name of the target.
+                From the receivers recog attribute for the target.
+                For example if they recog a friend with a proper name.
+            Capitalization of /Me or /Target results in the name being upper cased.
+                This does NOT work as string.capitalize(), ONLY the first character
+                is adjusted. Meaning following character's in the string can be
+                upper cased.
+                Example: /Target may be replaced with "A big fish flops"
+                         where /target would show "a big fish flops"
+            If a receiver has a recog for a /target or /me entry, it will have the
+                potential of being upper case. This allows for players to recog
+                with proper names.
+            This method is a very light wrapper for utils.um_utils.um_emote.
+            If a feature is supported there, it will be supported here.
+
+        Unit Tests:
+            commands.tests.TestCommands.test_um_emote, indirectly
+            This will be directly tested in most commands scripts and other.
         """
         receivers = self.contents
         if exclude:

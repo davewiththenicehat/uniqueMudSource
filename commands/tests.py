@@ -2083,9 +2083,11 @@ class TestCommands(UniqueMudCmdTest):
         self.char3 = create.create_object(
             self.character_typeclass, key="Character Three", location=self.room1, home=self.room1
         )
+        self.char3.sdesc.add("a normal person")
         self.char4 = create.create_object(
             self.character_typeclass, key="Character Four", location=self.room1, home=self.room1
         )
+        self.char3.sdesc.add("a normal person")
         self.char5 = create.create_object(
             self.character_typeclass, key="Character Five", location=self.room1, home=self.room1
         )
@@ -2101,7 +2103,7 @@ class TestCommands(UniqueMudCmdTest):
         cmd_result = self.call_multi_receivers(command(), arg, receivers, noansi=False)
         # test /me switchm /me is self.char1 command caller
         command = developer_cmds.CmdCmdFuncTest
-        arg = "send_emote, char2 = /me message"
+        arg = "send_emote, char2 = /Me message"
         receivers = {
             self.char1: "You message",
             self.char2: f"{ANSI_BLUE}Char{ANSI_NORMAL} message",
@@ -2110,7 +2112,7 @@ class TestCommands(UniqueMudCmdTest):
         cmd_result = self.call_multi_receivers(command(), arg, receivers, noansi=False)
         # test /target switch
         command = developer_cmds.CmdCmdFuncTest
-        arg = f"send_emote, normal = /target message"
+        arg = f"send_emote, normal = /Target message"
         receivers = {
             self.char1: f"A normal person(#12) message",
             self.char3: "You message",
@@ -2128,7 +2130,7 @@ class TestCommands(UniqueMudCmdTest):
         cmd_result = self.call_multi_receivers(command(), arg, receivers, noansi=False)
         # test /target switch, with a number
         command = developer_cmds.CmdCmdFuncTest
-        arg = f"send_emote, 2 person = /target message"
+        arg = f"send_emote, 2 person = /Target message"
         receivers = {
             self.char1: "A normal person(#13) message",
             self.char2: "A normal person message",
@@ -2140,7 +2142,7 @@ class TestCommands(UniqueMudCmdTest):
         cmd_result = self.call_multi_receivers(command(), arg, receivers, noansi=False)
         # search for multi word desc
         command = developer_cmds.CmdCmdFuncTest
-        arg = f"send_emote, normal person = /target message"
+        arg = f"send_emote, normal person = /Target message"
         receivers = {
             self.char1: "A normal person(#12) message",
             self.char2: "A normal person message",
@@ -2150,7 +2152,7 @@ class TestCommands(UniqueMudCmdTest):
             self.obj1: "A normal person message"
         }
         cmd_result = self.call_multi_receivers(command(), arg, receivers, noansi=False)
-        arg = f"send_emote, normal giant = /target message"
+        arg = f"send_emote, normal giant = /Target message"
         receivers = {
             self.char1: "A normal giant(#14) message",
             self.char2: "A normal giant message",
@@ -2162,7 +2164,7 @@ class TestCommands(UniqueMudCmdTest):
         cmd_result = self.call_multi_receivers(command(), arg, receivers, noansi=False)
         # target an object
         command = developer_cmds.CmdCmdFuncTest
-        arg = f"send_emote, obj2 = /target message"
+        arg = f"send_emote, obj2 = /Target message"
         receivers = {
             self.char1: "Obj2(#5) message",
             self.char2: "Obj2 message",
@@ -2174,7 +2176,7 @@ class TestCommands(UniqueMudCmdTest):
         cmd_result = self.call_multi_receivers(command(), arg, receivers, noansi=False)
         # test after punctuation:
         command = developer_cmds.CmdCmdFuncTest
-        arg = f"send_emote, normal person = Sentence one. /target sentence two."
+        arg = f"send_emote, normal person = Sentence one. /Target sentence two."
         receivers = {
             self.char1: "Sentence one. A normal person(#12) sentence two.",
             self.char2: "Sentence one. A normal person sentence two.",
@@ -2186,7 +2188,7 @@ class TestCommands(UniqueMudCmdTest):
         cmd_result = self.call_multi_receivers(command(), arg, receivers, noansi=False)
         # color codes at the start of a sentence.
         command = developer_cmds.CmdCmdFuncTest
-        arg = f"send_emote, normal person = |r/target message|n"
+        arg = f"send_emote, normal person = |r/Target message|n"
         receivers = {
             self.char1: f"{ANSI_RED}A normal person(#12) message{ANSI_NORMAL}",
             self.char2: f"{ANSI_RED}A normal person message{ANSI_NORMAL}",
@@ -2199,7 +2201,7 @@ class TestCommands(UniqueMudCmdTest):
         # Test color codes after end of sentences and in the middle of a sentence
         # with an ansi switch after the punctiation at the end of the sentence.
         command = developer_cmds.CmdCmdFuncTest
-        arg = f"send_emote, normal person = Sentence one. |r/target sentence two.|n |r/target sentence three.|n sentence three |r/target|n."
+        arg = f"send_emote, normal person = Sentence one. |r/Target sentence two.|n |r/Target sentence three.|n sentence three |r/target|n."
         receivers = {
             self.char1: f"Sentence one. {ANSI_RED}A normal person(#12) sentence two.{ANSI_NORMAL} " \
                         f"{ANSI_RED}A normal person(#12) sentence three.{ANSI_NORMAL} " \
@@ -2218,7 +2220,7 @@ class TestCommands(UniqueMudCmdTest):
         cmd_result = self.call_multi_receivers(command(), arg, receivers, noansi=False)
         # test as previous but text tag appears before functuation.
         command = developer_cmds.CmdCmdFuncTest
-        arg = f"send_emote, normal person = Sentence one. |r/target sentence two|n. |r/target sentence three.|n sentence three |r/target|n."
+        arg = f"send_emote, normal person = Sentence one. |r/Target sentence two|n. |r/Target sentence three.|n sentence three |r/target|n."
         receivers = {
             self.char1: f"Sentence one. {ANSI_RED}A normal person(#12) sentence two{ANSI_NORMAL}. " \
                         f"{ANSI_RED}A normal person(#12) sentence three.{ANSI_NORMAL} " \
@@ -2237,7 +2239,7 @@ class TestCommands(UniqueMudCmdTest):
         cmd_result = self.call_multi_receivers(command(), arg, receivers, noansi=False)
         # test where Characters has different recog for the target
         command = developer_cmds.CmdCmdFuncTest
-        arg = f"send_emote, obj2 = /target message"
+        arg = f"send_emote, obj2 = /Target message"
         self.char1.recog.add(self.obj2, "obj2 char1")
         self.char2.recog.add(self.obj2, "obj2 char2")
         self.char3.recog.add(self.obj2, "obj2 char3")
@@ -2254,7 +2256,7 @@ class TestCommands(UniqueMudCmdTest):
         cmd_result = self.call_multi_receivers(command(), arg, receivers, noansi=False)
         # test with upper cased recog
         command = developer_cmds.CmdCmdFuncTest
-        arg = f"send_emote, normal = /target message /target"
+        arg = f"send_emote, normal = /Target message /target"
         self.char1.recog.add(self.char3, "Char3 for char1")
         self.char2.recog.add(self.char3, "Char3 for char2")
         self.char3.recog.add(self.char3, "Char3 for char3")
@@ -2263,10 +2265,10 @@ class TestCommands(UniqueMudCmdTest):
         receivers = {
             self.char1: "Char3 for char1(#12) message Char3 for char1(#12)",
             self.char2: "Char3 for char2 message Char3 for char2",
-            self.char3: "You message You",
+            self.char3: "You message you",
             self.char4: "Char3 for char4 message Char3 for char4",
             self.char5: "Char3 for char5 message Char3 for char5",
-            self.obj2: "A normal person message A normal person"
+            self.obj2: "A normal person message a normal person"
         }
         cmd_result = self.call_multi_receivers(command(), arg, receivers, noansi=False)
         self.char1.recog.remove(self.char3)
@@ -2288,7 +2290,7 @@ class TestCommands(UniqueMudCmdTest):
         cmd_result = self.call_multi_receivers(command(), arg, receivers, noansi=False)
         # test multiple targets
         command = developer_cmds.CmdCmdFuncTest
-        arg = f"send_emote, to person and 2 person = /target message. /target"
+        arg = f"send_emote, to person and 2 person = /Target message. /Target"
         receivers = {
             self.char1: "A normal person(#12) and a normal person(#13) message. A normal person(#12) and a normal person(#13)",
             self.char2: "A normal person and a normal person message. A normal person and a normal person",
@@ -2298,22 +2300,33 @@ class TestCommands(UniqueMudCmdTest):
             self.obj1: "A normal person and a normal person message. A normal person and a normal person"
         }
         cmd_result = self.call_multi_receivers(command(), arg, receivers, noansi=False)
+        # multiple targets where the sender is in the target list.
+        command = developer_cmds.CmdCmdFuncTest
+        arg = f"send_emote, to self and 2 person = /Target message. /Target"
+        receivers = {
+            self.char1: "A normal person(#13) and you message. A normal person(#13) and you",
+            self.char2: "Char and a normal person message. Char and a normal person",
+            self.char3: "Char and a normal person message. Char and a normal person",
+            self.char4: "Char and you message. Char and you",
+            self.char5: "Char and a normal person message. Char and a normal person",
+            self.obj1: "Char and a normal person message. Char and a normal person"
+        }
+        cmd_result = self.call_multi_receivers(command(), arg, receivers, noansi=False)
         # test multi targets with recog's set
         command = developer_cmds.CmdCmdFuncTest
-        arg = f"send_emote, obj2 = /target message"
-        self.char1.recog.add(self.char3, "char3 char1")
-        self.char2.recog.add(self.char3, "char3 char2")
-        self.char3.recog.add(self.char3, "char3 char3")
-        self.char4.recog.add(self.char3, "char3 char4")
-        self.char5.recog.add(self.char3, "char3 char5")
-        arg = f"send_emote, to person and 2 person = /target message. /target"
+        self.char1.recog.add(self.char3, "Char3 char1")
+        self.char2.recog.add(self.char3, "Char3 char2")
+        self.char3.recog.add(self.char3, "Char3 char3")
+        self.char4.recog.add(self.char3, "Char3 char4")
+        self.char5.recog.add(self.char3, "Char3 char5")
+        arg = f"send_emote, to person and 2 person = /Target message /target"
         receivers = {
-            self.char1: "Char3 char1(#12) and a normal person(#13) message. Char3 char1(#12) and a normal person(#13)",
-            self.char2: "Char3 char2 and a normal person message. Char3 char2 and a normal person",
-            self.char3: "A normal person and you message. A normal person and you",
-            self.char4: "Char3 char4 and you message. Char3 char4 and you",
-            self.char5: "Char3 char5 and a normal person message. Char3 char5 and a normal person",
-            self.obj1: "A normal person and a normal person message. A normal person and a normal person"
+            self.char1: "Char3 char1(#12) and a normal person(#13) message Char3 char1(#12) and a normal person(#13)",
+            self.char2: "Char3 char2 and a normal person message Char3 char2 and a normal person",
+            self.char3: "A normal person and you message a normal person and you",
+            self.char4: "Char3 char4 and you message Char3 char4 and you",
+            self.char5: "Char3 char5 and a normal person message Char3 char5 and a normal person",
+            self.obj1: "A normal person and a normal person message a normal person and a normal person"
         }
         cmd_result = self.call_multi_receivers(command(), arg, receivers, noansi=False)
         # test where recog has an upper case
@@ -2328,7 +2341,7 @@ class TestCommands(UniqueMudCmdTest):
         self.char3.recog.add(self.char4, "Char4 char3")
         self.char4.recog.add(self.char4, "Char4 char4")
         self.char5.recog.add(self.char4, "Char4 char5")
-        arg = f"send_emote, to person and 2 person = /target message. /target"
+        arg = f"send_emote, to person and 2 person = /Target message. /Target"
         receivers = {
             self.char1: "Char3 char1(#12) and Char4 char1(#13) message. Char3 char1(#12) and Char4 char1(#13)",
             self.char2: "Char3 char2 and Char4 char2 message. Char3 char2 and Char4 char2",
