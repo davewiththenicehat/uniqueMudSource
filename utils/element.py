@@ -867,7 +867,7 @@ class Element:
         other = self.verify_num_arg(other)
         value = self.get()
         if self.log:
-            log_info(f"Element {self.name} for db object {self.container.dbref}, {descriptor} called other is {other} value is {value}.")
+            log_info(f"Element {self.name} for db object {self.container.dbref}, __rmod called other is {other} value is {value}.")
         value = other % value
         return value
 
