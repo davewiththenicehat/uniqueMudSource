@@ -1771,6 +1771,38 @@ class TestCommands(UniqueMudCmdTest):
         # make certain commands have been taking a cost.
         self.assertTrue(self.char1.END < 100)
 
+    def test_evasion(self):
+        """
+        test the evasion command set.
+        """
+        # tests for the dodge command
+        dodge_rc = {self.char1: "Char2 begins to sway warily.",
+                   self.char2: "You will be busy for 10 seconds.|You begin to sway warily.",
+                   self.obj1: "Char2 begins to sway warily."}
+        dodge_post = tuple()
+        dodge_cmd = {
+                    'arg': f"= dodge",
+                    'receivers': dodge_rc,
+                    'post_reg_tests': dodge_post,
+                    'caller': self.char2
+                   }
+        punch_rc = {self.char1: "You will be busy for 3 seconds.|Facing Char2 Char pulls theirs hand back preparing an attack.|Char2 tries to dodge the incoming attack.",
+                   self.char2: "Facing Char2 Char pulls theirs hand back preparing an attack.|You are no longer busy.|You try to dodge the incoming attack.",
+                   self.obj1: "Facing Char2 Char pulls theirs hand back preparing an attack.|Char2 tries to dodge the incoming attack.|Char punches at char2 with their fist "}
+        #punch_post = ("You try to dodge the incoming attack.",)
+        punch_post = tuple()
+        punch_cmd = {
+                    'arg': f"= punch Char2, complete_cmd_early",
+                    'receivers': punch_rc,
+                    'post_reg_tests': punch_post
+                   }
+
+        # run the tests
+        self.loop_tests((dodge_cmd, punch_cmd))
+
+        # make certain commands have been taking a cost.
+        self.assertTrue(self.char1.END < 100)
+
     def test_get_body_part(self):
         """
             Test Command methods.

@@ -151,8 +151,8 @@ def evade_roll(char=None, evade_mod_stat=None, log=False, unit_test=False):
                                 log_info(msg)
                 evade_cmd.stop_forced()  # stop the deffered evasion command
                 # message target and room of the evade action.
-                room_msg = f'{char.usdesc} tries '+evade_cmd.evade_msg
-                char.location.msg_contents(room_msg, exclude=(char))
+                room_msg = f'/Me tries '+evade_cmd.evade_msg
+                char.location.emote_contents(room_msg, char, exclude=(char))
                 char.msg('You try '+evade_cmd.evade_msg)
         # if the evade command has a evade mod stat use it instead of default
         evade_mod_stat = getattr(evade_cmd, 'evade_mod_stat', evade_mod_stat)
@@ -320,7 +320,6 @@ def action_cost(char, cost_level='very easy', cost_stat='END', subt_cost=True,
             return False
     # if the cost level is a number, use it as base cost
     elif isinstance(cost_level, (int, float)):
-        char.msg("cost_level is a number")
         base_cost = cost_level
     else:
         err_msg = f"rules.action.cost, character: {char.id} | "

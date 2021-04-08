@@ -385,7 +385,8 @@ class UniqueMudCmdTest(UniqueMudTest):
         """
         command = developer_cmds.CmdMultiCmd
         for cmd in cmds:
-            cmd_result = self.call_multi_receivers(command(), cmd['arg'], cmd['receivers'])
+            caller = cmd.get('caller', self.char1)
+            cmd_result = self.call_multi_receivers(command(), cmd['arg'], cmd['receivers'], caller=caller)
             post_tests = cmd.get('post_reg_tests', tuple())
             for post_test in post_tests:
                 try:

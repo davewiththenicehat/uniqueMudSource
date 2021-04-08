@@ -285,9 +285,9 @@ def um_emote(emote, sender, receivers=None, target=None, anonymous_add=None):
         if target:
             if utils.is_iter(target):  # target is multiple targets
                 # send a message to each target
-                for targ in target:
-                    if targ in receivers:  # process message only if needed
-                        if targ == sender and sender_emote:
+                for receiver in target:
+                    if receiver in receivers:  # process message only if needed
+                        if receiver == sender and sender_emote:
                             targ_emote = sender_emote
                             # sender's emote will send with target's emotes
                             sender_emote = False
@@ -295,13 +295,13 @@ def um_emote(emote, sender, receivers=None, target=None, anonymous_add=None):
                             targ_emote = emote
                         # remove target receiving emote from name replacement
                         targets = list(target)
-                        targets.remove(targ)
+                        targets.remove(receiver)
                         # Capitalized recog support
                         allow_upper = False
                         # create a list of recog names
                         target_names = list()
                         for other_targ in targets:
-                            ot_targ_name = other_targ.get_display_name(targ)
+                            ot_targ_name = other_targ.get_display_name(receiver)
                             # if the receiver has a custom recog for the receiver
                             # do not force it to be lower cased
                             if ot_targ_name.startswith(other_targ.usdesc):
@@ -315,10 +315,14 @@ def um_emote(emote, sender, receivers=None, target=None, anonymous_add=None):
                         # replace target switches with target names string
                         target_emote = replace_cap(targ_emote, '/target', target_names, allow_upper=allow_upper)
                         target_emote = replace_cap(target_emote, '/Target', target_names)
+                        # replace /me with senders display name
+                        sender_name = sender.get_display_name(receiver)
+                        target_emote = replace_cap(target_emote, '/me', sender_name, allow_upper=True)
+                        target_emote = replace_cap(target_emote, '/Me', sender_name)
                         # this target receives a custom emote, remove from standard
-                        receivers.remove(targ)
+                        receivers.remove(receiver)
                         # send the emote to the target
-                        rpsystem.send_emote(sender, (targ,), target_emote, anonymous_add)
+                        rpsystem.send_emote(sender, (receiver,), target_emote, anonymous_add)
             else:  # if the command has a single target
                 if target in receivers: # process message only if needed
                     # make target's emote replacing /target's with 'your'
@@ -327,6 +331,10 @@ def um_emote(emote, sender, receivers=None, target=None, anonymous_add=None):
                     # make target's emote replacing /target with 'you'
                     target_emote = replace_cap(target_emote, '/target', 'you')
                     target_emote = replace_cap(target_emote, '/Target', 'you')
+                    # replace /me with senders display name
+                    sender_name = sender.get_display_name(target)
+                    target_emote = replace_cap(target_emote, '/me', sender_name, allow_upper=True)
+                    target_emote = replace_cap(target_emote, '/Me', sender_name)
                     # this target receives a custom emote, remove from standard
                     receivers.remove(target)
                     # send the emote to the target
@@ -374,5 +382,9 @@ def um_emote(emote, sender, receivers=None, target=None, anonymous_add=None):
             else:  # there is no target but is in the switch.
                 rec_emote = rec_emote.replace("/target", "|rnothing|n")
                 rec_emote = rec_emote.replace("/Target", "|rnothing|n")
+            # replace /me with senders display name
+            sender_name = sender.get_display_name(receiver)
+            target_emote = replace_cap(rec_emote, '/me', sender_name, allow_upper=True)
+            target_emote = replace_cap(rec_emote, '/Me', sender_name)
         # send the emote to the receiver
         rpsystem.send_emote(sender, (receiver,), rec_emote, anonymous_add)

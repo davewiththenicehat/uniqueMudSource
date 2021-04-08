@@ -90,14 +90,14 @@ class CmdDodge(EvasionCommand):
         Automatically called at the end of Command.func
         """
         caller = self.caller
-        room_message = f'{caller.usdesc} begins to sway warily.'
+        room_message = f'/Me begins to sway warily.'
         caller_message = 'You begin to sway warily.'
-        caller.location.msg_contents(room_message, exclude=(caller))
+        caller.location.emote_contents(room_message, caller, exclude=(caller))
         caller.msg(caller_message)
 
     def deferred_action(self):
         """The command completed, without receiving an attack."""
         caller = self.caller
-        room_message = f'{caller.usdesc} stops swaying warily.'
-        caller.location.msg_contents(room_message, exclude=(caller))
+        room_message = f'/Me stops swaying warily.'
+        caller.location.emote_contents(room_message, caller, exclude=(caller))
         caller.msg('You stop moving warily.')
