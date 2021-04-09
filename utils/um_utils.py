@@ -220,6 +220,17 @@ def replace_cap(msg, switch, rep_txt, upper=False, lower=False, allow_upper=Fals
             return msg.replace(switch, rep_txt[0].lower() + rep_txt[1:])
     return msg
 
+def support_upper(name, obj):
+    allow_upper = False
+    if hasattr(obj, 'sdesc'):
+        sdesc = obj.sdesc.get()
+    else:
+        sdesc = obj.key
+    if name.startswith(sdesc):
+        name = name.lower()
+    else:
+        allow_upper = True
+    return name, allow_upper
 
 def um_emote(emote, sender, receivers=None, target=None, anonymous_add=None):
     """
@@ -272,14 +283,13 @@ def um_emote(emote, sender, receivers=None, target=None, anonymous_add=None):
     else:
         receivers = utils.make_iter(receivers)
     sender_emote = False
-    target_emote = False
     # If me is in msg, create custom message for sender
     if '/me' in emote.lower():
         if sender in receivers:
-            receivers.remove(sender)
-            if '/Me' in emote:
-                sender_emote = replace_cap(emote, '/Me', 'you')
-            if '/me' in emote:
+            sender_emote = emote
+            if '/Me' in sender_emote:
+                sender_emote = replace_cap(sender_emote, '/Me', 'you')
+            if '/me' in sender_emote:
                 sender_emote = replace_cap(sender_emote, '/me', 'you')
     if '/target' in emote.lower():
         if target:
@@ -288,11 +298,11 @@ def um_emote(emote, sender, receivers=None, target=None, anonymous_add=None):
                 for receiver in target:
                     if receiver in receivers:  # process message only if needed
                         if receiver == sender and sender_emote:
-                            targ_emote = sender_emote
+                            rec_emote = sender_emote
                             # sender's emote will send with target's emotes
                             sender_emote = False
                         else:
-                            targ_emote = emote
+                            rec_emote = emote
                         # remove target receiving emote from name replacement
                         targets = list(target)
                         targets.remove(receiver)
@@ -304,48 +314,55 @@ def um_emote(emote, sender, receivers=None, target=None, anonymous_add=None):
                             ot_targ_name = other_targ.get_display_name(receiver)
                             # if the receiver has a custom recog for the receiver
                             # do not force it to be lower cased
-                            if ot_targ_name.startswith(other_targ.usdesc):
-                                ot_targ_name = ot_targ_name.lower()
-                            else:
-                                allow_upper = True  # Capitalized recog support
+                            ot_targ_name, allow_upper = support_upper(ot_targ_name, other_targ)
                             target_names.append(ot_targ_name)
                         # turn names list into a string
                         target_names = utils.iter_to_string(target_names, endsep="")
                         target_names += " and you"
                         # replace target switches with target names string
-                        target_emote = replace_cap(targ_emote, '/target', target_names, allow_upper=allow_upper)
-                        target_emote = replace_cap(target_emote, '/Target', target_names)
+                        rec_emote = replace_cap(rec_emote, '/target', target_names, allow_upper=allow_upper)
+                        rec_emote = replace_cap(rec_emote, '/Target', target_names)
                         # replace /me with senders display name
                         sender_name = sender.get_display_name(receiver)
-                        target_emote = replace_cap(target_emote, '/me', sender_name, allow_upper=True)
-                        target_emote = replace_cap(target_emote, '/Me', sender_name)
+                        sender_name, allow_upper = support_upper(sender_name, sender)
+                        rec_emote = replace_cap(rec_emote, '/me', sender_name, allow_upper=allow_upper)
+                        rec_emote = replace_cap(rec_emote, '/Me', sender_name)
                         # this target receives a custom emote, remove from standard
                         receivers.remove(receiver)
                         # send the emote to the target
-                        rpsystem.send_emote(sender, (receiver,), target_emote, anonymous_add)
+                        rpsystem.send_emote(sender, (receiver,), rec_emote, anonymous_add)
             else:  # if the command has a single target
                 if target in receivers: # process message only if needed
+                    if target == sender and sender_emote:
+                        target_emote = sender_emote
+                        # sender's emote will send with target's emotes
+                        sender_emote = False
+                    else:
+                        target_emote = emote
                     # make target's emote replacing /target's with 'your'
-                    target_emote = replace_cap(emote, "/target's", 'your')
+                    target_emote = replace_cap(target_emote, "/target's", 'your')
                     target_emote = replace_cap(target_emote, "/Target's", 'your')
                     # make target's emote replacing /target with 'you'
                     target_emote = replace_cap(target_emote, '/target', 'you')
                     target_emote = replace_cap(target_emote, '/Target', 'you')
                     # replace /me with senders display name
                     sender_name = sender.get_display_name(target)
-                    target_emote = replace_cap(target_emote, '/me', sender_name, allow_upper=True)
+                    sender_name, allow_upper = support_upper(sender_name, sender)
+                    target_emote = replace_cap(target_emote, '/me', sender_name, allow_upper=allow_upper)
                     target_emote = replace_cap(target_emote, '/Me', sender_name)
                     # this target receives a custom emote, remove from standard
                     receivers.remove(target)
                     # send the emote to the target
                     rpsystem.send_emote(sender, (target,), target_emote, anonymous_add)
-    # if there is a custom emote for the sender, send it now.
-    if sender_emote:
-        rpsystem.send_emote(sender, (sender,), sender_emote, anonymous_add)
     # process message for receivers
     for receiver in receivers:
-        rec_emote = emote
-        if '/target' in emote.lower():
+        if receiver == sender and sender_emote:
+            rec_emote = sender_emote
+            # sender's emote will send with target's emotes
+            sender_emote = False
+        else:
+            rec_emote = emote
+        if '/target' in rec_emote.lower():
             if target:
                 if utils.is_iter(target):  # target is multiple targets
                     allow_upper = False  # Capitalized recog support
@@ -355,36 +372,28 @@ def um_emote(emote, sender, receivers=None, target=None, anonymous_add=None):
                         targ_name = targ.get_display_name(receiver)
                         # if the receiver has a custom recog for the receiver
                         # do not force it to be lower cased
-                        if targ_name.startswith(targ.usdesc):
-                            targ_name = targ_name.lower()
-                        else:
-                            allow_upper = True  # Capitalized recog support
+                        targ_name, upper = support_upper(targ_name, targ)
+                        if upper:
+                            allow_upper = True
                         target_names.append(targ_name)
                     # turn names list into a string
                     target_names = utils.iter_to_string(target_names, endsep="and")
                     # replace target switches with target names string
-                    rec_emote = replace_cap(emote, '/target', target_names,
-                                            allow_upper=allow_upper)
+                    rec_emote = replace_cap(rec_emote, '/target', target_names, allow_upper=allow_upper)
                     rec_emote = replace_cap(rec_emote, '/Target', target_names)
                 else:  # only a single target
-                    allow_upper = False  # Capitalized recog support
                     targ_name = target.get_display_name(receiver)
-                    # if the receiver has a custom recog for the receiver
-                    # do not force it to be lower cased
-                    if targ_name.startswith(target.usdesc):
-                        targ_name = targ_name.lower()
-                    else:
-                        allow_upper = True  # Capitalized recog support
+                    targ_name, allow_upper = support_upper(targ_name, target)
                     # replace /target with the receivers recog for target
-                    rec_emote = replace_cap(emote, '/target', targ_name,
-                                            allow_upper=allow_upper)
+                    rec_emote = replace_cap(rec_emote, '/target', targ_name, allow_upper=allow_upper)
                     rec_emote = replace_cap(rec_emote, '/Target', targ_name)
             else:  # there is no target but is in the switch.
                 rec_emote = rec_emote.replace("/target", "|rnothing|n")
                 rec_emote = rec_emote.replace("/Target", "|rnothing|n")
             # replace /me with senders display name
             sender_name = sender.get_display_name(receiver)
-            target_emote = replace_cap(rec_emote, '/me', sender_name, allow_upper=True)
-            target_emote = replace_cap(rec_emote, '/Me', sender_name)
+            sender_name, allow_upper = support_upper(sender_name, sender)
+            rec_emote = replace_cap(rec_emote, '/me', sender_name, allow_upper=allow_upper)
+            rec_emote = replace_cap(rec_emote, '/Me', sender_name)
         # send the emote to the receiver
         rpsystem.send_emote(sender, (receiver,), rec_emote, anonymous_add)

@@ -362,6 +362,59 @@ class AllObjectsMixin:
         um_emote(text, sender, receivers, target, anonymous_add)
 
 
+    def emote(self, text, sender=None, receivers=None, target=None, anonymous_add=None):
+        """
+        send emote to contents of an object.
+
+        Arguments:
+            text (str): The raw emote string as input by emoter.
+            sender (Object): The one sending the emote.
+            receivers (iterable): Receivers of the emote. These
+                will also form the basis for which sdescs are
+                'valid' to use in the emote.
+            target (iterable): objects to replace /target switch with.
+            anonymous_add (str or None, optional): If `sender` is not
+                self-referencing in the emote, this will auto-add
+                `sender`'s data to the emote. Possible values are
+                - None: No auto-add at anonymous emote
+                - 'last': Add sender to the end of emote as [sender]
+                - 'first': Prepend sender to start of emote.
+
+        Example:
+            "/Me punches at /target "
+            from a by stander: "A tall man punches at a short name "
+            from the target of the attach: "A tall man punches at you "
+            from the sender (or command caller) "You punches at a short man "
+                Normally the command caller and target get custom messages.
+
+        Notes:
+            All standard evennia switches are supported.
+            /me will be replaced with "you" for the sender.
+            /target will be replaced with the display name of the target.
+                From the receivers recog attribute for the target.
+                For example if they recog a friend with a proper name.
+            Capitalization of /Me or /Target results in the name being upper cased.
+                This does NOT work as string.capitalize(), ONLY the first character
+                is adjusted. Meaning following character's in the string can be
+                upper cased.
+                Example: /Target may be replaced with "A big fish flops"
+                         where /target would show "a big fish flops"
+            If a receiver has a recog for a /target or /me entry, it will have the
+                potential of being upper case. This allows for players to recog
+                with proper names.
+            This method is a very light wrapper for utils.um_utils.um_emote.
+            If a feature is supported there, it will be supported here.
+
+        Unit Tests:
+            commands.tests.TestCommands.test_um_emote, indirectly
+            This will be directly tested in most commands scripts and other.
+        """
+        if not sender:
+            sender = self
+        if not receivers:
+            receivers = self
+        um_emote(text, sender, receivers, target, anonymous_add)
+
 class ExObjAndRoomMixin:
     """
     Creates basic attributes for Exits Objects and Rooms.

@@ -622,9 +622,8 @@ class TestCommands(UniqueMudCmdTest):
         self.char1.skills.one_handed.stab = 1
         command = developer_cmds.CmdMultiCmd
         arg = "= stab char2, complete_cmd_early"
-        wnt_msg = 'You will be busy for \\d+ seconds.\nFacing Char2 Char raises a sword preparing an attack.\nstab \\d+ VS evade \\d+: You stab at char2\(#7\)\.*'
-        cmd_result = self.call(command(), arg)
-        self.assertRegex(cmd_result, wnt_msg)
+        wnt_msg = "You will be busy for 3 seconds.|Facing char2(#7) you raise a sword preparing an attack.|stab"
+        cmd_result = self.call(command(), arg, wnt_msg)
         arg = "= drop sword"
         wnt_msg = "You drop a sword"
         cmd_result = self.call(command(), arg, caller=self.char1)
@@ -1726,9 +1725,9 @@ class TestCommands(UniqueMudCmdTest):
         test the unarmed command set.
         """
         # tests for the stab command
-        stab_rc = {self.char1: "You will be busy for 3 seconds.|Facing Char2 Char raises a sword preparing an attack.",
-                   self.char2: "Facing Char2 Char raises a sword preparing an attack.",
-                   self.obj1: "Facing Char2 Char raises a sword preparing an attack.|Char stabs at char2 with their sword and connects. Hitting char2's "}
+        stab_rc = {self.char1: "You will be busy for 3 seconds.|Facing char2(#7) you raise a sword preparing an attack.",
+                   self.char2: "Facing you char raises a sword preparing an attack.",
+                   self.obj1: "Facing char2 char raises a sword preparing an attack.|Char stabs at char2 with their sword and connects. Hitting char2's "}
         stab_post = ("stab \d+ VS evade \d+: You stab at char2\(#7\) with your sword and connect\. Hitting char2\(#7\)'s",
                      "Dealing \d+ damage\.|You are no longer busy\.",
                      # defenders messages
@@ -1742,12 +1741,12 @@ class TestCommands(UniqueMudCmdTest):
                     'post_reg_tests': stab_post
                    }
         # test a missed stab
-        stab_miss_rc = {self.char1: "You will be busy for 3 seconds.|Facing Char2 Char raises a sword preparing an attack.",
-                   self.char2: "Facing Char2 Char raises a sword preparing an attack.",
-                   self.obj1: "Facing Char2 Char raises a sword preparing an attack.|Char stabs at char2 with their sword and misses."}
+        stab_miss_rc = {self.char1: "You will be busy for 3 seconds.|Facing char2(#7) you raise a sword preparing an attack.",
+                   self.char2: "Facing you char raises a sword preparing an attack.",
+                   self.obj1: "Facing char2 char raises a sword preparing an attack.|Char stabs at char2 with their sword and misses."}
         stab_miss_post = ("stab \d+ VS evade \d+: You stab at char2\(#7\) with your sword but miss\.",
-                     # defenders messages
-                     "evade \d+ VS stab \d+: Char stabs at you with their sword but you successfully evade the stab\.")
+                          # defenders messages
+                          "evade \d+ VS stab \d+: Char stabs at you with their sword but you successfully evade the stab\.")
         stab_missed_cmd = {
                     'arg': f"= stab/unit_test_fail Char2, complete_cmd_early",
                     'receivers': stab_miss_rc,

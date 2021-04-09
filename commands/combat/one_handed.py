@@ -73,10 +73,18 @@ class CmdStab(OneHandedCommand):
 
         Automatically called at the end of Command.func
         """
-        caller_pronoun = self.caller.get_pronoun('|a')
-        message = f"Facing {self.target.usdesc} {self.caller.usdesc} raises " \
-                  f"{self.weapon_desc} preparing an attack."
-        self.caller.location.msg_contents(message)
+        caller = self.caller
+        target = self.target
+        # message the room
+        caller_pronoun = caller.get_pronoun('|a')
+        room_msg = f"Facing /target /me raises " \
+                   f"{self.weapon_desc} preparing an attack."
+        caller.location.emote_contents(room_msg, caller, target=target, exclude=(caller))
+        # message the caller
+        caller_msg = f"Facing /target /me raise " \
+                     f"{self.weapon_desc} preparing an attack."
+        caller.emote(caller_msg, target=target)
+
         self.pres_tense_desc = "stabs"  # a present tense description for the action of this command. IE: "kicks"
 
     def deferred_action(self):
