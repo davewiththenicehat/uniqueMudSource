@@ -307,16 +307,16 @@ class TestCommands(UniqueMudCmdTest):
         self.exit.targetable = True
         command = developer_cmds.CmdMultiCmd
         arg = "= punch out, complete_cmd_early"
-        wnt_msg = "You will be busy for \\d+ seconds.\nFacing out Char pulls theirs hand back preparing an attack.\npunch \\d+ VS evade 5: You punch at out"
-        cmd_result = self.call(command(), arg)
-        self.assertRegex(cmd_result, wnt_msg)
+        wnt_msg = "You will be busy for 3 seconds.|Facing out(#3) you pull theirs hand back preparing an attack.|punch"
+        cmd_result = self.call(command(), arg, wnt_msg)
+
         self.exit.targetable = False
         # test attacking a basic Object, defense should be 5
         # test a targeted command that has a stop_request against an object
         # to make certain the stop request to an object causes no issues
         command = developer_cmds.CmdMultiCmd
         arg = "= kick Obj, complete_cmd_early"
-        wnt_msg = "You will be busy for \\d+ seconds.\nFacing Obj Char lifts theirs knee up preparing an attack.\nkick \\d+ VS evade 5: You kick at obj"
+        wnt_msg = "evade 5:"
         cmd_result = self.call(command(), arg)
         self.assertRegex(cmd_result, wnt_msg)
         # test a target leaving melee range
@@ -1685,9 +1685,9 @@ class TestCommands(UniqueMudCmdTest):
                    }
 
         # tests for the punch command
-        punch_rc = {self.char1: "You will be busy for 3 seconds.|Facing Char2 Char pulls theirs hand back preparing an attack.",
-                   self.char2: "Facing Char2 Char pulls theirs hand back preparing an attack.",
-                   self.obj1: "Facing Char2 Char pulls theirs hand back preparing an attack.|Char punches at char2 with their fist and connects. Hitting char2's "}
+        punch_rc = {self.char1: "You will be busy for 3 seconds.|Facing char2(#7) you pull theirs hand back preparing an attack.",
+                   self.char2: "Facing you char pulls theirs hand back preparing an attack.",
+                   self.obj1: "Facing char2 char pulls theirs hand back preparing an attack.|Char punches at char2 with their fist and connects. Hitting char2's "}
         punch_post = ("punch \d+ VS evade \d+: You punch at char2\(#7\) with your fist and connect\. Hitting char2\(#7\)'s ",
                      "Dealing \d+ damage\.|You are no longer busy\.",
                      # defenders messages
@@ -1701,9 +1701,9 @@ class TestCommands(UniqueMudCmdTest):
                     'post_reg_tests': punch_post
                    }
         # test a punch that misses
-        punch_miss_rc = {self.char1: "You will be busy for 3 seconds.|Facing Char2 Char pulls theirs hand back preparing an attack.",
-                   self.char2: "Facing Char2 Char pulls theirs hand back preparing an attack.",
-                   self.obj1: "Facing Char2 Char pulls theirs hand back preparing an attack.|Char punches at char2 with their fist and misses."}
+        punch_miss_rc = {self.char1: "You will be busy for 3 seconds.|Facing char2(#7) you pull theirs hand back preparing an attack.",
+                         self.char2: "Facing you char pulls theirs hand back preparing an attack.",
+                         self.obj1: "Facing char2 char pulls theirs hand back preparing an attack.|Char punches at char2 with their fist and misses."}
         punch_miss_post = ("punch \d+ VS evade \d+: You punch at char2\(#7\) with your fist but miss.",
                      "Dealing \d+ damage\.|You are no longer busy\.",
                      # defenders messages
@@ -1785,9 +1785,9 @@ class TestCommands(UniqueMudCmdTest):
                     'post_reg_tests': dodge_post,
                     'caller': self.char2
                    }
-        punch_rc = {self.char1: "You will be busy for 3 seconds.|Facing Char2 Char pulls theirs hand back preparing an attack.|Char2 tries to dodge the incoming attack.",
-                   self.char2: "Facing Char2 Char pulls theirs hand back preparing an attack.|You are no longer busy.|You try to dodge the incoming attack.",
-                   self.obj1: "Facing Char2 Char pulls theirs hand back preparing an attack.|Char2 tries to dodge the incoming attack.|Char punches at char2 with their fist "}
+        punch_rc = {self.char1: "You will be busy for 3 seconds.|Facing char2(#7) you pull theirs hand back preparing an attack.|Char2 tries to dodge the incoming attack.",
+                   self.char2: "Facing you char pulls theirs hand back preparing an attack.|You are no longer busy.|You try to dodge the incoming attack.",
+                   self.obj1: "Facing char2 char pulls theirs hand back preparing an attack.|Char2 tries to dodge the incoming attack.|Char punches at char2 with their fist "}
         #punch_post = ("You try to dodge the incoming attack.",)
         punch_post = tuple()
         punch_cmd = {

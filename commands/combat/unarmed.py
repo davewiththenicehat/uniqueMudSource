@@ -99,10 +99,17 @@ class CmdPunch(UnarmedCommand):
 
         Automatically called at the end of Command.func
         """
+        caller = self.caller
+        target = self.target
         self.weapon_desc = "fist"  # weapon description that will show up in Command.combat_action's automated messages
         caller_pronoun = self.caller.get_pronoun('|a')
-        message = f"Facing {self.target.usdesc} {self.caller.usdesc} pulls {caller_pronoun} hand back preparing an attack."
-        self.caller.location.msg_contents(message)
+        #message = f"Facing {self.target.usdesc} {self.caller.usdesc} pulls {caller_pronoun} hand back preparing an attack."
+        #self.caller.location.msg_contents(message)
+        room_msg = f"Facing /target /me pulls {caller_pronoun} hand back preparing an attack."
+        caller.location.emote_contents(room_msg, caller, target=target, exclude=(caller))
+        #message caller
+        caller_msg = f"Facing /target you pull {caller_pronoun} hand back preparing an attack."
+        caller.emote(caller_msg, target=target)
 
     def deferred_action(self):
         """Causes the action of the punch command."""

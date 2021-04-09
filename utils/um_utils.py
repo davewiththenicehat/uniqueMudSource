@@ -221,6 +221,7 @@ def replace_cap(msg, switch, rep_txt, upper=False, lower=False, allow_upper=Fals
     return msg
 
 def support_upper(name, obj):
+    """intended to be used with um_emote"""
     allow_upper = False
     if hasattr(obj, 'sdesc'):
         sdesc = obj.sdesc.get()
