@@ -168,7 +168,7 @@ def status_user_request_stop(target, prompt, result, *args, **kwargs):
         return True
 
 
-def status_force_stop(target, stop_message=None, stop_cmd=None, status_type='busy'):
+def status_force_stop(target, stop_message=None, stop_cmd=None, status_type='busy', stopper=None):
     """
     INTERNAL COMMAND, not intended for general developers.
 
@@ -184,10 +184,8 @@ def status_force_stop(target, stop_message=None, stop_cmd=None, status_type='bus
     # only do rest if there was a command to stop.
     if stop_success:
         if stop_message:
-            target.msg(stop_message)
-        # any arguments received should be stop commands, run them now
+            target.emote(stop_message, stopper, target, target)
         if stop_cmd:
             if isinstance(stop_cmd, str):
-                if isinstance(stop_cmd, str):
-                    target.execute_cmd(stop_cmd)
+                target.execute_cmd(stop_cmd)
     return stop_success

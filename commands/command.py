@@ -434,7 +434,7 @@ class Command(default_cmds.MuxCommand):
                             search_location = self.target_search(location_name)
                             if search_location:  # useable location provided
                                 msg = f"You could not find {target_name} " \
-                                      f"in {search_location.usdesc}."
+                                      f"in {search_location.get_display_name(caller)}."
                                 caller.msg(msg)
                                 return True
                             else:  # caller did not provide a useable location
@@ -456,7 +456,7 @@ class Command(default_cmds.MuxCommand):
             for item in wielded_items:
                 if item.item_type == self.cmd_type:
                     self.caller_weapon = item
-                    self.weapon_desc = item.usdesc
+                    self.weapon_desc = item.key
                     self.dmg_max = item.dmg_max
                     if item.act_roll_max_mod:  # the item has a meaningful roll_max modifier add it
                         self.roll_max += item.act_roll_max_mod
@@ -532,8 +532,8 @@ class Command(default_cmds.MuxCommand):
                 def func(self):
                     defer_successful = self.defer()
                     if defer_successful:
-                        message = f"{self.caller.usdesc} is testing deferring a command."
-                        self.caller.location.msg_contents(message)
+                        message = f"/Me is testing deferring a command."
+                        self.caller.location.emote_contents(message)
 
                 def deferred_action(self):
                     self.caller.msg("Defered command ran successfully.")
@@ -615,7 +615,7 @@ class Command(default_cmds.MuxCommand):
             target=Character, the target of the forced stop
                 Default: self.caller
             stop_message=str, a message to show the target.
-                Default: f'{self.caller.usdesc} stopped your {target.ndb.deffered_command.key} command with {self_pronoun} {self.key}.'
+                Default: f'/Me stopped your {target.ndb.deffered_command.key} command with {self_pronoun} {self.key}.'
             stop_cmd=str: a command to run when the deffered command is stopped.
                 Default: None
                 Example: 'look'
@@ -636,8 +636,8 @@ class Command(default_cmds.MuxCommand):
                     stop_message = None
                 else:
                     self_pronoun = caller.get_pronoun('|p')
-                    stop_message = f'{caller.usdesc} stopped your {target.ndb.deffered_command.key} command with {self_pronoun} {self.key}.'
-            status_functions.status_force_stop(target, stop_message, stop_cmd, status_type)
+                    stop_message = f'/Me stopped your {target.ndb.deffered_command.key} command with {self_pronoun} {self.key}.'
+            status_functions.status_force_stop(target, stop_message, stop_cmd, status_type, caller)
         else:
             caller.msg(f'{target.usdesc} is not commited to an action.')
 
@@ -666,13 +666,14 @@ class Command(default_cmds.MuxCommand):
             Example in commands.developer_cmdsets.CmdCompleteCmdEarly
         """
         #set the target of the forced stop
+        caller = self.caller
         stopped_succesfully = None
         if not target:
             target = self.caller
         if target.nattributes.has('deffered_command'):
             if not stop_message:  # if none was provided make a message
                 self_pronoun = self.caller.get_pronoun('|p')
-                stop_message = f'{self.caller.usdesc} allowed you to complete your {target.ndb.deffered_command.key} command early with {self_pronoun} {self.key} command.'
+                stop_message = f'{caller.usdesc} allowed you to complete your {target.ndb.deffered_command.key} command early with {self_pronoun} {self.key} command.'
             stopped_succesfully = status_functions.status_delay_stop(target, 'busy', True)
             if stop_message:
                 target.msg(stop_message)

@@ -606,7 +606,7 @@ class Character(AllObjectsMixin, CharExAndObjMixin, ClothedCharacter, GenderChar
         stun_time = 10 if stun_time > 10 else stun_time
         status_functions.status_delay_set(self, None, stun_time, 'stunned')
 
-    def status_stop(self, status_type='busy', stop_message=None, stop_cmd=None):
+    def status_stop(self, status_type='busy', stop_message=None, stop_cmd=None, stopper=None):
         """
         Remove a status from a this character.
         Returns True if the status was successfully stopped.
@@ -629,7 +629,7 @@ class Character(AllObjectsMixin, CharExAndObjMixin, ClothedCharacter, GenderChar
             From within a command
             self.caller.status_stop('stunned', "Stunned stopped message successful.", 'test_cmd')
         """
-        return status_functions.status_force_stop(self, stop_message, stop_cmd, status_type)
+        return status_functions.status_force_stop(self, stop_message, stop_cmd, status_type, stopper)
 
     def status_stop_request(self, stop_message=None, stop_cmd=None):
         """

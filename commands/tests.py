@@ -144,7 +144,7 @@ class TestCommands(UniqueMudCmdTest):
         # force a deffered command to stop, a deffered command was left open on 'char' from the test above
         # self.stop_forced
         command = developer_cmds.CmdMultiCmd
-        arg = "= stop_cmd"
+        arg = "= stop_cmd/test_cmd"
         wnt_msg = "You are no longer busy.|Test command ran successfully."
         self.call(command(), arg, wnt_msg)
         # request the stop of a deffered command on self when there is none
@@ -552,8 +552,8 @@ class TestCommands(UniqueMudCmdTest):
         # test getting fake object from a location that exists.
         # test target_required when sl_split found
         arg = "= get fake item from Obj"
-        wnt_msg = "You could not find fake item in Obj."
-        self.call(command(), arg, wnt_msg, caller=self.char1)
+        wnt_msg = "You could not find fake item in Obj(#4)."
+        self.call(command(), arg, wnt_msg)
         # test getting an object that does not exist
         # test target_required
         arg = "= get fake item"
