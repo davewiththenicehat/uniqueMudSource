@@ -639,9 +639,9 @@ class Command(default_cmds.MuxCommand):
                     stop_message = f'/Me stopped your {target.ndb.deffered_command.key} command with {self_pronoun} {self.key}.'
             status_functions.status_force_stop(target, stop_message, stop_cmd, status_type, caller)
         else:
-            caller.msg(f'{target.usdesc} is not commited to an action.')
+            caller.emote(f'/target is not commited to an action.', target=target)
 
-    def complete_early(self, target=None, stop_message=None):
+    def complete_early(self, target=None, comp_msg=None):
         """
         Complete a deffered complete before the completion time has passed
         Returns True if the early completion was successful.
@@ -654,7 +654,7 @@ class Command(default_cmds.MuxCommand):
 
         Arguments:
             target=Character, a Character to complete a command early
-            stop_message=msg, a message to send to the target
+            comp_msg=msg, a message to send to the target
 
         Example:
             From within a commands func method
@@ -665,23 +665,22 @@ class Command(default_cmds.MuxCommand):
 
             Example in commands.developer_cmdsets.CmdCompleteCmdEarly
         """
-        #set the target of the forced stop
         caller = self.caller
         stopped_succesfully = None
         if not target:
             target = self.caller
         if target.nattributes.has('deffered_command'):
-            if not stop_message:  # if none was provided make a message
+            if not comp_msg:  # if none was provided make a message
                 self_pronoun = self.caller.get_pronoun('|p')
-                stop_message = f'{caller.usdesc} allowed you to complete your {target.ndb.deffered_command.key} command early with {self_pronoun} {self.key} command.'
+                comp_msg = f'/Me allowed you to complete your {target.ndb.deffered_command.key} command early with {self_pronoun} {self.key} command.'
             stopped_succesfully = status_functions.status_delay_stop(target, 'busy', True)
-            if stop_message:
-                target.msg(stop_message)
+            if comp_msg and target is not caller:
+                target.emote(comp_msg, caller, target=target)
         else:
             if target == self.caller:
                 self.caller.msg(f'You are not commited to an action.')
             else:
-                self.caller.msg(f'{target.usdesc} is not commited to an action.')
+                caller.emote("/Target is not commited to an action.", target=target)
         return stopped_succesfully
 
     def act_vs_msg(self, action_result, evade_result):

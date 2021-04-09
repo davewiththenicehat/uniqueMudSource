@@ -63,7 +63,7 @@ class TestCommands(UniqueMudCmdTest):
         # wear the test hat
         command = developer_cmds.CmdMultiCmd
         arg = "= wear hat, complete_cmd_early"
-        wnt_msg = "You will be busy for 1 second.\nYou begin to put on test hat.\nYou wear test hat.\nYou are no longer busy.\nChar allowed you to complete your wear command early with their complete_cmd_early command."
+        wnt_msg = "You will be busy for 1 second.\nYou begin to put on test hat.\nYou wear test hat.\nYou are no longer busy."
         cmd_result = self.call(command(), arg, caller=self.char1)
         self.assertRegex(cmd_result, wnt_msg)
         # make certain the hat is no longer in hand
@@ -96,8 +96,8 @@ class TestCommands(UniqueMudCmdTest):
         # wear the test shirt
         command = developer_cmds.CmdMultiCmd
         arg = "= wear shirt, complete_cmd_early"
-        wnt_msg = "You will be busy for 1 second.\nYou begin to put on test shirt.\nYou wear test shirt.\nYou are no longer busy.\nChar allowed you to complete your wear command early with their complete_cmd_early command."
-        cmd_result = self.call(command(), arg, caller=self.char1)
+        wnt_msg = "You will be busy for 1 second.\nYou begin to put on test shirt.\nYou wear test shirt.\nYou are no longer busy."
+        cmd_result = self.call(command(), arg)
         self.assertRegex(cmd_result, wnt_msg)
         # get a second object
         arg = "= get Obj2, complete_cmd_early"
@@ -129,7 +129,7 @@ class TestCommands(UniqueMudCmdTest):
         # tests self.defer_teme, by recording secods of defferal.
         command = developer_cmds.CmdMultiCmd
         arg = "= defer_cmd, complete_cmd_early"
-        wnt_msg = "You will be busy for 5 seconds.|Char is testing deferring a command.|Defered command ran successfully.|You are no longer busy.|Char allowed you to complete your defer_cmd command early with their complete_cmd_early command."
+        wnt_msg = "You will be busy for 5 seconds.|Char is testing deferring a command.|Defered command ran successfully.|You are no longer busy."
         self.call(command(), arg, wnt_msg)
         # request a deffered command to stop
         command = developer_cmds.CmdMultiCmd
@@ -257,7 +257,7 @@ class TestCommands(UniqueMudCmdTest):
         # comlete self.char1's deffered command
         command = developer_cmds.CmdMultiCmd
         arg = "= complete_cmd_early"
-        wnt_msg = "Defered command ran successfully.|You are no longer busy.|Char allowed you to complete your defer_cmd command early with their complete_cmd_early command."
+        wnt_msg = "Defered command ran successfully.|You are no longer busy."
         self.call(command(), arg, wnt_msg)
     # test Character.condition.unconscious
         self.char1.set_unconscious()
@@ -666,7 +666,7 @@ class TestCommands(UniqueMudCmdTest):
         self.assertRegex(cmd_result, wnt_msg)
         command = developer_cmds.CmdMultiCmd
         arg = "= wear hat, complete_cmd_early"
-        wnt_msg = "You will be busy for 1 second.\nYou begin to put on test hat.\nYou wear test hat.\nYou are no longer busy.\nChar allowed you to complete your wear command early with their complete_cmd_early command."
+        wnt_msg = "You will be busy for 1 second.\nYou begin to put on test hat.\nYou wear test hat.\nYou are no longer busy."
         cmd_result = self.call(command(), arg, caller=self.char1)
         self.assertRegex(cmd_result, wnt_msg)
         # make certain the hat is no longer in hand
@@ -693,20 +693,20 @@ class TestCommands(UniqueMudCmdTest):
         # test removing an item
         command = developer_cmds.CmdMultiCmd
         arg = "= remove hat, complete_cmd_early"
-        wnt_msg = "You will be busy for 1 second.\nYou begin to remove test hat.\nYou remove test hat.\nYou are no longer busy.\nChar allowed you to complete your remove command early with their complete_cmd_early command."
+        wnt_msg = "You will be busy for 1 second.\nYou begin to remove test hat.\nYou remove test hat.\nYou are no longer busy."
         cmd_result = self.call(command(), arg)
         self.assertRegex(cmd_result, wnt_msg)
         self.assertTrue(self.char1.is_holding(self.test_hat))
         # Put the hat back on to test covering
         command = developer_cmds.CmdMultiCmd
         arg = "= wear hat, complete_cmd_early"
-        wnt_msg = "You will be busy for 1 second.\nYou begin to put on test hat.\nYou wear test hat.\nYou are no longer busy.\nChar allowed you to complete your wear command early with their complete_cmd_early command."
+        wnt_msg = "You will be busy for 1 second.\nYou begin to put on test hat.\nYou wear test hat.\nYou are no longer busy."
         cmd_result = self.call(command(), arg)
         self.assertRegex(cmd_result, wnt_msg)
         # Test wearing a peace of armor
         command = developer_cmds.CmdMultiCmd
         arg = "= get helmet, complete_cmd_early, wear helmet, complete_cmd_early"
-        wnt_msg = "You will be busy for 1 second.\nYou begin to put on test helmet.\nYou wear test helmet, covering test hat.\nYou are no longer busy.\nChar allowed you to complete your wear command early with their complete_cmd_early command."
+        wnt_msg = "You will be busy for 1 second.\nYou begin to put on test helmet.\nYou wear test helmet, covering test hat.\nYou are no longer busy."
         cmd_result = self.call(command(), arg)
         self.assertRegex(cmd_result, wnt_msg)
         # make certain the helmet is worn
@@ -1401,8 +1401,8 @@ class TestCommands(UniqueMudCmdTest):
         # test sit stand lay also tests Character.set_position
         command = developer_cmds.CmdMultiCmd
         arg = "= sit, complete_cmd_early"
-        wnt_msg = r"You will be busy for \d+ second.|You move to sit down.|You sit down.|You are no longer busy.|Char allowed you to complete your sit command early with their complete_cmd_early command."
-        cmd_result = self.call(command(), arg, caller=self.char1)
+        wnt_msg = r"You will be busy for \d+ second.|You move to sit down.|You sit down.|You are no longer busy."
+        cmd_result = self.call(command(), arg)
         self.assertRegex(cmd_result, wnt_msg)
         # test other sitting down
         command = developer_cmds.CmdMultiCmd
@@ -1423,8 +1423,8 @@ class TestCommands(UniqueMudCmdTest):
         # stand up
         command = developer_cmds.CmdMultiCmd
         arg = "= stand, complete_cmd_early"
-        wnt_msg = r"You will be busy for \d+ seconds.|You move to stand up.|You stand up.|You are no longer busy.|Char allowed you to complete your stand command early with their complete_cmd_early command."
-        cmd_result = self.call(command(), arg, caller=self.char1)
+        wnt_msg = r"You will be busy for \d+ seconds.|You move to stand up.|You stand up.|You are no longer busy."
+        cmd_result = self.call(command(), arg)
         self.assertRegex(cmd_result, wnt_msg)
         # test other standing
         command = developer_cmds.CmdMultiCmd
@@ -1445,8 +1445,8 @@ class TestCommands(UniqueMudCmdTest):
         # lay down
         command = developer_cmds.CmdMultiCmd
         arg = "= lay, complete_cmd_early"
-        wnt_msg = r"You will be busy for \d+ second.|You move to lay down.|You lay down.|You are no longer busy.|Char allowed you to complete your lay command early with their complete_cmd_early command."
-        cmd_result = self.call(command(), arg, caller=self.char1)
+        wnt_msg = r"You will be busy for \d+ second.|You move to lay down.|You lay down.|You are no longer busy."
+        cmd_result = self.call(command(), arg)
         self.assertRegex(cmd_result, wnt_msg)
         # test other laying
         command = developer_cmds.CmdMultiCmd
@@ -1472,7 +1472,7 @@ class TestCommands(UniqueMudCmdTest):
         # stand both characters up
         command = developer_cmds.CmdMultiCmd
         arg = "= stand, complete_cmd_early"
-        wnt_msg = "You will be busy for 3 seconds.|You move to stand up.|You stand up.|You are no longer busy.|Char allowed you to complete your stand command early with their complete_cmd_early command."
+        wnt_msg = "You will be busy for 3 seconds.|You move to stand up.|You stand up.|You are no longer busy."
         cmd_result = self.call(command(), arg, wnt_msg, caller=self.char1)
         self.char2.position = 'standing'
         self.assertEqual(self.char2.position, 'standing')
