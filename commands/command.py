@@ -333,7 +333,7 @@ class Command(default_cmds.MuxCommand):
         if Command.required_wielding is True
             collects an instance of wielded weapon of same type as command in Command.caller_weapon
                 IE: For an item to be accepted item.item_type == command.cmd_type
-            Command.weapon_desc is set to item.usdesc
+            Command.weapon_desc is set to item.key
             Command.dmg_max is set to item.dmg_max
             item.dmg_types is merged with command.dmg_types
                 Where values are added together, not replaced.
@@ -645,7 +645,7 @@ class Command(default_cmds.MuxCommand):
         """
         Complete a deffered complete before the completion time has passed
         Returns True if the early completion was successful.
-        Displays a f'{target.usdesc} is not commited to an action.' message
+        Displays a f'/target is not commited to an action.' message
             if the command could not be completed early.
 
         Supports:
@@ -710,10 +710,14 @@ class Command(default_cmds.MuxCommand):
             True, if the target is out of melee range
         """
         caller = self.caller
-        target = caller.search(self.target.usdesc, quiet=True)
-        if not target:
-            caller.msg(f'You can no longer reach {self.target.usdesc}.')
-            return True
+        cmd_target = self.target
+        target_name = cmd_target.get_display_name(caller)
+        target = caller.search(target_name, quiet=True)
+        if target:
+            if cmd_target in target:
+                return False
+        caller.msg(f'You can no longer reach {target_name}.')
+        return True
 
     def get_body_part(self, target=None, part_name=False, log=None):
         """
@@ -800,15 +804,15 @@ class Command(default_cmds.MuxCommand):
             action_mod=None, an int to add to the caller's action roll.
             caller_msg=None, Replaced message sent to caller.
                 Replaces:
-                    You {self.key} at {target.usdesc}
+                    You {self.key} at /target
                     if self.weapon_desc: with your {weapon_desc}
             target_msg=None, Replaced message sent to action's target.
                 Replaces:
-                    {caller.usdesc} {cmd_desc} at you
+                    /Me /target at you
                     if self.weapon_desc: with {caller.get_pronoun('|p')} {weapon_desc}
             room_msg=None, Replaced message sent to the caller's location.
                 Replaces:
-                    {caller.usdesc} {cmd_desc} at {target.usdesc}
+                    /Me {cmd_desc} at /target
                     if self.weapon_desc: with {caller.get_pronoun('|p')} {weapon_desc}
             log, if this method and methods and functions used within should log messages
 
@@ -1011,7 +1015,7 @@ class Command(default_cmds.MuxCommand):
             return True
         # check if the target can be targeted
         if not target.targetable:
-            caller.msg(f'You can not {self.key} {target.usdesc}.')
+            caller.emote(f'You can not {self.key} /target.', target=target)
             return True
         # if enabled verify inheritens and show message on mismatch
         if self.target_inherits_from:
@@ -1024,7 +1028,7 @@ class Command(default_cmds.MuxCommand):
             # if the Character is not holding the object to be wielded, stop the command
             if not caller.is_holding(target):
                 stop_msg = f"You have to hold an object you want to {self.cmdstring}.|/"
-                get_cmd = f"get {target.usdesc}"
+                get_cmd = f"get {target.get_display_name(caller)}"
                 get_suggestion = highlighter(get_cmd, click_cmd=get_cmd)
                 stop_msg += f"Try getting it with {get_suggestion}."
                 caller.msg(stop_msg)

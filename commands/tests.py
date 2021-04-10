@@ -301,7 +301,7 @@ class TestCommands(UniqueMudCmdTest):
         # test targeting an exit that is not targetable
         command = developer_cmds.CmdMultiCmd
         arg = "= punch out"
-        wnt_msg = 'You can not punch out.'
+        wnt_msg = 'You can not punch out(#3).'
         cmd_result = self.call(command(), arg, wnt_msg)
         # test targeting a targetable exit
         self.exit.targetable = True
@@ -322,7 +322,7 @@ class TestCommands(UniqueMudCmdTest):
         # test a target leaving melee range
         command = developer_cmds.CmdMultiCmd
         arg = "= punch Char2, control_other Char2=out, complete_cmd_early"
-        wnt_msg = "You can no longer reach Char2\\."
+        wnt_msg = "You can no longer reach Char2\(#7\)\\."
         cmd_result = self.call(command(), arg)
         self.assertRegex(cmd_result, wnt_msg)
         # get Char2 back into the room.
