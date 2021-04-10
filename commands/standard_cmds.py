@@ -74,7 +74,8 @@ class CmdStatus(Command):
         # display name and appearance
         caller.msg("|/", force=True)
         caller.msg(f"Statistics for: |w{caller.name.capitalize()}|n", force=True)
-        caller.msg(f"Others who do not know this Character see |o as: |w{caller.usdesc}|n", force=True)
+        caller_msg = f"Others who do not know this Character see |o as: {caller.get_display_name()}"
+        caller.msg(caller_msg, force=True)
         caller.msg("|/", force=True)
         # show health statistics
         caller.msg("Health:", force=True)
@@ -220,26 +221,27 @@ class CmdLook(EvCmdLook, Command):
         # if the character is looking at something other than the room.
         if not inherits_from(target, "typeclasses.rooms.Room"):
             if inherits_from(target, "typeclasses.exits.Exit"):
-                if target.usdesc in STANDARD_EXITS:  # if the target is a standard exit
-                    room_msg = f"{caller.usdesc.capitalize()} looks {target.usdesc}."
+                if target.key in STANDARD_EXITS:  # if the target is a standard exit
+                    room_msg = f"/Me looks /target."
                 else:
-                    room_msg = f"{caller.usdesc.capitalize()} looks through {target.usdesc}."
-                caller.location.msg_contents(room_msg, exclude=(caller,))
+                    room_msg = f"/Me looks through /target."
+                caller.location.emote_contents(room_msg, caller, target, exclude=(caller,))
             else:
                 if target is caller: # |o
-                    room_msg = f"{caller.usdesc.capitalize()} looks at " \
-                               f"{caller.get_pronoun('|o')}self."
-                    caller.location.msg_contents(room_msg, exclude=(caller,))
+                    room_msg = f"/Me looks at {caller.get_pronoun('|o')}self."
+                    caller.location.emote_contents(room_msg, caller, exclude=(caller))
                 else:
                     # target location is not caller or caller location
                     if target.location not in (caller, caller.location):
-                        at_msg = f"something in {target.location.usdesc}"
+                        at_msg = f"something in /target"
+                        em_targ = target.location
                     else:
-                        at_msg = f"{target.usdesc}"
-                    room_msg = f"{caller.usdesc.capitalize()} looks at {at_msg}."
-                    target_msg = f"{caller.usdesc.capitalize()} looks at you."
-                    caller.location.msg_contents(room_msg, exclude=(caller, target))
-                    target.msg(target_msg)
+                        at_msg = f"/target"
+                        em_targ = target
+                    room_msg = f"/Me looks at {at_msg}."
+                    target_msg = f"/Me looks at you."
+                    caller.location.emote_contents(room_msg, caller, em_targ, exclude=(caller, target))
+                    target.emote(target_msg, caller)
 
 # separator used to format help cmd
 from django.conf import settings

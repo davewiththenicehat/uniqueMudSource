@@ -2000,7 +2000,7 @@ class TestCommands(UniqueMudCmdTest):
             receivers = {
                 self.char1: "Char2 is not wearing anything.",
                 self.char2: "Char looks at you.",
-                self.obj1: "Char looks at Char2"
+                self.obj1: "Char looks at char2"
             }
             self.call_multi_receivers(command(), arg, receivers)
             # Character looks at self
@@ -2032,7 +2032,7 @@ class TestCommands(UniqueMudCmdTest):
             arg = f"= {aliase} Obj"
             receivers = {
                 self.char1: "Obj(#4) is devoid of description.",
-                self.char2: "Char looks at Obj.",
+                self.char2: "Char looks at obj.",
                 self.obj1: "Char looks at you."
             }
             self.call_multi_receivers(command(), arg, receivers)
@@ -2042,7 +2042,7 @@ class TestCommands(UniqueMudCmdTest):
             arg = f"= {aliase} Obj"
             receivers = {
                 self.char1: "This is a plain object.",
-                self.char2: "Char looks at Obj.",
+                self.char2: "Char looks at obj.",
                 self.obj1: "Char looks at you."
             }
             self.call_multi_receivers(command(), arg, receivers)
@@ -2052,18 +2052,18 @@ class TestCommands(UniqueMudCmdTest):
             arg = f"= {aliase} Obj"
             receivers = {
                 self.char1: "This is a plain object.\nIt contains nothing.",
-                self.char2: "Char looks at Obj.",
+                self.char2: "Char looks at obj.",
                 self.obj1: "Char looks at you."
             }
             cmd_result = self.call_multi_receivers(command(), arg, receivers)
-            self.assertRegex(cmd_result, "^This is a plain object\.\nIt contains nothing\.Char looks at Obj\.Char looks at you\.$")
+            self.assertRegex(cmd_result, "^This is a plain object\.\nIt contains nothing\.Char looks at obj\.Char looks at you\.$")
             # look at a container with an object in it
             self.obj3.location = self.obj1
             command = developer_cmds.CmdMultiCmd
             arg = f"= {aliase} Obj"
             receivers = {
                 self.char1: "This is a plain object.\nIt contains an Obj3(#12).",
-                self.char2: "Char looks at Obj.",
+                self.char2: "Char looks at obj.",
                 self.obj1: "Char looks at you."
             }
             cmd_result = self.call_multi_receivers(command(), arg, receivers)
@@ -2074,18 +2074,18 @@ class TestCommands(UniqueMudCmdTest):
             arg = f"= {aliase} Obj"
             receivers = {
                 self.char1: "This is a plain object.\nIt contains an Obj3(#12) and a test shirt(#10).",
-                self.char2: "Char looks at Obj.",
+                self.char2: "Char looks at obj.",
                 self.obj1: "Char looks at you."
             }
             cmd_result = self.call_multi_receivers(command(), arg, receivers)
-            self.assertRegex(cmd_result, '^This is a plain object\.\\nIt contains an Obj3\(\#12\) and a test shirt\(\#10\)\.Char looks at Obj\.Char looks at you\.')
+            self.assertRegex(cmd_result, '^This is a plain object\.\\nIt contains an Obj3\(\#12\) and a test shirt\(\#10\)\.Char looks at obj\.Char looks at you\.')
             # look at object in a container
             self.test_shirt.location = self.obj1
             command = developer_cmds.CmdMultiCmd
             arg = f"= {aliase} Obj3 in Obj"
             receivers = {
                 self.char1: "Obj3(#12) is devoid of description.",
-                self.char2: "Char looks at something in Obj.",
+                self.char2: "Char looks at something in obj.",
                 self.obj3: "Char looks at you."
             }
             cmd_result = self.call_multi_receivers(command(), arg, receivers)
