@@ -50,8 +50,8 @@ class TestCommands(UniqueMudCmdTest):
         # get an object
         command = developer_cmds.CmdMultiCmd
         arg = "= get Obj, complete_cmd_early"
-        wnt_msg = "You pick up Obj\."
-        cmd_result = self.call(command(), arg, caller=self.char1)
+        wnt_msg = "You pick up obj\(#4\)\."
+        cmd_result = self.call(command(), arg)
         self.assertRegex(cmd_result, wnt_msg)
         self.assertTrue(self.char1.is_holding(self.obj1))
         # Get the hat
@@ -101,8 +101,8 @@ class TestCommands(UniqueMudCmdTest):
         self.assertRegex(cmd_result, wnt_msg)
         # get a second object
         arg = "= get Obj2, complete_cmd_early"
-        wnt_msg = "You pick up Obj2\."
-        cmd_result = self.call(command(), arg, caller=self.char1)
+        wnt_msg = "You pick up obj2\(#5\)\."
+        cmd_result = self.call(command(), arg)
         self.assertRegex(cmd_result, wnt_msg)
         self.assertTrue(self.char1.is_holding(self.obj2))
 
@@ -390,8 +390,8 @@ class TestCommands(UniqueMudCmdTest):
         command = developer_cmds.CmdMultiCmd
         # get an object
         arg = "= get Obj, complete_cmd_early"
-        wnt_msg = "You pick up Obj\."
-        cmd_result = self.call(command(), arg, caller=self.char1)
+        wnt_msg = "You pick up obj\(#4\)\."
+        cmd_result = self.call(command(), arg)
         self.assertRegex(cmd_result, wnt_msg)
         self.assertTrue(self.char1.is_holding(self.obj1))
         # test getting an object already in possession
@@ -425,9 +425,9 @@ class TestCommands(UniqueMudCmdTest):
         # tests self.sl_split
         arg = "= get Obj2 from Obj, complete_cmd_early"
         cmd_result = self.call(command(), arg, caller=self.char1)
-        wnt_msg = r"You reach into Obj\."
+        wnt_msg = r"You reach into obj"
         self.assertRegex(cmd_result, wnt_msg)
-        wnt_msg = r"You get Obj2 from Obj\."
+        wnt_msg = r"You get obj2\(#5\) from Obj\."
         self.assertRegex(cmd_result, wnt_msg)
         self.assertTrue(self.char1.is_holding(self.obj2))
         # test putting an object into a non container object.
@@ -479,9 +479,9 @@ class TestCommands(UniqueMudCmdTest):
         # tests self.sl_split
         arg = "= get Obj2 from Obj, complete_cmd_early"
         cmd_result = self.call(command(), arg, caller=self.char1)
-        wnt_msg = r"You reach into Obj\."
+        wnt_msg = r"You reach into obj\(#4\)\."
         self.assertRegex(cmd_result, wnt_msg)
-        wnt_msg = r"You get Obj2 from Obj\."
+        wnt_msg = r"You get obj2\(#5\) from Obj\."
         self.assertRegex(cmd_result, wnt_msg)
         self.assertTrue(self.char1.is_holding(self.obj2))
         # drop the second object
@@ -492,13 +492,13 @@ class TestCommands(UniqueMudCmdTest):
     # make certain room message is correct
         command = developer_cmds.CmdMultiCmd
         arg = "= get Obj, complete_cmd_early"
-        wnt_msg = "Char picks up Obj\."
+        wnt_msg = "Char picks up obj\."
         cmd_result = self.call(command(), arg, caller=self.char1, receiver=self.char2)
         self.assertRegex(cmd_result, wnt_msg)
         # get second object
         command = developer_cmds.CmdMultiCmd
         arg = "= get Obj2, complete_cmd_early"
-        wnt_msg = "Char picks up Obj2\."
+        wnt_msg = "Char picks up obj2\."
         cmd_result = self.call(command(), arg, caller=self.char1, receiver=self.char2)
         self.assertRegex(cmd_result, wnt_msg)
         # put object 2 in object 1
@@ -513,9 +513,9 @@ class TestCommands(UniqueMudCmdTest):
         # get object 2 from object 1
         arg = "= get Obj2 from Obj, complete_cmd_early"
         cmd_result = self.call(command(), arg, caller=self.char1, receiver=self.char2)
-        wnt_msg = "Char gets Obj2 from Obj\."
+        wnt_msg = "Char gets obj2 from Obj\."
         self.assertRegex(cmd_result, wnt_msg)
-        wnt_msg = "Char reaches into Obj\."
+        wnt_msg = "Char reaches into obj\."
         self.assertRegex(cmd_result, wnt_msg)
         # test getting a third object when hands are full
         self.obj3 = create_object(Object, key="Obj3")
@@ -667,8 +667,8 @@ class TestCommands(UniqueMudCmdTest):
         # test tring to wear an item that is not clothing, also tests target_inherits_from
         command = developer_cmds.CmdMultiCmd
         arg = "= get Obj, complete_cmd_early"
-        wnt_msg = "You pick up Obj."
-        cmd_result = self.call(command(), arg, caller=self.char1)
+        wnt_msg = "You pick up obj\(#4\)\."
+        cmd_result = self.call(command(), arg)
         self.assertRegex(cmd_result, wnt_msg)
         # make certain hands are occupied with the object picked up
         self.assertTrue(self.char1.is_holding(self.obj1))

@@ -641,15 +641,15 @@ class CmdGet(Command):
         caller = self.caller
         target = self.target
         if target.location == caller.location:  # get target is in caller's room
-            caller_message = f"You reach for {target.usdesc}."
+            caller_message = f"You reach for /target."
             caller.emote(caller_message, target)
-            room_message = f"{caller.usdesc.capitalize()} reaches for {target.usdesc}."
-            caller.location.msg_contents(room_message, exclude=(caller,))
+            room_message = f"/Me reaches for /target."
+            caller.location.emote_contents(room_message, caller, target, exclude=(caller,))
         else:  # get target is not in callers room
-            caller_message = f"You reach into {target.location.usdesc}."
-            caller.msg(caller_message)
-            room_message = f"{caller.usdesc.capitalize()} reaches into {target.location.usdesc}."
-            caller.location.msg_contents(room_message, exclude=(caller,))
+            caller_message = f"You reach into /target."
+            caller.emote(caller_message, target.location)
+            room_message = f"/Me reaches into /target."
+            caller.location.emote_contents(room_message, caller, target.location, exclude=(caller,))
 
     def deferred_action(self):
         """implements the command."""
@@ -680,7 +680,7 @@ class CmdGet(Command):
         targ_old_location = obj.location  # used to choose message text
         success = obj.move_to(caller, quiet=True)
         if not success:
-            caller.msg(f"{obj.usdesc.capitalize()} can not be picked up.")
+            caller.emote(f"/Target can not be picked up.", obj)
         else:
             # calling at_get hook method
             obj.at_get(caller)
@@ -693,15 +693,14 @@ class CmdGet(Command):
                 error_report(err_msg, caller)
             # message player(s)
             if targ_old_location == caller.location:  # get target is in caller's room
-                caller_msg = f"You pick up {obj.usdesc}."
-                location_msg = f"{caller.usdesc} picks up {obj.usdesc}."
-                caller.location.msg_contents(location_msg, exclude=caller)
+                caller_msg = f"You pick up /target."
+                location_msg = f"/Me picks up /target."
+                caller.location.emote_contents(location_msg, caller, obj, exclude=caller)
             else:  # caller is getting target from container
-                caller_msg = f"You get {obj.usdesc} from {targ_old_location.usdesc}."
-                location_msg = f"{caller.usdesc.capitalize()} gets {obj.usdesc} " \
-                               f"from {targ_old_location.usdesc}."
-            caller.msg(caller_msg)
-            caller.location.msg_contents(location_msg, exclude=caller)
+                caller_msg = f"You get /target from {targ_old_location.usdesc}."
+                location_msg = f"/Me gets /target from {targ_old_location.usdesc}."
+            caller.emote(caller_msg, obj, caller)
+            caller.location.emote_contents(location_msg, caller, obj, exclude=caller)
 
 
 class CmdPut(Command):
