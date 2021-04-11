@@ -240,7 +240,7 @@ class CmdLook(EvCmdLook, Command):
                     room_msg = f"/Me looks at {at_msg}."
                     target_msg = f"/Me looks at you."
                     caller.location.emote_contents(room_msg, caller, em_targ, exclude=(caller, target))
-                    target.emote(target_msg, caller)
+                    target.emote(target_msg, sender=caller)
 
 # separator used to format help cmd
 from django.conf import settings
@@ -422,7 +422,7 @@ class CmdSay(Command):
                 caller.location.emote_contents(room_message, caller, target, exclude=(caller,))
                 # message the caller
                 caller_message = f'You say {say_to_or_at} /target, "{speech}".'
-                caller.emote(caller_message, target=target)
+                caller.emote(caller_message, target)
                 return
         # No special targets, normal say
         speech = self.args
@@ -504,10 +504,10 @@ class CmdWhisper(Command):
         caller.location.emote_contents(room_message, caller, target=target, exclude=exclude)
         # message the caller
         caller_message = f'You whisper {whisper_to_or_at} /target, "{speech}".'
-        caller.emote(caller_message, target=target)
+        caller.emote(caller_message, target)
         # message receivers
         receiver_message = f'/Me whispers {whisper_to_or_at} /target, "{speech}".'
-        caller.emote(receiver_message, caller, target, target)
+        caller.emote(receiver_message, target, caller, target)
 
 
 class CmdDrop(Command):
@@ -627,8 +627,8 @@ class CmdGet(Command):
             return False
         # stop the command if the caller is already caring the object.
         if target.location == caller:
-            stop_message = f"You are already carrying {target.usdesc}."
-            caller.msg(stop_message)
+            stop_message = f"You are already carrying /target."
+            caller.emote(stop_message, target)
             return False
         return True  # custom requirements met, command can run
 
@@ -642,7 +642,7 @@ class CmdGet(Command):
         target = self.target
         if target.location == caller.location:  # get target is in caller's room
             caller_message = f"You reach for {target.usdesc}."
-            caller.msg(caller_message)
+            caller.emote(caller_message, target)
             room_message = f"{caller.usdesc.capitalize()} reaches for {target.usdesc}."
             caller.location.msg_contents(room_message, exclude=(caller,))
         else:  # get target is not in callers room

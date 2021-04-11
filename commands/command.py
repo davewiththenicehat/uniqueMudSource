@@ -639,7 +639,7 @@ class Command(default_cmds.MuxCommand):
                     stop_message = f'/Me stopped your {target.ndb.deffered_command.key} command with {self_pronoun} {self.key}.'
             status_functions.status_force_stop(target, stop_message, stop_cmd, status_type, caller)
         else:
-            caller.emote(f'/target is not commited to an action.', target=target)
+            caller.emote(f'/target is not commited to an action.', target)
 
     def complete_early(self, target=None, comp_msg=None):
         """
@@ -675,12 +675,12 @@ class Command(default_cmds.MuxCommand):
                 comp_msg = f'/Me allowed you to complete your {target.ndb.deffered_command.key} command early with {self_pronoun} {self.key} command.'
             stopped_succesfully = status_functions.status_delay_stop(target, 'busy', True)
             if comp_msg and target is not caller:
-                target.emote(comp_msg, caller, target=target)
+                target.emote(comp_msg, caller, target)
         else:
             if target == self.caller:
                 self.caller.msg(f'You are not commited to an action.')
             else:
-                caller.emote("/Target is not commited to an action.", target=target)
+                caller.emote("/Target is not commited to an action.", target)
         return stopped_succesfully
 
     def act_vs_msg(self, action_result, evade_result):
@@ -1015,7 +1015,7 @@ class Command(default_cmds.MuxCommand):
             return True
         # check if the target can be targeted
         if not target.targetable:
-            caller.emote(f'You can not {self.key} /target.', target=target)
+            caller.emote(f'You can not {self.key} /target.', target)
             return True
         # if enabled verify inheritens and show message on mismatch
         if self.target_inherits_from:

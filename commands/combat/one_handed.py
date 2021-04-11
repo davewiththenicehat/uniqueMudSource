@@ -83,7 +83,7 @@ class CmdStab(OneHandedCommand):
         # message the caller
         caller_msg = f"Facing /target /me raise " \
                      f"{self.weapon_desc} preparing an attack."
-        caller.emote(caller_msg, target=target)
+        caller.emote(caller_msg, target)
 
         self.pres_tense_desc = "stabs"  # a present tense description for the action of this command. IE: "kicks"
 

@@ -184,7 +184,7 @@ def status_force_stop(target, stop_message=None, stop_cmd=None, status_type='bus
     # only do rest if there was a command to stop.
     if stop_success:
         if stop_message:
-            target.emote(stop_message, stopper, target=target)
+            target.emote(stop_message, target, stopper)
         if stop_cmd:
             if isinstance(stop_cmd, str):
                 target.execute_cmd(stop_cmd)

@@ -397,9 +397,8 @@ class TestCommands(UniqueMudCmdTest):
         # test getting an object already in possession
         command = developer_cmds.CmdMultiCmd
         arg = "= get Obj"
-        wnt_msg = "^You are already carrying Obj\.$"
-        cmd_result = self.call(command(), arg, caller=self.char1)
-        self.assertRegex(cmd_result, wnt_msg)
+        wnt_msg = "You are already carrying obj(#4)."
+        cmd_result = self.call(command(), arg, wnt_msg)
         # get a second object
         command = developer_cmds.CmdMultiCmd
         arg = "= get Obj2, complete_cmd_early"

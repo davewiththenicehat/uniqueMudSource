@@ -362,17 +362,17 @@ class AllObjectsMixin:
         um_emote(text, sender, receivers, target, anonymous_add)
 
 
-    def emote(self, text, sender=None, receivers=None, target=None, anonymous_add=None):
+    def emote(self, text, target=None, sender=None, receivers=None, anonymous_add=None):
         """
         send emote to contents of an object.
 
         Arguments:
             text (str): The raw emote string as input by emoter.
-            sender (Object): The one sending the emote.
-            receivers (iterable): Receivers of the emote. These
+            target (iterable): objects to replace /target switch with.
+            sender (Object)=self: The one sending the emote.
+            receivers (iterable)=self: Receivers of the emote. These
                 will also form the basis for which sdescs are
                 'valid' to use in the emote.
-            target (iterable): objects to replace /target switch with.
             anonymous_add (str or None, optional): If `sender` is not
                 self-referencing in the emote, this will auto-add
                 `sender`'s data to the emote. Possible values are
