@@ -1,6 +1,5 @@
-import re
 from evennia.utils import evtable, evmore
-from evennia.utils.utils import fill, dedent, inherits_from
+from evennia.utils.utils import fill, dedent, inherits_from, make_iter
 from evennia import default_cmds
 from evennia.contrib import rpsystem
 from evennia import CmdSet
@@ -9,7 +8,7 @@ from evennia.commands.default.help import CmdHelp as EvCmdHelp
 from evennia.commands.default.system import CmdObjects
 from evennia.commands.default.general import CmdLook as EvCmdLook
 from world.rules import stats
-from utils.um_utils import highlighter, error_report, objs_sdesc_str
+from utils.um_utils import highlighter, error_report
 from typeclasses.exits import STANDARD_EXITS
 
 
@@ -492,47 +491,23 @@ class CmdWhisper(Command):
         else:
             begins_to_or_at = self.begins_to_or_at
         if self.targets:  # if multiple targets were found
-            targets = self.targets
-            speech = self.rhs.strip('"')  # speech without quotes
-            whisper_to_or_at = begins_to_or_at
-            # message room
-            target_names = objs_sdesc_str(targets)  # get a string of object names
-            room_message = f"{caller.usdesc.capitalize()} whispers something {whisper_to_or_at} " \
-                           f'{target_names}.'
-            exclude = list(targets)
+            target = self.targets
+            exclude = list(self.targets)
             exclude.append(caller)
-            caller.location.msg_contents(room_message, exclude=exclude)
-            # message the caller
-            caller_message = f"You whisper {whisper_to_or_at} "
-            caller_message += f'{target_names}, "{speech}"'
-            caller.msg(caller_message)
-            # message targets
-            for receiver in targets:
-                # replace the first instance of the receiver's name with "you"
-                target_names = objs_sdesc_str(targets, receiver)  # get a string of object names
-                receiver_message = f"{caller.usdesc.capitalize()} whispers {whisper_to_or_at} "
-                receiver_message += f'{target_names}, "{speech}"'
-                receiver.msg(receiver_message)
-            return
-        elif self.target:  # if only one target found
-            target = self.target
-            speech = self.rhs.strip('"')  # speech without quotes
-            whisper_to_or_at = begins_to_or_at
-            room_message = f"{caller.usdesc.capitalize()} whispers something " \
-                           f'{whisper_to_or_at} {target.usdesc}.'
-            caller.location.msg_contents(room_message, exclude=(caller, target))
-            target_message = f"{caller.usdesc.capitalize()} whispers " \
-                             f'{whisper_to_or_at} you, "{speech}"'
-            target.msg(target_message)
-            caller_message = f"You whisper {whisper_to_or_at} {target.usdesc}, " \
-                             f'"{speech}"'
-            caller.msg(caller_message)
-            return
         else:
-            # no target should have already been caught
-            err_msg = f"Command whisper, caller: {caller.id} | " \
-                       "target not found, but func was still called."
-            error_report(err_msg, caller)
+            target = self.target
+            exclude = [target, caller]
+        speech = self.rhs.strip('"')  # speech without quotes
+        whisper_to_or_at = begins_to_or_at
+        # message room
+        room_message = f'/Me whispers something {whisper_to_or_at} /target.'
+        caller.location.emote_contents(room_message, caller, target=target, exclude=exclude)
+        # message the caller
+        caller_message = f'You whisper {whisper_to_or_at} /target, "{speech}".'
+        caller.emote(caller_message, target=target)
+        # message receivers
+        receiver_message = f'/Me whispers {whisper_to_or_at} /target, "{speech}".'
+        caller.emote(receiver_message, caller, target, target)
 
 
 class CmdDrop(Command):
