@@ -453,9 +453,8 @@ class TestCommands(UniqueMudCmdTest):
         self.assertTrue(self.char1.is_holding(self.obj2))
         # drop the first object
         arg = "= drop Obj"
-        wnt_msg = "You drop Obj."
-        cmd_result = self.call(command(), arg, caller=self.char1)
-        self.assertRegex(cmd_result, wnt_msg)
+        wnt_msg = "You drop obj(#4)."
+        cmd_result = self.call(command(), arg, wnt_msg)
         self.assertFalse(self.char1.is_holding(self.obj1))
         # try putting obj2 into a container that does not exist
         arg = "= put Obj2 in fake container"
@@ -488,9 +487,8 @@ class TestCommands(UniqueMudCmdTest):
         self.assertTrue(self.char1.is_holding(self.obj2))
         # drop the second object
         arg = "= drop Obj2"
-        wnt_msg = "You drop Obj2"
-        cmd_result = self.call(command(), arg, caller=self.char1)
-        self.assertRegex(cmd_result, wnt_msg)
+        wnt_msg = "You drop obj2(#5)."
+        cmd_result = self.call(command(), arg, wnt_msg)
         self.assertFalse(self.char1.is_holding(self.obj2))
     # make certain room message is correct
         command = developer_cmds.CmdMultiCmd
@@ -531,14 +529,12 @@ class TestCommands(UniqueMudCmdTest):
         self.assertRegex(cmd_result, wnt_msg)
         # drop object 1
         arg = "= drop Obj, complete_cmd_early"
-        wnt_msg = "Char drops Obj\."
-        cmd_result = self.call(command(), arg, caller=self.char1, receiver=self.char2)
-        self.assertRegex(cmd_result, wnt_msg)
+        wnt_msg = "Char drops obj."
+        cmd_result = self.call(command(), arg, wnt_msg, receiver=self.char2)
         # drop object 2
         arg = "= drop Obj2, complete_cmd_early"
-        wnt_msg = "Char drops Obj2\."
-        cmd_result = self.call(command(), arg, caller=self.char1, receiver=self.char2)
-        self.assertRegex(cmd_result, wnt_msg)
+        wnt_msg = "Char drops obj2."
+        cmd_result = self.call(command(), arg, wnt_msg, receiver=self.char2)
     # test get command failures
         # get an object from a location that does not exist
         # test self.target_required when self.sl_split found
@@ -682,9 +678,8 @@ class TestCommands(UniqueMudCmdTest):
         cmd_result = self.call(command(), arg, caller=self.char1)
         self.assertRegex(cmd_result, wnt_msg)
         arg = "= drop Obj"
-        wnt_msg = "You drop Obj."
-        cmd_result = self.call(command(), arg, caller=self.char1)
-        self.assertRegex(cmd_result, wnt_msg)
+        wnt_msg = "You drop obj(#4)."
+        cmd_result = self.call(command(), arg,  wnt_msg)
         self.assertFalse(self.char1.is_holding(self.obj1))
         # test removing an item
         command = developer_cmds.CmdMultiCmd
@@ -762,12 +757,11 @@ class TestCommands(UniqueMudCmdTest):
         command = developer_cmds.CmdMultiCmd
         arg = "= wear"
         wnt_msg = "What would you like to wear?|If you need help try help wear."
-        cmd_result = self.call(command(), arg, caller=self.char1)
-        self.assertRegex(cmd_result, wnt_msg)
+        self.call(command(), arg,  wnt_msg)
         # test dropping a worn item
         arg = "= drop undershirt"
-        wnt_msg = 'You must remove test undershirt to drop it.\r\nTry command remove test undershirt to remove it.'
-        self.call(command(), arg, wnt_msg, caller=self.char1)
+        wnt_msg = 'You must remove test undershirt(#13) to drop it.\nTry command remove test undershirt(#13) to remove it.'
+        self.call(command(), arg, wnt_msg)
         # test wearing a peace of clothing when the slot is occupied
         command = developer_cmds.CmdMultiCmd
         arg = "= get second helmet, complete_cmd_early, wear second helmet"
@@ -1133,7 +1127,7 @@ class TestCommands(UniqueMudCmdTest):
         self.call(command(), arg, wnt_msg)
         # with no wielded weapon
         command = developer_cmds.CmdMultiCmd
-        self.call(command(), '= drop sword', 'You drop a sword.')
+        self.call(command(), '= drop sword', 'You drop a sword(#8).')
         command = developer_cmds.CmdCmdAttrTest
         arg = "cmd_type:unarmed=dmg_max"
         wnt_msg = r"dmg_max: 4"

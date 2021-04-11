@@ -556,13 +556,16 @@ class CmdDrop(Command):
             return
         # Inform player worn items must be removed to drop.
         elif obj.db.worn:
-            remove_help = highlighter(f"remove {obj.usdesc}", click_cmd=f"remove {obj.usdesc}")
-            caller.msg(f"You must remove {obj.usdesc} to drop it.|/Try command {remove_help} to remove it.")
+            obj_name = obj.get_display_name(caller)
+            remove_help = highlighter(f"remove {obj_name}", click_cmd=f"remove {obj_name}")
+            caller.msg(f"You must remove {obj_name} to drop it.\nTry command {remove_help} to remove it.")
             return
         obj.move_to(caller.location, quiet=True)  # move the object from the Character to the room
         # object being moved will remove itself from Character's hands in Object.at_after_move
-        caller.msg(f"You drop {obj.usdesc}.")  # message the caller
-        caller.location.msg_contents(f"{caller.usdesc} drops {obj.usdesc}.", exclude=caller)  # message the room
+        caller.emote("You drop /target.", target=obj)  # message the caller
+        room_msg = "/Me drops /target."
+        # message the room
+        caller.location.emote_contents(room_msg, caller, obj, exclude=caller)
         obj.at_drop(caller)
 
 
