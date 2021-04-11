@@ -766,8 +766,8 @@ class CmdPut(Command):
                 container = container[0]  # get the correct target number
                 # stop the command if the target can not move to the container
                 if not target.at_before_move(container):
-                    stop_message = f"{container.usdesc.capitalize()} is not a container."
-                    caller.msg(stop_message)
+                    stop_message = "/Target is not a container."
+                    caller.emote(stop_message, container)
                     return False  # Stop the command from running
                 # target can be moved to container, notify caller and location
                 self.container = container
@@ -778,10 +778,10 @@ class CmdPut(Command):
                 caller.msg(stop_message)
                 return False  # Stop the command from running
         else:
-            cmd_help = highlighter('help put', click_cmd=f"help put", up=True)
-            stop_message = f"You must specify a container to place {target.usdesc} into.|/" \
+            cmd_help = highlighter('help put', click_cmd="help put", up=True)
+            stop_message = "You must specify a container to place /target into.\n" \
                            f"For a full help use: {cmd_help}"
-            caller.msg(stop_message)
+            caller.emote(stop_message, target)
             return False  # stop the command from running
 
     def start_message(self):
@@ -793,13 +793,12 @@ class CmdPut(Command):
         caller = self.caller
         target = self.target
         container = self.container  # collected in self.custom_req_met
-        # message caller and Characters in the room
-        caller_message = f"You begin to put {target.usdesc} into " \
-                         f"{container.usdesc}."
-        caller.msg(caller_message)
-        room_message = f"{caller.usdesc.capitalize()} begins to put " \
-                       f"{target.usdesc} into {container.usdesc}."
-        caller.location.msg_contents(room_message, exclude=(caller,))
+        # message caller, making sender the container
+        caller_message = "You begin to put /target into /me."
+        caller.emote(caller_message, target, container)
+        # message the room
+        room_message = f"/Me begins to put /target into {container.usdesc}."
+        caller.location.emote_contents(room_message, caller, target, exclude=(caller,))
 
     def deferred_action(self):
         caller = self.caller
@@ -810,16 +809,15 @@ class CmdPut(Command):
         success = target.move_to(container, quiet=True)
         if success:
             target.at_get(container)
-            # object being moved will remove itself from Character's hands in Object.at_after_move
-            # message player(s)
-            caller.msg(f"You put {target.usdesc} into {container.usdesc}.")
-            room_msg = f"{caller.usdesc} puts {target.usdesc} into {container.usdesc}."
-            caller.location.msg_contents(room_msg, exclude=caller)
+            # message the caller
+            caller.emote("You put /target into /me.", target, container)
+            # message the room
+            room_msg = f"/Me puts /target into {container.usdesc}."
+            caller.location.emote_contents(room_msg, caller, target, exclude=caller)
             # calling at_get hook method
             target.at_get(container)
         else:
-            caller.msg(f"{target.usdesc.capitalize()} can not be put into " \
-                       f"{container.usdesc}.")
+            caller.emote("/Target can not be put into /me.", target, container)
             err_msg = f"CmdPut: caller: {caller.dbref}, target: {target.dbref} " \
                       f"container: {container.dbref}. target.move_to returned " \
                       f"false in Command.deferred_action."

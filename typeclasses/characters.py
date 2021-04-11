@@ -316,6 +316,11 @@ class Character(AllObjectsMixin, CharExAndObjMixin, ClothedCharacter, GenderChar
         Usage:
            caller.msg(f'You attack {target.usdesc}.)  # to get
            target.usdesc = 'a happy tree'  # to set
+
+        Notes:
+            usdesc is intended for rare instance where the emote system can not
+            apply a name to a second target. Than there is no single receiver for
+            obj.get_display_name(receiver).
         """
         return self.sdesc.get()
 

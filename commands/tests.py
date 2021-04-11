@@ -409,9 +409,9 @@ class TestCommands(UniqueMudCmdTest):
         self.obj1.container = True
         arg = "= put Obj2 in Obj, complete_cmd_early"
         cmd_result = self.call(command(), arg, caller=self.char1)
-        wnt_msg = "You put Obj2 into Obj\."
+        wnt_msg = "You put obj2\(#5\) into obj\(#4\)\."
         self.assertRegex(cmd_result, wnt_msg)
-        wnt_msg = r"You begin to put Obj2 into Obj\."
+        wnt_msg = r"You begin to put obj2\(#5\) into obj\(#4\)\."
         self.assertRegex(cmd_result, wnt_msg)
         self.assertFalse(self.char1.is_holding(self.obj2))
         self.assertEqual(self.obj2.location, self.obj1)
@@ -433,21 +433,21 @@ class TestCommands(UniqueMudCmdTest):
         # test putting an object into a non container object.
         # this does NOT use self.sl_split
         arg = "= put Obj2 in Obj"
-        wnt_msg = '^Obj is not a container\.$'
+        wnt_msg = '^Obj\(#4\) is not a container\.$'
         cmd_result = self.call(command(), arg, caller=self.char1)
         self.assertRegex(cmd_result, wnt_msg)
         self.assertTrue(self.char1.is_holding(self.obj2))
         # test CmdPut the error catching in deffered action
         self.obj1.container = True
         arg = "= put Obj2 in Obj"
-        wnt_msg = "You begin to put Obj2 into Obj\."
+        wnt_msg = "You begin to put obj2\(#5\) into obj\(#4\)\."
         cmd_result = self.call(command(), arg, caller=self.char1)
         self.assertRegex(cmd_result, wnt_msg)
         self.assertTrue(self.char1.is_holding(self.obj2))
         self.obj1.container = False
         arg = "= complete_cmd_early"
         cmd_result = self.call(command(), arg, caller=self.char1)
-        wnt_msg = r"Obj2 can not be put into Obj\.\nError message: CmdPut: caller: #6, target: #5 container: #4\. target\.move_to returned false in Command\.deferred_action\.\r\nThis has NOT been logged\. System detects you are a developer\.\nYou are no longer busy\."
+        wnt_msg = r"Obj2\(#5\) can not be put into obj\(#4\)\.\nError message: CmdPut: caller: #6, target: #5 container: #4\. target\.move_to returned false in Command\.deferred_action\.\r\nThis has NOT been logged\. System detects you are a developer\.\nYou are no longer busy\."
         self.assertRegex(cmd_result, wnt_msg)
         self.assertTrue(self.char1.is_holding(self.obj2))
         # drop the first object
@@ -463,14 +463,13 @@ class TestCommands(UniqueMudCmdTest):
         self.assertTrue(self.char1.is_holding(self.obj2))
         # test help message for put when no container is supplied.
         arg = "= put Obj2"
-        wnt_msg = r"^You must specify a container to place Obj2 into.\r\nFor a full help use: Help put$"
-        cmd_result = self.call(command(), arg, caller=self.char1)
-        self.assertRegex(cmd_result, wnt_msg)
+        wnt_msg = 'You must specify a container to place obj2(#5) into.\nFor a full help use: Help put'
+        cmd_result = self.call(command(), arg, wnt_msg)
         self.assertTrue(self.char1.is_holding(self.obj2))
         # put obj2 in obj1 while obj1 is on the ground
         self.obj1.container = True
         arg = "= put Obj2 in Obj, complete_cmd_early"
-        wnt_msg = "You put Obj2 into Obj\."
+        wnt_msg = "You put obj2\(#5\) into obj\(#4\)\."
         cmd_result = self.call(command(), arg, caller=self.char1)
         self.assertRegex(cmd_result, wnt_msg)
         self.assertFalse(self.char1.is_holding(self.obj2))
@@ -504,11 +503,8 @@ class TestCommands(UniqueMudCmdTest):
         # put object 2 in object 1
         self.obj1.container = True
         arg = "= put Obj2 in Obj, complete_cmd_early"
-        cmd_result = self.call(command(), arg, caller=self.char1, receiver=self.char2)
-        wnt_msg = "Char begins to put Obj2 into Obj\."
-        self.assertRegex(cmd_result, wnt_msg)
-        wnt_msg = "Char puts Obj2 into Obj\."
-        self.assertRegex(cmd_result, wnt_msg)
+        wnt_msg = "Char begins to put obj2 into Obj.|Char puts obj2 into Obj."
+        cmd_result = self.call(command(), arg, wnt_msg, receiver=self.char2)
         self.obj1.container = False
         # get object 2 from object 1
         arg = "= get Obj2 from Obj, complete_cmd_early"
