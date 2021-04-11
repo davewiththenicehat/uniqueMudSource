@@ -413,42 +413,18 @@ class CmdSay(Command):
         if self.begins_to_or_at:
             if self.rhs:  # if message as a proper break in it
                 if self.targets:  # if multiple targets were found
-                    targets = self.targets
-                    speech = self.rhs.strip('"')  # speech without quotes
-                    say_to_or_at = self.begins_to_or_at
-                    # message room
-                    target_names = objs_sdesc_str(targets)  # get a string of object names
-                    room_message = f"{caller.usdesc.capitalize()} says {say_to_or_at} " \
-                                   f'{target_names}, "{speech}"'
-                    exclude = list(targets)
-                    exclude.append(caller)
-                    caller.location.msg_contents(room_message, exclude=exclude)
-                    # message the caller
-                    caller_message = f"You say {say_to_or_at} "
-                    caller_message += f'{target_names}, "{speech}"'
-                    caller.msg(caller_message)
-                    # message targets
-                    for receiver in targets:
-                        # replace the first instance of the receiver's name with "you"
-                        target_names = objs_sdesc_str(targets, receiver)  # get a string of object names
-                        receiver_message = f"{caller.usdesc.capitalize()} says {say_to_or_at} "
-                        receiver_message += f'{target_names}, "{speech}"'
-                        receiver.msg(receiver_message)
-                    return
-                elif self.target:  # if only one target found
+                    target = self.targets
+                else:
                     target = self.target
-                    speech = self.rhs.strip('"')  # speech without quotes
-                    say_to_or_at = self.begins_to_or_at
-                    room_message = f"{caller.usdesc.capitalize()} says " \
-                                   f'{say_to_or_at} {target.usdesc}, "{speech}"'
-                    caller.location.msg_contents(room_message, exclude=(caller, target))
-                    target_message = f"{caller.usdesc.capitalize()} says " \
-                                     f'{say_to_or_at} you, "{speech}"'
-                    target.msg(target_message)
-                    caller_message = f"You say {say_to_or_at} {target.usdesc}, " \
-                                     f'"{speech}"'
-                    caller.msg(caller_message)
-                    return
+                speech = self.rhs.strip('"')  # speech without quotes
+                say_to_or_at = self.begins_to_or_at
+                # message room
+                room_message = f'/Me says {say_to_or_at} /target, "{speech}".'
+                caller.location.emote_contents(room_message, caller, target, exclude=(caller,))
+                # message the caller
+                caller_message = f'You say {say_to_or_at} /target, "{speech}".'
+                caller.emote(caller_message, target=target)
+                return
         # No special targets, normal say
         speech = self.args
         # Calling the at_before_say hook on the character

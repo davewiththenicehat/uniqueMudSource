@@ -359,28 +359,24 @@ class TestCommands(UniqueMudCmdTest):
         test_object2.targetable = True
         command = standard_cmds.CmdSay
         arg = 'to 2 object "test message'
-        wnt_msg = r'You say to object two, "test message"'
-        cmd_result = self.call(command(), arg, caller=self.char1)
-        self.assertRegex(cmd_result, wnt_msg)
+        wnt_msg = r'You say to object two(#13), "test message".'
+        cmd_result = self.call(command(), arg, wnt_msg)
         # make certain saying to the first object works after saying to the second
         # this makes certain the Command.target is not a global variable
         arg = 'to object "test message'
-        wnt_msg = r'You say to object one, "test message"'
-        cmd_result = self.call(command(), arg, caller=self.char1)
-        self.assertRegex(cmd_result, wnt_msg)
+        wnt_msg = r'You say to object one(#12), "test message".'
+        cmd_result = self.call(command(), arg, wnt_msg)
         # add unit test for drop after get has been updated to use UM targetting system.
         # test for multiple targets using &
         command = standard_cmds.CmdSay
         arg = 'to object & 2 object "test message'
-        wnt_msg = r'You say to object one and object two, "test message"'
-        cmd_result = self.call(command(), arg, caller=self.char1)
-        self.assertRegex(cmd_result, wnt_msg)
+        wnt_msg = r'You say to object one(#12) and object two(#13), "test message".'
+        cmd_result = self.call(command(), arg, wnt_msg)
         # test for multiple targets using " and "
         command = standard_cmds.CmdSay
         arg = 'to object and 2 object "test message'
-        wnt_msg = r'You say to object one and object two, "test message"'
-        cmd_result = self.call(command(), arg, caller=self.char1)
-        self.assertRegex(cmd_result, wnt_msg)
+        wnt_msg = r'You say to object one(#12) and object two(#13), "test message".'
+        cmd_result = self.call(command(), arg, wnt_msg)
 
     def test_get_put_drop(self):
         """
@@ -1534,34 +1530,32 @@ class TestCommands(UniqueMudCmdTest):
         # test saying to another Character
         command = standard_cmds.CmdSay
         arg = 'to char2 "test message'
-        wnt_msg = r'You say to Char2, "test message"'
-        cmd_result = self.call(command(), arg, caller=self.char1)
-        self.assertRegex(cmd_result, wnt_msg)
+        wnt_msg = r'You say to char2(#7), "test message".'
+        cmd_result = self.call(command(), arg, wnt_msg)
         # test saying at another Character
         command = standard_cmds.CmdSay
         arg = 'at char2 "test message'
-        wnt_msg = r'You say at Char2, "test message"'
-        cmd_result = self.call(command(), arg, caller=self.char1)
-        self.assertRegex(cmd_result, wnt_msg)
+        wnt_msg = r'You say at char2(#7), "test message".'
+        cmd_result = self.call(command(), arg, wnt_msg)
         # Test your name is replace with You when you are spoken to
         command = developer_cmds.CmdMultiCmd
         arg = '=control_other char2=say to char "test message'
-        wnt_msg = r'Char2 says to you, "test message"'
-        self.call(command(), arg, wnt_msg, caller=self.char1)
+        wnt_msg = r'Char2(#7) says to you, "test message".'
+        self.call(command(), arg, wnt_msg)
         # make certain say to replaces targets message with name
         # with multiple targets
         command = developer_cmds.CmdMultiCmd
         arg = '=control_other char2=say to char and obj "test message'
-        wnt_msg = r'Char2 says to Obj and you, "test message"'
-        self.call(command(), arg, wnt_msg, caller=self.char1)
+        wnt_msg = r'Char2(#7) says to obj(#4) and you, "test message".'
+        self.call(command(), arg, wnt_msg)
         # test seeing a say that does not target you.
         command = developer_cmds.CmdMultiCmd
         arg = '=control_other char2=say to obj2 and obj "test message'
-        wnt_msg = r'Char2 says to Obj2 and Obj, "test message"'
-        self.call(command(), arg, wnt_msg, caller=self.char1)
+        wnt_msg = r'Char2(#7) says to obj2(#5) and obj(#4), "test message".'
+        self.call(command(), arg, wnt_msg)
         arg = '=control_other char2=say at obj2 and obj "test message'
-        wnt_msg = r'Char2 says at Obj2 and Obj, "test message"'
-        self.call(command(), arg, wnt_msg, caller=self.char1)
+        wnt_msg = r'Char2(#7) says at obj2(#5) and obj(#4), "test message".'
+        self.call(command(), arg, wnt_msg)
         # Test whisper
         # say
         # test saying to another Character
