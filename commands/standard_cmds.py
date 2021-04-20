@@ -891,9 +891,9 @@ class CmdInventory(Command):
         caller = self.caller
         caller_pronoun = caller.get_pronoun('|a')
         message = "You rummage through your possessions, taking inventory."
-        room_message = f"{caller.usdesc.capitalize()} begings to quickly look through {caller_pronoun} possessions."
+        room_msg = f"/Me begings to quickly look through {caller_pronoun} possessions."
         caller.msg(message)
-        caller.location.msg_contents(room_message, exclude=(caller,))
+        caller.location.emote_contents(room_msg, caller, exclude=caller)
 
     def deferred_action(self):
         """check inventory"""
@@ -917,8 +917,8 @@ class CmdInventory(Command):
         caller.msg(string)
         # Message the room
         caller_pronoun = caller.get_pronoun('|a')
-        room_message = f"{caller.usdesc.capitalize()} completes {caller_pronoun} search."
-        caller.location.msg_contents(room_message, exclude=(caller,))
+        room_msg = f"/Me completes {caller_pronoun} search."
+        caller.location.emote_contents(room_msg, caller, exclude=caller)
 
 
 class CmdSit(Command):
