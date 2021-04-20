@@ -2,7 +2,7 @@ from evennia.utils.utils import make_iter
 
 from world.rules.damage import TYPES as DAMAGE_TYPES
 from utils.element import Element, ListElement
-from utils.um_utils import um_emote
+from utils.emote import um_emote
 from world.rules.body import PART_STATUS
 from world.rules import body
 

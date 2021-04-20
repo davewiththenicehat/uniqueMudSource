@@ -13,7 +13,8 @@ from evennia import utils
 from evennia.utils.logger import log_info
 
 from world.rules import damage, actions, body
-from utils.um_utils import highlighter, um_emote
+from utils.um_utils import highlighter
+from utils.emote import um_emote
 
 
 class Command(default_cmds.MuxCommand):
