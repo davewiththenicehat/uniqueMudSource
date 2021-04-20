@@ -106,7 +106,7 @@ class CmdPunch(UnarmedCommand):
         room_msg = f"Facing /target /me pulls {caller_pronoun} hand back preparing an attack."
         caller.location.emote_contents(room_msg, caller, target=target, exclude=(caller))
         #message caller
-        caller_msg = f"Facing /target you pull {caller_pronoun} hand back preparing an attack."
+        caller_msg = f"Facing /target you pull your hand back preparing an attack."
         caller.emote(caller_msg, target=target)
 
     def deferred_action(self):
@@ -155,8 +155,9 @@ class CmdKick(UnarmedCommand):
         caller = self.caller
         self.weapon_desc = "foot"  # weapon description that will show up in Command.combat_action's automated messages
         caller_pronoun = self.caller.get_pronoun('|a')
-        message = f"Facing {target.usdesc} {caller.usdesc} lifts {caller_pronoun} knee up preparing an attack."
-        caller.location.msg_contents(message)
+        room_msg = f"Facing /target /me lifts {caller_pronoun} knee up preparing an attack."
+        caller.emote_location(room_msg, target)
+        caller.emote(f"Facing /target you lift your knee up preparing an attack.", target)
         # This is a slow powerful command, ask target if they would like to dodge.
         self.stop_request(target=target, stop_cmd='dodge')
 

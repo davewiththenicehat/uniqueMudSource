@@ -118,7 +118,7 @@ class TestRules(CommandTest):
         # defer a punch to use within rules.actions.action_roll
         command = developer_cmds.CmdMultiCmd
         arg = "= punch char2"
-        wanted_message = 'You will be busy for 3 seconds.|Facing char2(#7) you pull theirs hand back preparing an attack.'
+        wanted_message = 'You will be busy for 3 seconds.|Facing char2(#7) you pull your hand back preparing an attack.'
         cmd_result = self.call(command(), arg, wanted_message)
         # test 1 skill rank
         self.char1.skills.unarmed.punch = 1

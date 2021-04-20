@@ -307,7 +307,7 @@ class TestCommands(UniqueMudCmdTest):
         self.exit.targetable = True
         command = developer_cmds.CmdMultiCmd
         arg = "= punch out, complete_cmd_early"
-        wnt_msg = "You will be busy for 3 seconds.|Facing out(#3) you pull theirs hand back preparing an attack.|punch"
+        wnt_msg = "You will be busy for 3 seconds.|Facing out(#3) you pull your hand back preparing an attack.|punch"
         cmd_result = self.call(command(), arg, wnt_msg)
 
         self.exit.targetable = False
@@ -1637,9 +1637,9 @@ class TestCommands(UniqueMudCmdTest):
         test the unarmed command set.
         """
         # tests for the kick command
-        kick_rc = {self.char1: "You will be busy for 5 seconds.|Facing Char2 Char lifts theirs knee up preparing an attack.",
-                   self.char2: "Facing Char2 Char lifts theirs knee up preparing an attack.",
-                   self.obj1: "Facing Char2 Char lifts theirs knee up preparing an attack.|Char kicks at char2 with their foot and connects. Hitting char2's "}
+        kick_rc = {self.char1: "You will be busy for 5 seconds.|Facing char2(#7) you lift your knee up preparing an attack.|kick",
+                   self.char2: "Facing you char lifts theirs knee up preparing an attack.|You may want to dodge.|evade ",
+                   self.obj1: "Facing char2 char lifts theirs knee up preparing an attack.|Char kicks at char2 with their foot and connects. Hitting char2's "}
         kick_post = ("kick \d+ VS evade \d+: You kick at char2\(#7\) with your foot and connect\. Hitting char2\(#7\)'s",
                      "Dealing \d+ damage\.|You are no longer busy\.",
                      # defenders messages
@@ -1654,9 +1654,9 @@ class TestCommands(UniqueMudCmdTest):
                     'post_reg_tests': kick_post
                    }
         # test a missed kick
-        kick_miss_rc = {self.char1: "You will be busy for 5 seconds.|Facing Char2 Char lifts theirs knee up preparing an attack.",
-                   self.char2: "Facing Char2 Char lifts theirs knee up preparing an attack.",
-                   self.obj1: "Facing Char2 Char lifts theirs knee up preparing an attack.|Char kicks at char2 with their foot and misses."}
+        kick_miss_rc = {self.char1: "You will be busy for 5 seconds.|Facing char2(#7) you lift your knee up preparing an attack.|kick",
+                   self.char2: "Facing you char lifts theirs knee up preparing an attack.|You may want to dodge.|evade",
+                   self.obj1: "Facing char2 char lifts theirs knee up preparing an attack.|Char kicks at char2 with their foot and misses."}
         kick_miss_post = ("kick \d+ VS evade \d+: You kick at char2\(#7\) with your foot but miss\.",
                      # defenders messages
                      "You may want to dodge\.",
@@ -1668,7 +1668,7 @@ class TestCommands(UniqueMudCmdTest):
                    }
 
         # tests for the punch command
-        punch_rc = {self.char1: "You will be busy for 3 seconds.|Facing char2(#7) you pull theirs hand back preparing an attack.",
+        punch_rc = {self.char1: "You will be busy for 3 seconds.|Facing char2(#7) you pull your hand back preparing an attack.",
                    self.char2: "Facing you char pulls theirs hand back preparing an attack.",
                    self.obj1: "Facing char2 char pulls theirs hand back preparing an attack.|Char punches at char2 with their fist and connects. Hitting char2's "}
         punch_post = ("punch \d+ VS evade \d+: You punch at char2\(#7\) with your fist and connect\. Hitting char2\(#7\)'s ",
@@ -1684,7 +1684,7 @@ class TestCommands(UniqueMudCmdTest):
                     'post_reg_tests': punch_post
                    }
         # test a punch that misses
-        punch_miss_rc = {self.char1: "You will be busy for 3 seconds.|Facing char2(#7) you pull theirs hand back preparing an attack.",
+        punch_miss_rc = {self.char1: "You will be busy for 3 seconds.|Facing char2(#7) you pull your hand back preparing an attack.",
                          self.char2: "Facing you char pulls theirs hand back preparing an attack.",
                          self.obj1: "Facing char2 char pulls theirs hand back preparing an attack.|Char punches at char2 with their fist and misses."}
         punch_miss_post = ("punch \d+ VS evade \d+: You punch at char2\(#7\) with your fist but miss.",
@@ -1768,7 +1768,7 @@ class TestCommands(UniqueMudCmdTest):
                     'post_reg_tests': dodge_post,
                     'caller': self.char2
                    }
-        punch_rc = {self.char1: "You will be busy for 3 seconds.|Facing char2(#7) you pull theirs hand back preparing an attack.|Char2 tries to dodge the incoming attack.",
+        punch_rc = {self.char1: "You will be busy for 3 seconds.|Facing char2(#7) you pull your hand back preparing an attack.|Char2 tries to dodge the incoming attack.",
                    self.char2: "Facing you char pulls theirs hand back preparing an attack.|You are no longer busy.|You try to dodge the incoming attack.",
                    self.obj1: "Facing char2 char pulls theirs hand back preparing an attack.|Char2 tries to dodge the incoming attack.|Char punches at char2 with their fist "}
         #punch_post = ("You try to dodge the incoming attack.",)
