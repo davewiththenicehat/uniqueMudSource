@@ -81,7 +81,6 @@ class CmdPunch(UnarmedCommand):
     """
 
     key = "punch"
-    dmg_max = 2  # the maximum damage this command can roll
 
     def at_init(self):
         """
@@ -91,6 +90,7 @@ class CmdPunch(UnarmedCommand):
         shared among all instances of the Command.
         """
         super().at_init()
+        self.dmg_max = 2  # the maximum damage this command can roll
         self.pres_tense_desc = "punches"  # a present tense description for the action of this command. IE: "kicks"
 
     def start_message(self):
@@ -131,7 +131,6 @@ class CmdKick(UnarmedCommand):
     """
 
     key = "kick"
-    dmg_max = 4  # the maximum damage this command can roll
 
     def at_init(self):
         """
@@ -141,9 +140,10 @@ class CmdKick(UnarmedCommand):
         shared among all instances of the Command.
         """
         super().at_init()
+        self.dmg_max = 4  # the maximum damage this command can roll
         self.defer_time = 5  # time is seconds for the command to wait before running action of command
         self.pres_tense_desc = "kicks"  # a present tense description for the action of this command. IE: "kicks"
-        self.cost_level = 'high' #  level this action should cost. Acceptable levels: 'very easy', 'easy', 'moderate' 'hard', 'daunting' or a number
+        self.cost_level = 'hard' #  level this action should cost. Acceptable levels: 'very easy', 'easy', 'moderate' 'hard', 'daunting' or a number
 
     def start_message(self):
         """
