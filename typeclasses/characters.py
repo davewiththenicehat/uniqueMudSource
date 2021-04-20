@@ -734,7 +734,7 @@ class Character(AllObjectsMixin, CharExAndObjMixin, ClothedCharacter, GenderChar
 
         unit test in commands.tests
         """
-        self.set_position('standing', quiet, force)
+        return self.set_position('standing', quiet, force)
 
     def sit(self, quiet=False, force=False):
         """
@@ -746,7 +746,7 @@ class Character(AllObjectsMixin, CharExAndObjMixin, ClothedCharacter, GenderChar
 
         unit test in commands.tests
         """
-        self.set_position('sitting', quiet, force)
+        return self.set_position('sitting', quiet, force)
 
     def lay(self, quiet=False, force=False):
         """
@@ -758,7 +758,7 @@ class Character(AllObjectsMixin, CharExAndObjMixin, ClothedCharacter, GenderChar
 
         unit test in commands.tests
         """
-        self.set_position('laying', quiet, force)
+        return self.set_position('laying', quiet, force)
 
     def set_position(self, position, quiet=False, force=False):
         """
@@ -783,8 +783,9 @@ class Character(AllObjectsMixin, CharExAndObjMixin, ClothedCharacter, GenderChar
         """
         if position not in body.POSITIONS:
             raise ValueError(f"Character ID {self.id}.stance, {position} is not an allowed position. Positions are: {body.POSITIONS}")
-        if force:
-            self.position = position
+        #if force:
+        self.position = position
+        """
         else:
             if self.position == position:
                 self.msg(f'You are already {position}.')
@@ -806,6 +807,7 @@ class Character(AllObjectsMixin, CharExAndObjMixin, ClothedCharacter, GenderChar
             self.msg(f"You {self_pos_tense} down.")
         if not quiet:
             self.location.msg_contents(room_msg, exclude=(self,))
+        """
         return True
 
     def set_unconscious(self, state=True):

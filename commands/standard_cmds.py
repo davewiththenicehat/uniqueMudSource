@@ -981,14 +981,16 @@ class CmdSit(Command):
         Automatically called at the end of Command.func
         """
         caller = self.caller
-        message = "You move to sit down."
-        room_message = f"{caller.usdesc.capitalize()} moves to sit down."
-        caller.msg(message)
-        caller.location.msg_contents(room_message, exclude=(caller,))
+        caller.msg("You move to sit down.")
+        caller.emote_location("/Me moves to sit down.")
 
     def deferred_action(self):
         """Implement command"""
-        self.caller.sit()
+        caller = self.caller
+        success = caller.sit()
+        if success:
+            caller.msg("You sit down.")
+            caller.emote_location("/Me sits down.")
 
 
 class CmdStand(Command):
@@ -1039,14 +1041,16 @@ class CmdStand(Command):
         Automatically called at the end of Command.func
         """
         caller = self.caller
-        message = "You move to stand up."
-        room_message = f"{caller.usdesc.capitalize()} moves to stand up."
-        caller.msg(message)
-        caller.location.msg_contents(room_message, exclude=(caller,))
+        caller.msg("You move to stand up.")
+        caller.emote_location("/Me moves to stand up.")
 
     def deferred_action(self):
         """Implement command"""
-        self.caller.stand()
+        caller = self.caller
+        success = caller.stand()
+        if success:
+            caller.msg("You stand up.")
+            caller.emote_location("/Me stands up.")
 
 
 class CmdLay(Command):
@@ -1106,14 +1110,16 @@ class CmdLay(Command):
         Automatically called at the end of Command.func
         """
         caller = self.caller
-        message = "You move to lay down."
-        room_message = f"{caller.usdesc.capitalize()} moves to lay down."
-        caller.msg(message)
-        caller.location.msg_contents(room_message, exclude=(caller,))
+        caller.msg("You move to lay down")
+        caller.emote_location("/Me moves to lay down.")
 
     def deferred_action(self):
         """Implement command"""
-        self.caller.lay()
+        caller = self.caller
+        success = caller.lay()
+        if success:
+            caller.msg("You lay down.")
+            caller.emote_location("/Me lays down.")
 
 
 class UMRPSystemCmdSet(CmdSet):

@@ -415,6 +415,29 @@ class AllObjectsMixin:
             receivers = self
         um_emote(text, sender, receivers, target, anonymous_add)
 
+    def emote_location(self, text, target=None, sender=None, skip_caller=True, anonymous_add=None, exclude=None):
+        """
+        Emote everyone in the caller's location with a message.
+
+        Args:
+            caller (Object or None): Sender of the message. If None, there
+                is no sender.
+            text (str): Message to parse and send to the room.
+            skip_caller (bool): Send to everyone except caller.
+
+        """
+        receivers = self.location.contents
+        sender = self if not sender else sender
+        # remove caller from emote receivers.
+        if skip_caller:
+            if self in receivers:
+                receivers.remove(self)
+        # remove excluded objects from receivers
+        if exclude:
+            exclude = make_iter(exclude)
+            receivers = [obj for obj in receivers if obj not in exclude]
+        um_emote(text, sender, receivers, target, anonymous_add)
+
 class ExObjAndRoomMixin:
     """
     Creates basic attributes for Exits Objects and Rooms.

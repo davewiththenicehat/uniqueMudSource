@@ -1,3 +1,7 @@
+"""
+Cotanins functions for unique muds emote system.
+"""
+
 from evennia.utils import utils
 from evennia.contrib import rpsystem
 

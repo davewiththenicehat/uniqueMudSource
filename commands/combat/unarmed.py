@@ -103,8 +103,6 @@ class CmdPunch(UnarmedCommand):
         target = self.target
         self.weapon_desc = "fist"  # weapon description that will show up in Command.combat_action's automated messages
         caller_pronoun = self.caller.get_pronoun('|a')
-        #message = f"Facing {self.target.usdesc} {self.caller.usdesc} pulls {caller_pronoun} hand back preparing an attack."
-        #self.caller.location.msg_contents(message)
         room_msg = f"Facing /target /me pulls {caller_pronoun} hand back preparing an attack."
         caller.location.emote_contents(room_msg, caller, target=target, exclude=(caller))
         #message caller
