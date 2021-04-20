@@ -49,10 +49,10 @@ def status_delay_set(target, cmd, delay_time, status_type):
     plural_sec = 's' if delay_time > 1.99 else ''
     target.msg(f'You will be {status_type} for {round(delay_time)} second{plural_sec}.')
     if status_type != 'stunned':
-        target.nattributes.add(f'{status_type}_status', utils.delay(delay_time, status_delay_stop, target, status_type, True, persistent=True))
+        target.nattributes.add(f'{status_type}_status', utils.delay(delay_time, status_delay_stop, target, status_type, True))
     else:
-        target.nattributes.add(f'{status_type}_status', utils.delay(delay_time, status_delay_stop, target, status_type, False, persistent=True))
-    return True  # tell target the command was deffered succesfully
+        target.nattributes.add(f'{status_type}_status', utils.delay(delay_time, status_delay_stop, target, status_type, False))
+    return True  # tell target the command was deferred succesfully
 
 
 def status_delay_get(target, status_type='busy'):

@@ -56,3 +56,6 @@ nosetests.xml
 
 #server settings file
 server/conf/settings.py
+
+# notes file
+notes.txt
