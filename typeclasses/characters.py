@@ -116,9 +116,7 @@ class Character(AllObjectsMixin, CharExAndObjMixin, ClothedCharacter, GenderChar
             container = False  # Can the object contain other objects
 
         usdesc = self.sdesc.get()  # a property to easy get and set the short description on an object.
-            Use as if it were a stanard attribute.
-            usdesc = 'a happy tree'
-            caller.msg(f'You attack {target.usdesc}.')
+            usdesc is intended for rare instance where the emote system can not apply a name to a second target.
         position=str, used to control if character is sitting standing laying.
             full list of positions in world.rules.body.POSITIONS
             This is a python property and will control setting database.
@@ -306,12 +304,13 @@ class Character(AllObjectsMixin, CharExAndObjMixin, ClothedCharacter, GenderChar
     def usdesc(self):
         """
         Universal method to get and set an object's description.
-        Universal Short Description
+        Stands for Universal Short Description.
 
-        A usdesc exists on each evennia object type Object, Character, Room and Exit
+        A usdesc exists on each evennia object type Object, Character, Room and
+        Exit.
 
-        usdesc refers to self.key on Exits, Objects and rooms
-        usdesc refers to self.sdesc on Characters
+        usdesc refers to self.key on Exits, Objects and rooms.
+        usdesc refers to self.sdesc on Characters.
 
         Usage:
            caller.msg(f'You attack {target.usdesc}.)  # to get
@@ -659,7 +658,7 @@ class Character(AllObjectsMixin, CharExAndObjMixin, ClothedCharacter, GenderChar
         Useage:
             If not calling on self:
                 call within Command.func or Command.deffered_action methods
-                message = f'{self.caller.usdesc} left an opening, dodge?'
+                message = f'caller.get_display_name(target) left an opening, dodge?'
                 target.status_stop_request(message, 'dodge')
             If calling on self
                 message = 'You are at 20 hp, would you like to teleport home?'
@@ -724,43 +723,28 @@ class Character(AllObjectsMixin, CharExAndObjMixin, ClothedCharacter, GenderChar
         setattr(self, 'stunned_mod', stats.stunned_mod(self))
         setattr(self, 'purchase_mod', stats.purchase_mod(self))
 
-    def stand(self, quiet=False, force=False):
+    def stand(self):
         """
-        Cause the Charter to stand up
-
-        Arguments:
-            quiet=False, if True no messages will be displayed to the room.
-            force=False, change position even if player is in that position
-
+        Cause the Charter to stand up.
         unit test in commands.tests
         """
-        return self.set_position('standing', quiet, force)
+        return self.set_position('standing')
 
-    def sit(self, quiet=False, force=False):
+    def sit(self):
         """
-        Cause the Charter to sit down
-
-        Arguments:
-            quiet=False, if True no messages will be displayed to the room.
-            force=False, change position even if player is in that position
-
+        Cause the Charter to sit down.
         unit test in commands.tests
         """
-        return self.set_position('sitting', quiet, force)
+        return self.set_position('sitting')
 
-    def lay(self, quiet=False, force=False):
+    def lay(self):
         """
-        Cause the Charter to lay down
-
-        Arguments:
-            quiet=False, if True no messages will be displayed to the room.
-            force=False, change position even if player is in that position
-
+        Cause the Charter to lay down.
         unit test in commands.tests
         """
-        return self.set_position('laying', quiet, force)
+        return self.set_position('laying')
 
-    def set_position(self, position, quiet=False, force=False):
+    def set_position(self, position):
         """
         Change a character's position.
 
@@ -783,31 +767,7 @@ class Character(AllObjectsMixin, CharExAndObjMixin, ClothedCharacter, GenderChar
         """
         if position not in body.POSITIONS:
             raise ValueError(f"Character ID {self.id}.stance, {position} is not an allowed position. Positions are: {body.POSITIONS}")
-        #if force:
         self.position = position
-        """
-        else:
-            if self.position == position:
-                self.msg(f'You are already {position}.')
-                return False
-            else:
-                self.position = position
-        if position == 'standing':
-            room_msg = f"{self.usdesc} stands up."
-            self.msg("You stand up.")
-        elif position == 'laying' or position == 'sitting':
-            if position == 'laying':
-                room_pos_tense = 'lays'
-                self_pos_tense = 'lay'
-                room_msg = f"{self.usdesc} {room_pos_tense} down."
-            else:
-                room_pos_tense = 'sits'
-                self_pos_tense = 'sit'
-                room_msg = f"{self.usdesc} {room_pos_tense} down."
-            self.msg(f"You {self_pos_tense} down.")
-        if not quiet:
-            self.location.msg_contents(room_msg, exclude=(self,))
-        """
         return True
 
     def set_unconscious(self, state=True):
@@ -848,13 +808,13 @@ class Character(AllObjectsMixin, CharExAndObjMixin, ClothedCharacter, GenderChar
             self.msg('You fall unconscious.', force=True)
             self.position = 'laying'
             self.db.pose = 'is unconscious here.'
-            room_msg = f"{self.usdesc} falls unconscious."
-            self.location.msg_contents(room_msg, exclude=(self,))
+            room_msg = "/Me falls unconscious."
+            self.emote_location(room_msg)
         else:  # setting unconscious to False
             self.msg('You recover consciousness.', force=True)
             self.db.pose = f'is {self.position} here.'
-            room_msg = f"{self.usdesc} recovers consciousness."
-            self.location.msg_contents(room_msg, exclude=(self,))
+            room_msg = "/Me recovers consciousness."
+            self.emote_location(room_msg)
 
     def at_msg_receive(self, text=None, from_obj=None, **kwargs):
         """

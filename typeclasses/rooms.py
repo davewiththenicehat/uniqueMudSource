@@ -33,9 +33,8 @@ class Room(AllObjectsMixin, ExObjAndRoomMixin, ContribRPRoom):
         Attributes:
             inheirited from ExObjAndRoomMixin
                 usdesc = self.key  # a property to easy get and set the short description on an object.
-                    Use as if it were a stanard attribute.
-                    usdesc = 'a happy tree'  # this will change the key of this object
-                    caller.msg(f'You attack {target.usdesc}.')
+                    usdesc is intended for rare instance where the emote system can not apply a name to a second target.
+                    Use the emote system or obj.get_display_name(receiver) first.
             inheirited from AllObjectsMixin
                 targetable = False  # can this object be targeted with an action
                 container = True  # Can the object contain other objects
