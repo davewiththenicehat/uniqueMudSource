@@ -440,7 +440,7 @@ class ClothedCharacter(DefaultCharacter):
         if looker == self:
             string += "You are "
         else:
-            string += f"{self.usdesc} is "
+            string += f"{self.get_display_name(looker)} is "
         # Append worn clothes.
         if worn_string_list:
             string += f"wearing {list_to_string(worn_string_list)}."
@@ -520,8 +520,8 @@ class CmdWear(ClothingCommand):
                 if type_count >= clothing.type_limit[clothing.db.clothing_type]:
                     for worn_article in worn_clothes:
                         if worn_article.db.clothing_type == clothing.db.clothing_type:
-                            worn_art_name = worn_article.usdesc
-                    remove_cmd = f"remove {worn_article.usdesc}"
+                            worn_art_name = worn_article.get_display_name(caller)
+                    remove_cmd = f"remove {worn_article.get_display_name(caller)}"
                     remove_sugg = highlighter(remove_cmd, click_cmd=remove_cmd)
                     err_msg = f"You are wearing {worn_art_name} on your " \
                               f"{clothing.db.clothing_type}. You will need to " \
@@ -531,20 +531,20 @@ class CmdWear(ClothingCommand):
         # check if the player is already wearing the item
         # if clothing.db.worn and len(self.arglist) == 1:
         if clothing.db.worn:
-            caller.msg(f"You are already wearing {clothing.name}.")
+            caller.msg(f"You are already wearing {clothing.get_display_name(caller)}.")
             return False
         # if the Character is not holding the object to be wielded, stop the command
         if not caller.is_holding(clothing):
             stop_msg = f"You have to hold an object you want to " \
                        f"{self.cmdstring}.|/"
-            get_cmd = f"get {clothing.usdesc}"
+            get_cmd = f"get {clothing.get_display_name(caller)}"
             get_suggestion = highlighter(get_cmd, click_cmd=get_cmd)
             stop_msg += f"Try getting it with {get_suggestion}."
             caller.msg(stop_msg)
             return False
         # If armor, check if the Character has the body type required for the armor.
         if not (clothing.db.clothing_type in caller.body.parts or clothing.db.clothing_type in CLOTHING_TYPE_ORDER):
-            caller.msg(f"You do not have a {clothing.db.clothing_type} to equip {clothing.usdesc} to.")
+            caller.msg(f"You do not have a {clothing.db.clothing_type} to equip {clothing.get_display_name(caller)} to.")
             return False
         return True  # custom requirements met, allow command to run
 
@@ -613,13 +613,13 @@ class CmdRemove(ClothingCommand):
         clothing = self.target
         # is the character wearing the clothing
         if not clothing.db.worn:
-            caller.msg(f"You are not wearing {clothing.usdesc}.")
+            caller.msg(f"You are not wearing {clothing.get_display_name(caller)}.")
             return False
         if clothing.db.covered_by:
-            remove_cmd = f"remove {clothing.db.covered_by.usdesc}"
+            remove_cmd = f"remove {clothing.db.covered_by.get_display_name(caller)}"
             remove_sugg = highlighter(remove_cmd, click_cmd=remove_cmd)
-            err_msg = f"You are wear {clothing.db.covered_by.usdesc} over " \
-                      f"{clothing.usdesc}. Try removing {clothing.db.covered_by.usdesc} " \
+            err_msg = f"You are wearing {clothing.db.covered_by.get_display_name(caller)} over " \
+                      f"{clothing.get_display_name(caller)}. Try removing {clothing.db.covered_by.get_display_name(caller)} " \
                       f"first with {remove_sugg}."
             caller.msg(err_msg)
             return False

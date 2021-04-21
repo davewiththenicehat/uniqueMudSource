@@ -578,9 +578,8 @@ class TestCommands(UniqueMudCmdTest):
         self.test_shirt.location = self.char1
         command = developer_cmds.CmdMultiCmd
         arg = "= wear shirt"
-        wnt_msg = "^You have to hold an object you want to wear\.\r\nTry getting it with get test shirt\.$"
-        cmd_result = self.call(command(), arg)
-        self.assertRegex(cmd_result, wnt_msg)
+        wnt_msg = "You have to hold an object you want to wear.\r\nTry getting it with get test shirt(#10)."
+        cmd_result = self.call(command(), arg, wnt_msg)
         self.test_shirt.location = self.room1
         # test using one_handed skillset
         command = developer_cmds.CmdMultiCmd
@@ -756,22 +755,20 @@ class TestCommands(UniqueMudCmdTest):
         # test wearing a peace of clothing when the slot is occupied
         command = developer_cmds.CmdMultiCmd
         arg = "= get second helmet, complete_cmd_early, wear second helmet"
-        wnt_msg = "You are wearing test helmet on your head\. You will need to remove it first, try remove test helmet\."
+        wnt_msg = "You are wearing test helmet\(#11\) on your head\. You will need to remove it first, try remove test helmet\(#11\)\."
         cmd_result = self.call(command(), arg)
         self.assertRegex(cmd_result, wnt_msg)
         # test wearing an article already worn.
         command = developer_cmds.CmdMultiCmd
         arg = "= wear test helmet"
-        wnt_msg = "^You are already wearing test helmet\.$"
-        cmd_result = self.call(command(), arg)
-        self.assertRegex(cmd_result, wnt_msg)
+        wnt_msg = "You are already wearing test helmet(#11)."
+        cmd_result = self.call(command(), arg, wnt_msg)
         # test wearing an article that the caller has no body part for
         self.test_helmet2.db.clothing_type = "intentional_fail"
         command = developer_cmds.CmdMultiCmd
         arg = "= wear second helmet, drop second helmet"
-        wnt_msg = "^You do not have a intentional\_fail to equip second helmet to\."
-        cmd_result = self.call(command(), arg)
-        self.assertRegex(cmd_result, wnt_msg)
+        wnt_msg = "You do not have a intentional_fail to equip second helmet(#12) to."
+        cmd_result = self.call(command(), arg, wnt_msg)
         self.test_helmet2.db.clothing_type = "head"
         # test wearing an item on person, not in hand and not worn
         # this should not trigger
@@ -781,7 +778,7 @@ class TestCommands(UniqueMudCmdTest):
         self.assertEqual(self.test_shirt.location, self.room1)
         self.test_shirt.location = self.char1
         arg = "= wear shirt"
-        wnt_msg = "^You have to hold an object you want to wear\.\r\nTry getting it with get test shirt\.$"
+        wnt_msg = "You have to hold an object you want to wear\.\r\nTry getting it with get test shirt\(#10\)\."
         cmd_result = self.call(command(), arg)
         self.assertRegex(cmd_result, wnt_msg)
         self.test_shirt.location = self.room1
@@ -818,7 +815,7 @@ class TestCommands(UniqueMudCmdTest):
         # test removing an object covered by another
         command = developer_cmds.CmdMultiCmd
         arg = "= remove hat"
-        wnt_msg = "You are wear test helmet over test hat. Try removing test helmet first with remove test helmet."
+        wnt_msg = "You are wearing test helmet(#11) over test hat(#9). Try removing test helmet(#11) first with remove test helmet(#11)."
         self.call(command(), arg, wnt_msg)
         self.assertFalse(self.char1.is_holding(self.test_hat))
 
@@ -1978,7 +1975,7 @@ class TestCommands(UniqueMudCmdTest):
             command = developer_cmds.CmdMultiCmd
             arg = f"= {aliase} Char2"
             receivers = {
-                self.char1: "Char2 is not wearing anything.",
+                self.char1: "Char2(#7) is not wearing anything.",
                 self.char2: "Char looks at you.",
                 self.obj1: "Char looks at char2"
             }
