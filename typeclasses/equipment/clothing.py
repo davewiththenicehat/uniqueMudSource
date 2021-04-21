@@ -305,16 +305,16 @@ class Clothing(Object):
         if quiet:
             return True
         # Echo a message to the room
-        room_msg = f"{wearer.usdesc.capitalize()} wears {self.usdesc}"
-        wearer_msg = f"You wear {self.usdesc}"
+        room_msg = f"/Me wears /target"
+        wearer_msg = f"You wear /target"
         if wearstyle is not True:
-            room_msg = f"{wearer.usdesc.capitalize()} wears {self.usdesc} {wearstyle}"
-            wearer_msg = f"You wear {self.usdesc} {wearstyle}"
+            room_msg = f"/Me wears /target {wearstyle}"
+            wearer_msg = f"You wear /target {wearstyle}"
         if to_cover:
             room_msg += f", covering {list_to_string(to_cover)}"
             wearer_msg += f", covering {list_to_string(to_cover)}"
-        wearer.location.msg_contents(room_msg + ".", exclude=(wearer,))
-        wearer.msg(wearer_msg + ".")
+        wearer.emote_location(room_msg + ".", self)
+        wearer.emote(wearer_msg + ".", self)
 
         # cache dr change for body parts, incase clothing is armor
         wearer.cache_body_dr()
@@ -337,8 +337,8 @@ class Clothing(Object):
         #remove the clothing
         self.db.worn = False
         # message wearer and room
-        room_msg = f"{wearer.usdesc.capitalize()} removes {self.usdesc}"
-        wearer_msg = f"You remove {self.usdesc}"
+        room_msg = f"/Me removes /target"
+        wearer_msg = f"You remove /target"
         uncovered_list = []
         # Check to see if any other clothes are covered by this object.
         for thing in wearer.contents:
@@ -352,8 +352,8 @@ class Clothing(Object):
             wearer_msg += f", revealing {uncov_msg}"
         # Echo a message to the room
         if not quiet:
-            wearer.location.msg_contents(room_msg + ".", exclude=(wearer,))
-            wearer.msg(wearer_msg + ".")
+            wearer.emote_location(room_msg + ".", self)
+            wearer.emote(wearer_msg + ".", self)
         # cache dr change for body parts, incase clothing is armor
         wearer.cache_body_dr()
         # command run successful
@@ -556,10 +556,10 @@ class CmdWear(ClothingCommand):
         """
         caller = self.caller
         target = self.target
-        room_message = f'{caller.usdesc} begins to put on {target.usdesc}.'
-        caller_message = f'You begin to put on {target.usdesc}.'
-        caller.location.msg_contents(room_message, exclude=(caller))
-        caller.msg(caller_message)
+        room_message = f'/Me begins to put on /target.'
+        caller_message = f'You begin to put on /target.'
+        caller.emote_location(room_message, target)
+        caller.emote(caller_message, target)
 
     def deferred_action(self):
         """The command completed, without receiving an attack."""
@@ -633,10 +633,10 @@ class CmdRemove(ClothingCommand):
         """
         caller = self.caller
         target = self.target
-        room_message = f'{caller.usdesc} begins to remove {target.usdesc}.'
-        caller_message = f'You begin to remove {target.usdesc}.'
-        caller.location.msg_contents(room_message, exclude=(caller))
-        caller.msg(caller_message)
+        room_message = f'/Me begins to remove /target.'
+        caller_message = f'You begin to remove /target.'
+        caller.emote_location(room_message, target)
+        caller.emote(caller_message, target)
 
     def deferred_action(self):
         """The command completed, without receiving an attack."""
