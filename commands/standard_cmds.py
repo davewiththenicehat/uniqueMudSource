@@ -73,7 +73,7 @@ class CmdStatus(Command):
         # display name and appearance
         caller.msg("|/", force=True)
         caller.msg(f"Statistics for: |w{caller.name.capitalize()}|n", force=True)
-        caller_msg = f"Others who do not know this Character see |o as: {caller.get_display_name()}"
+        caller_msg = f"Others who do not know this Character see |o as: {caller.usdesc}"
         caller.msg(caller_msg, force=True)
         caller.msg("|/", force=True)
         # show health statistics

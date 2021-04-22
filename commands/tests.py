@@ -1622,7 +1622,7 @@ class TestCommands(UniqueMudCmdTest):
         # test the statistics command
         command = developer_cmds.CmdMultiCmd
         arg = "= stat"
-        wnt_msg = "Statistics for: Char"
+        wnt_msg = "Statistics for: Char\nOthers who do not know this Character see |o as: Char\n\r\n\nHealth:\n    hp            100 \n    endurance     100 \n\r\n\nAttributes:\n    Constitution     100     Strength        100 \n    Agility          100     Observation     100 \n    Intelligence     100     Speed           100 \n    Charisma         100     Wisdom          100"
         cmd_result = self.call(command(), arg)
         self.assertRegex(cmd_result, wnt_msg)
 
