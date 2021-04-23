@@ -1621,10 +1621,18 @@ class TestCommands(UniqueMudCmdTest):
     def test_stats_cmd(self):
         # test the statistics command
         command = developer_cmds.CmdMultiCmd
-        arg = "= stat"
         wnt_msg = "Statistics for: Char\nOthers who do not know this Character see |o as: Char\n\r\n\nHealth:\n    hp            100 \n    endurance     100 \n\r\n\nAttributes:\n    Constitution     100     Strength        100 \n    Agility          100     Observation     100 \n    Intelligence     100     Speed           100 \n    Charisma         100     Wisdom          100"
-        cmd_result = self.call(command(), arg)
-        self.assertRegex(cmd_result, wnt_msg)
+        for arg in ('stat', 'stats', 'statistics'):
+            cmd_result = self.call(command(), "= "+arg)
+            self.assertRegex(cmd_result, wnt_msg)
+
+    def test_cond_cmd(self):
+        # test the statistics command
+        command = developer_cmds.CmdMultiCmd
+        wnt_msg = 'Condition of: Char\n    Dead     No     Unconscious     No \n    Sick     No     Poisoned        No \n\r\n\nPosition: Standing\n\r\n\nStatus:\n+------------+---------------+\n|    Busy    |    Stunned    |\n|    No      |    No         |\n+------------+---------------+'
+        for arg in ('cond', 'condition'):
+            cmd_result = self.call(command(), "= "+arg)
+            self.assertRegex(cmd_result, wnt_msg)
 
     def test_unarmed(self):
         """

@@ -3,13 +3,16 @@ from evennia.utils.utils import fill, dedent, inherits_from, make_iter
 from evennia import default_cmds
 from evennia.contrib import rpsystem
 from evennia import CmdSet
-from commands.command import Command
 from evennia.commands.default.help import CmdHelp as EvCmdHelp
 from evennia.commands.default.system import CmdObjects
 from evennia.commands.default.general import CmdLook as EvCmdLook
+
+from commands.command import Command
 from world.rules import stats
 from utils.um_utils import highlighter, error_report
 from typeclasses.exits import STANDARD_EXITS
+from world.rules.body import CHARACTER_CONDITIONS
+from world.status_functions import status_delay_get
 
 
 class StandardCmdsCmdSet(default_cmds.CharacterCmdSet):
@@ -41,6 +44,7 @@ class StandardCmdsCmdSet(default_cmds.CharacterCmdSet):
         self.add(CmdStatus)
         self.add(UMCmdObjects)
         self.add(CmdPut)
+        self.add(CmdCondition)
 
 
 class UMCmdObjects(CmdObjects):
@@ -115,6 +119,94 @@ class CmdStatus(Command):
         stats_table = evtable.EvTable(table=stats_list, border=None, pad_left=4)
         caller.msg(stats_table, force=True)
         caller.msg("|/", force=True)
+
+
+class CmdCondition(Command):
+    """
+    Display information about your Character's condition.
+
+    Usage:
+      cond, condition
+    """
+    key = "condition"
+    aliases = ["cond"]
+
+    def at_init(self):
+        """
+        Called when the Command object is initialized.
+        Created to bulk set local none class attributes.
+        This allows for adjusting attributes on the object instances and not having those changes
+        shared among all instances of the Command.
+        """
+        self.requires_ready = False  # if true this command requires the ready status before it can do anything. deferal commands still require ready to defer
+        self.requires_conscious = False  # if true this command requires the caller to be conscious
+
+    def func(self):
+        caller = self.caller
+        # display name and appearance
+        caller.msg("|/", force=True)
+        caller.msg(f"Condition of: {caller.name}")
+        row1 = list()
+        row2 = list()
+        row3 = list()
+        row4 = list()
+        # loop through statistics attributes
+        for condition in CHARACTER_CONDITIONS:
+            # show two stats to a row
+            if len(row1) < len(row3):
+                first_row = row1
+                second_row = row2
+            else:
+                first_row = row3
+                second_row = row4
+            # make the attribute clickable
+            condition = highlighter(condition, click_cmd=f"help {condition}", up=True)
+            first_row.append(condition)
+            state = 'No' if condition else 'Yes'
+            second_row.append("|w"+str(state)+'|n')
+        cond_list = [row1, row2, row3, row4]
+        cond_table = evtable.EvTable(table=cond_list, border=None, pad_left=4)
+        caller.msg(cond_table, force=True)
+        caller.msg("|/", force=True)
+        caller.msg(f"Position: {caller.position.capitalize()}", force=True)
+        caller.msg("|/", force=True)
+        caller.msg("Status:", force=True)
+        status_table = evtable.EvTable(table=[], border_right_char='|', pad_left=4, pad_right=4)
+        for status_type in ('busy', 'stunned'):
+            status_name = highlighter(status_type.capitalize(), click_cmd=f"help {status_type}", up=True)
+            if caller.nattributes.has(f'{status_type}_status'):
+                status_list = []
+                status_list.append(status_name)
+                if caller.nattributes.has("deffered_command"):
+                    cmd_name = caller.ndb.deffered_command.key.capitalize()
+                    status_list.append(f"Action: {cmd_name}")
+                    time_remain = status_delay_get(caller, status_type='busy')
+                    time_remain = round(time_remain)
+                    status_list.append(f"Time left: {time_remain}s")
+                status_table.add_column(*status_list)
+            else:
+                status_table.add_column(status_name, "No")
+        caller.msg(status_table, force=True)
+        body_table = evtable.EvTable(table=[], pad_left=2, pad_right=2)
+        body_status_required = False
+        body_list = []
+        for part in caller.body.parts:
+            part_inst = getattr(caller.body, part, False)
+            part_desc = []
+            for part_cond in part_inst.el_list:
+                part_cond_inst = getattr(part_inst, part_cond, False)
+                if part_cond_inst:
+                    if part_cond_inst.startswith('#'):
+                        part_cond_inst = caller.search(part_cond_inst).get_display_name(caller)
+                    if body_list:
+                        body_list.append(f"{part_cond}: {part_cond_inst}")
+                    else:
+                        body_list.append(part)
+                        body_list.append(f"{part_cond}: {part_cond_inst}")
+        if body_list:
+            body_table.add_column(*body_list)
+            caller.msg("Body:", force=True)
+            caller.msg(body_table, force=True)
 
 
 class CmdLook(EvCmdLook, Command):
