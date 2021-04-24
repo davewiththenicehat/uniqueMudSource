@@ -1629,11 +1629,15 @@ class TestCommands(UniqueMudCmdTest):
     def test_cond_cmd(self):
         # test the statistics command
         command = developer_cmds.CmdMultiCmd
-        cmd_result = self.call(command(), "= get sword, complete_cmd_early, wield sword")
-        wnt_msg = 'Condition of: Char\n    Dead     No     Unconscious     No \n    Sick     No     Poisoned        No \n\r\n\nPosition: Standing\n\r\n\nStatus:\n\+------------\+---------------\+\n|    Busy    |    Stunned    |\n|    No      |    No         |\n+------------\+---------------+\nBody:\n+-------------------------\+\n|  right_hand             |\n|  occupied: a sword\(#8\)  |\n|  wielding: a sword\(#8\)  |\n+-------------------------\+'
+        self.call(command(), "= get sword, complete_cmd_early, wield sword")
         for arg in ('cond', 'condition'):
             cmd_result = self.call(command(), "= "+arg)
-            self.assertRegex(cmd_result, wnt_msg)
+            self.assertRegex(cmd_result, "Condition of: Char")
+            self.assertRegex(cmd_result, "Dead     No")
+            self.assertRegex(cmd_result, "Position: Standing")
+            self.assertRegex(cmd_result, "Status:")
+            self.assertRegex(cmd_result, "Body")
+            self.assertRegex(cmd_result, "wielding: a sword\(#8\)")
 
     def test_unarmed(self):
         """
