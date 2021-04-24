@@ -1629,7 +1629,8 @@ class TestCommands(UniqueMudCmdTest):
     def test_cond_cmd(self):
         # test the statistics command
         command = developer_cmds.CmdMultiCmd
-        wnt_msg = 'Condition of: Char\n    Dead     No     Unconscious     No \n    Sick     No     Poisoned        No \n\r\n\nPosition: Standing\n\r\n\nStatus:\n+------------+---------------+\n|    Busy    |    Stunned    |\n|    No      |    No         |\n+------------+---------------+'
+        cmd_result = self.call(command(), "= get sword, complete_cmd_early, wield sword")
+        wnt_msg = 'Condition of: Char\n    Dead     No     Unconscious     No \n    Sick     No     Poisoned        No \n\r\n\nPosition: Standing\n\r\n\nStatus:\n\+------------\+---------------\+\n|    Busy    |    Stunned    |\n|    No      |    No         |\n+------------\+---------------+\nBody:\n+-------------------------\+\n|  right_hand             |\n|  occupied: a sword\(#8\)  |\n|  wielding: a sword\(#8\)  |\n+-------------------------\+'
         for arg in ('cond', 'condition'):
             cmd_result = self.call(command(), "= "+arg)
             self.assertRegex(cmd_result, wnt_msg)
