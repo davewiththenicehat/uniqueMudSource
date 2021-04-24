@@ -96,6 +96,29 @@ class ListElement:
             # reduce damage dealt by characters bludgeoning damage reduction.
             damage = damage - char.dr.BLD
 
+    Iteration:
+        ListElements will return an two value iterateable.
+        key 0 is the database key.
+        key 1 is the instance of the attribute saved at the data base.
+            To access the value of this attribute use value.
+            IE: instance.value, where instance is an instance of an element
+                in a ListElement.
+            Reference this in evennia.typeclasses.attributes.Attribute
+
+        Example part_inst is an instance of a ListElement that represents
+        the condition of a body part:
+            for part in caller.body.parts:
+                part_inst = getattr(caller.body, part, False)
+                for cond_desc, part_cond in part_inst:
+                    if part_cond:
+                        if part_cond.value.startswith('#'):  # accessing value
+                            part_cond_inst = caller.search(part_cond.value).get_display_name(caller)
+                        if body_list:
+                            body_list.append(f"{db_key}: {part_cond_inst}")
+                        else:
+                            body_list.append(part)
+                            body_list.append(f"{db_key}: {part_cond_inst}")
+
 
     Notes:
     Default values 0 will NOT record to the database.
@@ -251,7 +274,7 @@ class ListElement:
         except AttributeError:
                 pass
 
-    def __getattribute__(self, name):
+    def __getattribute__(self, name, **kwargs):
         """
         Used to access any attribute in the ListElement.
         ListElement attributes do not actuall exist.
@@ -264,7 +287,7 @@ class ListElement:
         if super(ListElement, self).__getattribute__('verified'):
             if name in self.el_list:
                 db_key, db_key_def_val = self.db_fields_dict.get(name)
-                value = self.db.get(db_key, default=db_key_def_val)
+                value = self.db.get(db_key, default=db_key_def_val, **kwargs)
                 if self.log:
                     log_info(f"ListElement {self.name} for db object {self.container.dbref} __getattribute__ attribute {name} and database key {db_key} got value {value}")
                 return value
@@ -289,6 +312,17 @@ class ListElement:
         else:
             # delete the nondatabase attribute, calling the origional version of __delattr__ to avoid recursion
             object.__delattr__(self, name)
+
+    def __iter__(self):
+        """
+        ListElement __iter__ descriptor
+        Called when there is a request for iteration.
+        """
+        ret = []
+        for db_key, db_key_def_val in self.db_fields_dict.items():
+            inst = self.__getattribute__(db_key, return_obj=True)
+            ret.append((db_key, inst))
+        return iter(ret)
 
 
 # element attributes that will be saved to database

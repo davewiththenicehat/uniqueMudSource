@@ -188,21 +188,18 @@ class CmdCondition(Command):
                 status_table.add_column(status_name, "No")
         caller.msg(status_table, force=True)
         body_table = evtable.EvTable(table=[], pad_left=2, pad_right=2)
-        body_status_required = False
         body_list = []
         for part in caller.body.parts:
             part_inst = getattr(caller.body, part, False)
-            part_desc = []
-            for part_cond in part_inst.el_list:
-                part_cond_inst = getattr(part_inst, part_cond, False)
-                if part_cond_inst:
-                    if part_cond_inst.startswith('#'):
-                        part_cond_inst = caller.search(part_cond_inst).get_display_name(caller)
+            for db_key, part_cond in part_inst:
+                if part_cond:
+                    if part_cond.value.startswith('#'):
+                        part_cond_inst = caller.search(part_cond.value).get_display_name(caller)
                     if body_list:
-                        body_list.append(f"{part_cond}: {part_cond_inst}")
+                        body_list.append(f"{db_key}: {part_cond_inst}")
                     else:
                         body_list.append(part)
-                        body_list.append(f"{part_cond}: {part_cond_inst}")
+                        body_list.append(f"{db_key}: {part_cond_inst}")
         if body_list:
             body_table.add_column(*body_list)
             caller.msg("Body:", force=True)
