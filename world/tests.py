@@ -518,6 +518,11 @@ class TestUtils(UniqueMudCmdTest):
         self.assertTrue(char.body.right_hand.get('bleeding', True))
         obj_inst = char.body.right_hand.get('occupied', return_obj=True)
         self.assertEqual(f"{type(obj_inst)}", "<class 'evennia.typeclasses.attributes.Attribute'>")
+        # test contain method
+        self.assertTrue('bleeding' in char.body.right_hand)
+        self.assertFalse('intentional_fail' in char.body.right_hand)
+        self.assertFalse(char.db.right_hand_occupied in char.body.right_hand)
+        self.assertFalse(char.db.name in char.body.right_hand)
 
 
     def test_highlighter(self):

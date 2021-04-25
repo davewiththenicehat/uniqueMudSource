@@ -1,6 +1,7 @@
 import weakref
 from evennia.utils.logger import log_info, log_warn
 from evennia.utils import inherits_from
+from evennia.typeclasses.attributes import Attribute
 
 
 class ListElement:
@@ -349,6 +350,16 @@ class ListElement:
             if value:
                 ret.append(value)
         return iter(ret)
+
+    def __contains__(self, item):
+        """ListElement's __contains__ descriptor method"""
+        if isinstance(item, str):
+            return item in self.el_list
+        elif isinstance(item, Attribute):
+            for el in self:
+                if item == el:
+                    return True
+        return False
 
     def items(self, return_obj=False):
         """
