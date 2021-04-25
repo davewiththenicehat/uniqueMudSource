@@ -490,6 +490,36 @@ class TestUtils(UniqueMudCmdTest):
             st_ins = 3
             st_ins = tmp
 
+    def test_listelement(self):
+        char = self.char1
+        command = developer_cmds.CmdMultiCmd
+        self.call(command(), "= get sword, complete_cmd_early, wield sword, get Obj, complete_cmd_early,")
+        # test iterators
+        for part_name in char.body.parts:
+            part_inst = getattr(char.body, part_name, False)
+            # test basic teration
+            for part_cond in part_inst:
+                if part_cond:
+                    self.assertEqual(f"{type(part_cond)}", "<class 'evennia.typeclasses.attributes.Attribute'>")
+            # test items method
+            for cond_desc, part_cond in part_inst.items():
+                if part_cond:
+                    self.assertTrue(char.attributes.has(f"{part_name}_{cond_desc}"))
+                else:
+                    self.assertFalse(char.attributes.has(f"{part_name}_{cond_desc}"))
+            for cond_desc, part_cond in part_inst.items(return_obj=True):
+                if part_cond:
+                    self.assertTrue(char.attributes.has(part_cond.db_key))
+                else:
+                    self.assertFalse(char.attributes.has(f"{part_name}_{cond_desc}"))
+        # test get method
+        self.assertTrue(char.body.right_hand.get('occupied'))
+        self.assertFalse(char.body.right_hand.get('bleeding'))
+        self.assertTrue(char.body.right_hand.get('bleeding', True))
+        obj_inst = char.body.right_hand.get('occupied', return_obj=True)
+        self.assertEqual(f"{type(obj_inst)}", "<class 'evennia.typeclasses.attributes.Attribute'>")
+
+
     def test_highlighter(self):
 
         # test um_utils.highlighter

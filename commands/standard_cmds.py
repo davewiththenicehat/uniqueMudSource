@@ -191,15 +191,16 @@ class CmdCondition(Command):
         body_list = []
         for part in caller.body.parts:
             part_inst = getattr(caller.body, part, False)
-            for db_key, part_cond in part_inst:
+            for db_key, part_cond in part_inst.items():
                 if part_cond:
-                    if part_cond.value.startswith('#'):
-                        part_cond_inst = caller.search(part_cond.value).get_display_name(caller)
+                    # replace dbref with the instance of the object
+                    if part_cond.startswith('#'):
+                        part_cond = caller.search(part_cond).get_display_name(caller)
                     if body_list:
-                        body_list.append(f"{db_key}: {part_cond_inst}")
+                        body_list.append(f"{db_key}: {part_cond}")
                     else:
                         body_list.append(part)
-                        body_list.append(f"{db_key}: {part_cond_inst}")
+                        body_list.append(f"{db_key}: {part_cond}")
         if body_list:
             body_table.add_column(*body_list)
             caller.msg("Body:", force=True)

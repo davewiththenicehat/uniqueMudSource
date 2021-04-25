@@ -36,6 +36,24 @@ class ListElement:
                 self._dr = ListElement(self, DAMAGE_TYPES)
                 The preceeding '_' will be automatically removed.
 
+    Attributes, on each ListElement individually:
+        name(str): name of the ListElement. (Normally what you named the container)
+        value: the value of this Element.
+        db_fields_dict(dict): Key is the db key for this Element, value is its
+            default value.
+        el_list(tuple): A tuple of element names in ListElement.
+
+    Methods:
+        items(return_obj=False): Returns an iterator of db_key, value or Attribute instance.
+            Reference: evennia.typeclasses.attributes.Attribute
+        get(key, default=None, return_obj=False): Returns the value of the key
+            or it's instance.
+
+        Note: while working with methods the key arguments are the short hand
+            description of the Elements. For example 'occupied', not
+            'right_hand_occupied'. To work on that level you can call
+            object_instance.attributes.get('right_hand_occupied').
+
     Creation:
     You will need to make a propery on the class that will contain the
     ListElement.
@@ -97,27 +115,15 @@ class ListElement:
             damage = damage - char.dr.BLD
 
     Iteration:
-        ListElements will return an two value iterateable.
-        key 0 is the database key.
-        key 1 is the instance of the attribute saved at the data base.
-            To access the value of this attribute use value.
-            IE: instance.value, where instance is an instance of an element
-                in a ListElement.
-            Reference this in evennia.typeclasses.attributes.Attribute
+        Basic iteration will return an iterator of Attribibute objects.
+        Reference: evennia.typeclasses.attributes.Attribute.
+        Instances that are the default value are not returned. For example
+        if a Character's body part is not broken there will be no Attribute
+        instance of broken for that body part. So there is not one to return.
 
-        Example part_inst is an instance of a ListElement that represents
-        the condition of a body part:
-            for part in caller.body.parts:
-                part_inst = getattr(caller.body, part, False)
-                for cond_desc, part_cond in part_inst:
-                    if part_cond:
-                        if part_cond.value.startswith('#'):  # accessing value
-                            part_cond_inst = caller.search(part_cond.value).get_display_name(caller)
-                        if body_list:
-                            body_list.append(f"{db_key}: {part_cond_inst}")
-                        else:
-                            body_list.append(part)
-                            body_list.append(f"{db_key}: {part_cond_inst}")
+        There are other methods that return iteratables.
+        items, returns a db_key and value or Attribute instance.
+
 
 
     Notes:
@@ -170,16 +176,28 @@ class ListElement:
         else:
             raise ValueError("ListElement Object, argument 2 must be a list or tuple.")
 
-    def get(self, instance=None, owner=None):
-        """Returns a reference of the ListElement"""
+    def get(self, key, default=None, return_obj=False):
+        """
+        Returns the value of the key or it's instance.
+
+        Attributes:
+            key(str): The key for the element requested.
+                Example: body.right_arm.get('bleeding')
+            default=None: the value to return if none was found.
+            return_obj(bool, optional): If set, the return is not the value of
+                the Attribute but the Attribute object itself.
+
+        Returns:
+            value or instance of element or None if
+
+        """
         self.verify()
-        if self.log:
-            log_info(f"ListElement {self.name} for db object {self.container.dbref}, selfget called")
-        return self
+        value = self.__getattribute__(key, default, return_obj=return_obj)
+        return value
 
     def __get__(self, instance=None, owner=None):
-        """descriptor wrapper for ListElement's self.get"""
-        return self.get()
+        """__get__ descriptor, returns self"""
+        return self
 
     def set(self, value=None):
         """ListElements should not be set"""
@@ -274,7 +292,7 @@ class ListElement:
         except AttributeError:
                 pass
 
-    def __getattribute__(self, name, **kwargs):
+    def __getattribute__(self, name, default=None, **kwargs):
         """
         Used to access any attribute in the ListElement.
         ListElement attributes do not actuall exist.
@@ -287,7 +305,9 @@ class ListElement:
         if super(ListElement, self).__getattribute__('verified'):
             if name in self.el_list:
                 db_key, db_key_def_val = self.db_fields_dict.get(name)
-                value = self.db.get(db_key, default=db_key_def_val, **kwargs)
+                if default is None:
+                    default = db_key_def_val
+                value = self.db.get(db_key, default=default, **kwargs)
                 if self.log:
                     log_info(f"ListElement {self.name} for db object {self.container.dbref} __getattribute__ attribute {name} and database key {db_key} got value {value}")
                 return value
@@ -317,11 +337,41 @@ class ListElement:
         """
         ListElement __iter__ descriptor
         Called when there is a request for iteration.
+
+        Returns:
+            An iteratable with instances of the ListElements' evennia Attributes.
+            Reference: evennia.typeclasses.attributes.Attribute
+            It is possible for these to be None.
         """
         ret = []
-        for db_key, db_key_def_val in self.db_fields_dict.items():
-            inst = self.__getattribute__(db_key, return_obj=True)
-            ret.append((db_key, inst))
+        for key in self.el_list:
+            value = self.__getattribute__(key, return_obj=True)
+            if value:
+                ret.append(value)
+        return iter(ret)
+
+    def items(self, return_obj=False):
+        """
+        Returns an iterator of db_key, value or Attribute instance.
+        Reference: evennia.typeclasses.attributes.Attribute
+
+        Arguments:
+            return_obj (bool, optional): If set, the return is not the value of
+            the Attribute but the Attribute object itself.
+
+        Returns:
+            (el_desc=str, db_value=?): Element's description and the value of
+                the database field.
+
+            If return_obj is True:
+            (el_desc=str, attr_inst=Attribute): Element's description and an
+                instance of the attribute
+                Reference: evennia.typeclasses.attributes.Attribute
+        """
+        ret = []
+        for key in self.el_list:
+            value = self.__getattribute__(key,  return_obj=return_obj)
+            ret.append((key, value))
         return iter(ret)
 
 
