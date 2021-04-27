@@ -271,7 +271,6 @@ class ListElement:
         They are forwarded to the database.
         Only set an attribute if it is not the default value of 1
         """
-        super().__setattr__(name, value)
         try:  # if verified does not exist ignore it.
             if name in self.db_fields_dict:
                 db_key, db_key_def_val = self.db_fields_dict.get(name)
@@ -290,8 +289,10 @@ class ListElement:
                         if self.log:
                             log_info(f"ListElement {self.name} for db object {self.container.dbref} __setattr__ attribute {name} and database key {db_key} getting set to non default value {value}")
                         self.db.add(db_key, value)
+                return
         except AttributeError:
                 pass
+        super().__setattr__(name, value)
 
     def __getattribute__(self, name, default=None, **kwargs):
         """
@@ -360,6 +361,17 @@ class ListElement:
                 if item == el:
                     return True
         return False
+
+    def __getitem__(self, key):
+        """ListElement's __getitem__ descriptor."""
+        return getattr(self, key)
+
+    def __setitem__(self, key, value):
+        """ListElement's __setitem__ descriptor."""
+        if key not in self.el_list:
+            raise KeyError(f'{value} is not in {self.name}')
+        else:
+            setattr(self, key, value)
 
     def items(self, return_obj=False):
         """

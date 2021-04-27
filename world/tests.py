@@ -523,6 +523,12 @@ class TestUtils(UniqueMudCmdTest):
         self.assertFalse('intentional_fail' in char.body.right_hand)
         self.assertFalse(char.db.right_hand_occupied in char.body.right_hand)
         self.assertFalse(char.db.name in char.body.right_hand)
+        # test __setitem__ and __getitem__ methods
+        self.assertTrue(char.body.right_hand['occupied'])
+        char.body.right_hand['bleeding'] = True
+        self.assertTrue(char.body.right_hand['bleeding'])
+        self.assertTrue(char.attributes.get('right_hand_bleeding'))
+        char.body.right_hand['bleeding'] = False
 
 
     def test_highlighter(self):
