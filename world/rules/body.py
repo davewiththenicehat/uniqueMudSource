@@ -60,37 +60,39 @@ HUMANOID_HANDS = (
 )
 
 
-def get_part(target, part_name=False, log=None):
-    """
-    Return a randon or specified instance of a part on the object's body.
+def get_part(target, part_name=None, log=False):
+    """Return a randon or specified instance of a part on the object's body.
 
-    Arguments:
-        target, an Object target for get_part to choose a body part from
-        part_name=False, Pass a string name of a body part and get_body_part will return an
-            instance of that part.
-            Example: 'left_leg'
-        log=False, if True log the variables used
-
-    Returns:
-        Instance of a body part on the target.
-        False, if this object has no body parts to hit.
-        None, the function failed on the python level.
-
-    Notes:
-        Body parts retain python's standard attribute format.
-        The name attribute is the name of the body part.
-        As it is an instance of an object spaces are replaced with _.
-
-        Get a parts name with:
-            part = body.body_part()
-            part_name = part.name.replace('_', ' ')  # replace _ with spaces
+    Body part instances are ListElements. List Elements function very simular
+        to python's dict object.
+        ref: utils.element.ListElement
+        Created using keys: world.rules.body.PART_STATUS:
+            ('broke', 'bleeding', 'missing', 'occupied', 'wielding',)
+    Body parts retain python's standard attribute format.
+    The name attribute is the name of the body part.
+    As it is an instance of an object spaces are replaced with _.
+    Get a parts name with:
+        part = body.body_part()
+        part_name = part.name.replace('_', ' ')  # replace _ with spaces
 
     Unit Tests:
         commands.test.TestCommands.test_get_body_part
         world.tests.test_rules
         commands.test.TestCommands.test_wear_remove
 
-    todo:
+    Args:
+        target (Object), an evennia Object for get_part to choose a body part from
+        part_name (bool, optional), String name of a body part. Defaults to None.
+            Example: 'left_leg'
+        log (bool, optional), Should variables be logged. Defaults to False.
+
+    Returns:
+        body_part (ListElement): Functions very simular to python dict.
+            ref: utils.element.ListElement
+            Created using keys: world.rules.body.PART_STATUS:
+                ('broke', 'bleeding', 'missing', 'occupied', 'wielding',)
+
+    Todo:
         option to target low middle or high
     """
 

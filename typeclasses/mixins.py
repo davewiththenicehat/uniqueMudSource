@@ -169,21 +169,38 @@ class CharExAndObjMixin:
                         setattr(body_part.dr, dmg_type, dmg_type_dr_rating)
 
     def get_body_part(self, part_name=False, log=False):
-        """
-        Return a randon or specified instance of a part on the object's body.
+        """Return a randon or specified instance of a part on the object's body.
 
-        Arguments:
-            part_name=False, Pass a string name of a body part and get_body_part will return an
-                instance of that part.
+        Body part instances are ListElements. List Elements function very simular
+            to python's dict object.
+            ref: utils.element.ListElement
+            Created using keys: world.rules.body.PART_STATUS:
+                ('broke', 'bleeding', 'missing', 'occupied', 'wielding',)
+        Body parts retain python's standard attribute format.
+        The name attribute is the name of the body part.
+        As it is an instance of an object spaces are replaced with _.
+        Get a parts name with:
+            part = body.body_part()
+            part_name = part.name.replace('_', ' ')  # replace _ with spaces
+
+        Unit Tests:
+            commands.test.TestCommands.test_get_body_part
+            world.tests.test_rules
+            commands.test.TestCommands.test_wear_remove
+
+        Args:
+            part_name (bool, optional), String name of a body part. Defaults to None.
                 Example: 'left_leg'
-                If not provided a random part will be returned.
-            log=False, if True log the variables used
+            log (bool, optional), Should variables be logged. Defaults to False.
 
         Returns:
-            Instance of a body part on the target.
-            False, if this object has no body parts to hit
-                or if part_name does not exist on the object's body.
-            None, the function failed on the python level.
+            body_part (ListElement): Functions very simular to python dict.
+                ref: utils.element.ListElement
+                Created using keys: world.rules.body.PART_STATUS:
+                    ('broke', 'bleeding', 'missing', 'occupied', 'wielding',)
+
+        Todo:
+            option to target low middle or high
         """
         return body.get_part(self, part_name, log)
 
