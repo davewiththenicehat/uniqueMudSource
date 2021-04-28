@@ -13,7 +13,7 @@ from utils.element import Element, ListElement
 from utils import um_utils
 from world import status_functions
 from evennia import utils
-from world.rules import stats, body, damage, skills, actions
+from world.rules import stats, body, damage, actions, skills as skills_rules
 from evennia.contrib.rpsystem import ContribRPCharacter
 from typeclasses.equipment.clothing import ClothedCharacter
 from evennia.contrib.rpsystem import RPSystemCmdSet
@@ -242,10 +242,10 @@ class Character(AllObjectsMixin, CharExAndObjMixin, ClothedCharacter, GenderChar
             # create an empty object
             self._skills = type('_skills', (object,), {})()
             self._skills  # initialize the empty object
-            self._skills.skills = skills.SKILLS  # make copy of the skills dictionary
+            self._skills.skills = skills_rules.SKILLS  # make copy of the skills dictionary
             # ListElements will want to know what its db method is
             self._skills.attributes = self.attributes
-            for skill_name, skill in skills.SKILLS.items():
+            for skill_name, skill in skills_rules.SKILLS.items():
                 # create attributes to represent skill sets
                 setattr(self._skills, skill_name, ListElement(self._skills, skill))
                 # verify the newly created Element
