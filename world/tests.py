@@ -529,6 +529,8 @@ class TestUtils(UniqueMudCmdTest):
         self.assertTrue(char.body.right_hand['bleeding'])
         self.assertTrue(char.attributes.get('right_hand_bleeding'))
         char.body.right_hand['bleeding'] = False
+        self.assertRaises(AttributeError, lambda:char.body.right_hand['int_fail'])
+        self.assertRaises(TypeError, lambda:char.body.right_hand.__setitem__('int_fail'))
 
 
     def test_highlighter(self):

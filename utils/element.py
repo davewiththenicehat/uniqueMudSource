@@ -369,7 +369,7 @@ class ListElement:
     def __setitem__(self, key, value):
         """ListElement's __setitem__ descriptor."""
         if key not in self.el_list:
-            raise KeyError(f'{value} is not in {self.name}')
+            raise KeyError(f'{value} can not be set in {self.name}. Only {self.el_list} can be set.')
         else:
             setattr(self, key, value)
 
