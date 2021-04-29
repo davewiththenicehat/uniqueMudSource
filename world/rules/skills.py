@@ -47,23 +47,16 @@ DIFFICULTY_LEVELS = {
     5: 'daunting'
 }
 
-EVASION = {
-    'dodge': {}
-}
+EVASION = ('dodge',)
 
-UNARMED = {
-    'punch': {},
-    'kick': {}
-}
+UNARMED = ('punch', 'kick')
 
-ONE_HANDED = {
-    'stab': {}
-}
+ONE_HANDED = ('stab',)
 
 SKILLS = {
-    'evasion': tuple(EVASION.keys()),
-    'unarmed': tuple(UNARMED.keys()),
-    'one_handed': tuple(ONE_HANDED.keys())
+    'evasion': tuple(EVASION)+('skill_points',),
+    'unarmed': tuple(UNARMED)+('skill_points',),
+    'one_handed': tuple(ONE_HANDED)+('skill_points',)
 }
 
 def cmd_diff_mod(cmd_comp_diff, skill_ranks):

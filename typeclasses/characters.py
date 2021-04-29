@@ -245,11 +245,11 @@ class Character(AllObjectsMixin, CharExAndObjMixin, ClothedCharacter, GenderChar
             self._skills.skills = skills_rules.SKILLS  # make copy of the skills dictionary
             # ListElements will want to know what its db method is
             self._skills.attributes = self.attributes
-            for skill_name, skill in skills_rules.SKILLS.items():
+            for skill_set_name, skill_name in skills_rules.SKILLS.items():
                 # create attributes to represent skill sets
-                setattr(self._skills, skill_name, ListElement(self._skills, skill))
+                setattr(self._skills, skill_set_name, ListElement(self._skills, skill_name))
                 # verify the newly created Element
-                set_inst = getattr(self._skills, skill_name)
+                set_inst = getattr(self._skills, skill_set_name)
                 set_inst.verify()
         return self._skills
 
