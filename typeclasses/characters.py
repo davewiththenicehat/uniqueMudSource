@@ -234,13 +234,18 @@ class Character(AllObjectsMixin, CharExAndObjMixin, ClothedCharacter, GenderChar
         Create object to hold characters' skill sets.
 
         Each skill set name is a ListElement.
+        Reference utils.Element.ListElement
         The ListElement keys are:
             skill_name, for each skill name
             skill_name_exp, for each skill name
             skill_points, One instance.
         The lists used to create these objects are in a dictionary world.rules.skill.SKILLS
 
-        This forwards to a ListElement so all database interactions are handled automatically.
+        An example useage:
+            if char.skills.unarmed.kick > 1:
+                pass
+            if char.skills.unarmed.kick_exp > 1:
+                pass
         """
         try:
             if self._skills:
