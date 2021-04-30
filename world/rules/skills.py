@@ -16,13 +16,39 @@ Each skill set has skills (commands, actions or abilities) it grants access to l
     For example 'unarned' grants access to the 'punch' and 'kick' actions.
     Without the parent skill set those commands can not be learned.
 
+    Each skill has a rank and experience tracker on the Character.
+    This is represented as a ListElement in Character.skills.skill_set_name.
+    The rank tracker is an intiger with the name of the skill.
+        IE: char.skills.unarmed.punch
+    The experience tracker is an intiger with the name of the skill+'_exp'.
+        IE: char.skills.unarmed.punch_exp
+        The experience tracker is a direct reflection of the time the Character has used
+        the represented skill.
+        This tracker does not set to zero when a rank is increased.
+        This tracker increases if the Character succeds or fails with the action.
+        This tracker does not increase if the Character stops the action.
+    Refer to utils.element.ListElement, for full usage. The function simular dictionaries.
+
     Each skill has a learning dificulty.
     This is used to adjust how difficult it is to learn it.
+    This is represented in the corrispinding command for the skill. As an instance
+        attribute named 'learn_diff' and is an int.
+    Each rank has a required time investment to unlock that rank. The number for these are
+        as of yet undetermined. The place holder for now will be 5 minutes for each rank. 
+    The equation for learning difficulty is:
+        Plus 25% exp for each step of the action's learning difficulty past 'very easy'
+            'very easy': 100% of skill ranks, rounded up
+            'easy': 125% of skill ranks, rounded up
+            'moderate', 150% of skill ranks, rounded up
+            'hard', 175% of skill ranks, rounded up
+            'daunting', 200% of skill ranks, rounded up
 
     Each skill has a completion difficulty.
     This is used to represent how difficult it is to complete the action.
     This should have no effect on flat abilities that have no corrisponding
     command.
+    This is represented in the corrispinding command for the skill. As an instance
+        attribute named 'comp_diff' and is an int.
     The equation for completion difficulty is:
         Minus 20% for each step of the action's completion difficulty past 'very easy'
             'very easy': 100% of skill ranks, rounded up
@@ -30,7 +56,6 @@ Each skill set has skills (commands, actions or abilities) it grants access to l
             'moderate', 60% of skill ranks, rounded up
             'hard', 40% of skill ranks, rounded up
             'daunting', 20% of skill ranks, rounded up
-
     Difficulty levels are:
         'very easy': 1
         'easy': 2

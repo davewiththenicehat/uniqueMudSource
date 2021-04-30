@@ -233,6 +233,13 @@ class Character(AllObjectsMixin, CharExAndObjMixin, ClothedCharacter, GenderChar
         """
         Create object to hold characters' skill sets.
 
+        Each skill set name is a ListElement.
+        The ListElement keys are:
+            skill_name, for each skill name
+            skill_name_exp, for each skill name
+            skill_points, One instance.
+        The lists used to create these objects are in a dictionary world.rules.skill.SKILLS
+
         This forwards to a ListElement so all database interactions are handled automatically.
         """
         try:
@@ -245,9 +252,15 @@ class Character(AllObjectsMixin, CharExAndObjMixin, ClothedCharacter, GenderChar
             self._skills.skills = skills_rules.SKILLS  # make copy of the skills dictionary
             # ListElements will want to know what its db method is
             self._skills.attributes = self.attributes
-            for skill_set_name, skill_name in skills_rules.SKILLS.items():
+            for skill_set_name, skill_names in skills_rules.SKILLS.items():
                 # create attributes to represent skill sets
-                setattr(self._skills, skill_set_name, ListElement(self._skills, skill_name))
+                exp_names = list()
+                for skill_name in skill_names:
+                    if skill_name is 'skill_points':
+                        continue
+                    exp_names.append(skill_name+'_exp')
+                exp_names = tuple(exp_names)
+                setattr(self._skills, skill_set_name, ListElement(self._skills, skill_names+exp_names))
                 # verify the newly created Element
                 set_inst = getattr(self._skills, skill_set_name)
                 set_inst.verify()
