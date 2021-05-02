@@ -66,6 +66,7 @@ Each skill set has skills (commands, actions or abilities) it grants access to l
         'daunting': 5
 """
 
+# used to convert difficulty levels to numbers
 DIFFICULTY_LEVELS = {
     1: 'very easy',
     2: 'easy',
@@ -74,16 +75,28 @@ DIFFICULTY_LEVELS = {
     5: 'daunting'
 }
 
+# lists of each command or action type, reference above docstring
 EVASION = ('dodge',)
 
 UNARMED = ('punch', 'kick')
 
 ONE_HANDED = ('stab',)
 
+# a dictionary of skill sets.
 SKILLS = {
     'evasion': tuple(EVASION)+('skill_points',),
     'unarmed': tuple(UNARMED)+('skill_points',),
     'one_handed': tuple(ONE_HANDED)+('skill_points',)
+}
+
+# this is created in function rank_requirement
+# It is added to as rank requirements are requested.
+_RANK_REQUIREMENTS = {
+    'very easy': [0,300],
+    'easy': [0,375],
+    'moderate': [0,450],
+    'hard': [0,525],
+    'daunting': [0,600]
 }
 
 
@@ -182,3 +195,36 @@ def act_max_mod(command):
     skill_ranks = int(skill_ranks)
     result = cmd_diff_mod(command.comp_diff, skill_ranks)
     return result
+
+
+def rank_requirement(rank, learn_diff):
+    """Get the expereince required for a rank.
+
+    The equation for learning difficulty is:
+        Plus 25% exp for each step of the action's learning difficulty past 'very easy'
+            'very easy': 100% of skill ranks, rounded up
+            'easy': 125% of skill ranks, rounded up
+            'moderate', 150% of skill ranks, rounded up
+            'hard', 175% of skill ranks, rounded up
+            'daunting', 200% of skill ranks, rounded up
+        A rank 1 very easy skill required 300 experience.
+
+    Args:
+        rank (int): The skill rank you would like to get the required expereince
+            for.
+        learn_diff (str): The learning difficulty you would like to get the
+            required expereince for.
+            Acceptable strings: 'very easy', 'easy', 'moderate', 'hard' or
+                'daunting'.
+
+    Returns:
+        exp_req (int): The experience required for this rank, and learning
+            difficulty.
+    """
+    # add ranks to the global dictionary if they are not there.
+    if rank not in _RANK_REQUIREMENTS[learn_diff]:
+        array_size = len(_RANK_REQUIREMENTS[learn_diff])
+        diff_array = _RANK_REQUIREMENTS[learn_diff]
+        for i in range(array_size, rank+1):
+            diff_array.append(diff_array[(-1)] + diff_array[1])
+    return _RANK_REQUIREMENTS[learn_diff][rank]

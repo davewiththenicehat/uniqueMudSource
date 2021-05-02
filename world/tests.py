@@ -10,6 +10,7 @@ from utils.element import Element
 from utils import um_utils
 from utils.unit_test_resources import UniqueMudCmdTest
 from world.rules.stats import STATS
+from world.rules import skills
 
 
 class TestRules(CommandTest):
@@ -148,6 +149,27 @@ class TestRules(CommandTest):
         cmd_result = self.call(command(), arg)
         self.assertRegex(cmd_result, wanted_message)
         self.char1.skills.unarmed.punch = 0
+
+class TestSkills(CommandTest):
+
+    object_typeclass = Object
+    character_typeclass = Human
+    exit_typeclass = Exit
+    room_typeclass = Room
+
+    def test_rank_requirement(self):
+        self.assertEqual(skills.rank_requirement(1, 'very easy'), 300)
+        self.assertEqual(skills.rank_requirement(3, 'very easy'), 900)
+        self.assertEqual(skills.rank_requirement(1, 'easy'), 375)
+        self.assertEqual(skills.rank_requirement(3, 'easy'), 1125)
+        self.assertEqual(skills.rank_requirement(1, 'moderate'), 450)
+        self.assertEqual(skills.rank_requirement(3, 'moderate'), 1350)
+        self.assertEqual(skills.rank_requirement(1, 'hard'), 525)
+        self.assertEqual(skills.rank_requirement(3, 'hard'), 1575)
+        self.assertEqual(skills.rank_requirement(1, 'daunting'), 600)
+        self.assertEqual(skills.rank_requirement(3, 'daunting'), 1800)
+        for learn_diff in skills. DIFFICULTY_LEVELS.values():
+            self.assertEqual(len(skills._RANK_REQUIREMENTS[learn_diff]), 4)
 
 
 class TestUtils(UniqueMudCmdTest):

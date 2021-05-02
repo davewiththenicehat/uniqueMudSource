@@ -232,6 +232,7 @@ class Command(default_cmds.MuxCommand):
         evade_roll, used for unit testing
         action_roll, used for unit testing
         skill_ranks(), Returns the number of ranks the caller has in this command's corrisponding Character skill
+        gain_exp(self), Character gains experience for the command.
     """
 
     def __init__(self, **kwargs):
