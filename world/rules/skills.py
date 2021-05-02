@@ -13,7 +13,7 @@ command set.
         For example CmdDodge.cmd_type='evasion', for the dodge action.
 
 Each skill set has skills (commands, actions or abilities) it grants access to learn.
-    For example 'unarned' grants access to the 'punch' and 'kick' actions.
+    For example 'unarmed' grants access to the 'punch' and 'kick' actions.
     Without the parent skill set those commands can not be learned.
 
     Each skill has a rank and experience tracker on the Character.
@@ -26,6 +26,8 @@ Each skill set has skills (commands, actions or abilities) it grants access to l
         the represented skill.
         This tracker does not set to zero when a rank is increased.
         This tracker increases if the Character succeds or fails with the action.
+            This occurs when status_functions.status_delay_stop calls the
+            command's deferred_action method.
         This tracker does not increase if the Character stops the action.
     Refer to utils.element.ListElement, for full usage. The function simular dictionaries.
 
@@ -34,7 +36,7 @@ Each skill set has skills (commands, actions or abilities) it grants access to l
     This is represented in the corrispinding command for the skill. As an instance
         attribute named 'learn_diff' and is an int.
     Each rank has a required time investment to unlock that rank. The number for these are
-        as of yet undetermined. The place holder for now will be 5 minutes for each rank. 
+        as of yet undetermined. The place holder for now will be 5 minutes for each rank.
     The equation for learning difficulty is:
         Plus 25% exp for each step of the action's learning difficulty past 'very easy'
             'very easy': 100% of skill ranks, rounded up
@@ -84,6 +86,7 @@ SKILLS = {
     'one_handed': tuple(ONE_HANDED)+('skill_points',)
 }
 
+
 def cmd_diff_mod(cmd_comp_diff, skill_ranks):
     """
     Arguments:
@@ -103,6 +106,7 @@ def cmd_diff_mod(cmd_comp_diff, skill_ranks):
     """
     diff_mod = (6 - cmd_comp_diff) * .2 * skill_ranks
     return math.ceil(diff_mod)
+
 
 def evd_max_mod(command):
     """

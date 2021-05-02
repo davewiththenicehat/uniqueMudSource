@@ -1,3 +1,5 @@
+from datetime import datetime, timedelta
+
 from evennia import create_object
 from evennia.utils import create
 
@@ -14,7 +16,6 @@ from utils.element import Element
 ANSI_RED = "\033[1m" + "\033[31m"
 ANSI_NORMAL = "\033[0m"
 ANSI_BLUE = "\033[1m" + "\033[34m"
-#r"|b", ANSI_HILITE + ANSI_BLUE
 
 
 class TestCommands(UniqueMudCmdTest):
@@ -2390,3 +2391,34 @@ class TestCommands(UniqueMudCmdTest):
         # test the lower switch.
         result = replace_cap("/target test /target test. /target", "/target", "name", upper=False, lower=True)
         self.assertEqual(result, "name test name test. name")
+
+    def test_gain_exp(self):
+        command = developer_cmds.CmdCmdFuncTest
+        # punch command
+        end_time = f"{datetime.now() + timedelta(seconds=3.01)}".replace(':', '_')
+        arg = f"/r gain_exp, char2, cmd_type:unarmed, end_time:{end_time}, skill_name:punch"
+        wnt_msg = "gain_exp returned: 3.009"
+        self.call(command(), arg, wnt_msg)
+        self.assertTrue(self.char1.skills.unarmed.punch_exp > 3)
+        self.assertTrue(self.char1.skills.unarmed.punch_exp < 3.5)
+        self.char1.skills.unarmed.punch_exp = 0
+        # dodge command
+        end_time = f"{datetime.now() + timedelta(seconds=3.01)}".replace(':', '_')
+        arg = f"/r gain_exp, char2, cmd_type:evasion, end_time:{end_time}, skill_name:dodge"
+        wnt_msg = "gain_exp returned: 3.009"
+        self.call(command(), arg, wnt_msg)
+        self.assertTrue(self.char1.skills.evasion.dodge_exp > 3)
+        self.assertTrue(self.char1.skills.evasion.dodge_exp < 3.5)
+        self.char1.skills.evasion.dodge_exp = 0
+        # Run the punch command. Not not set a run time.
+        command = developer_cmds.CmdMultiCmd
+        arg = "= punch char2, complete_cmd_early"
+        self.call(command(), arg)
+        self.assertTrue(self.char1.skills.unarmed.punch_exp > 0)
+        self.char1.skills.unarmed.punch_exp = 0
+        # Run the dodge command. Complete early without actually dodging
+        command = developer_cmds.CmdMultiCmd
+        arg = "= dodge, complete_cmd_early"
+        self.call(command(), arg)
+        self.assertTrue(self.char1.skills.evasion.dodge_exp == 0)
+        self.char1.skills.evasion.dodge_exp = 0

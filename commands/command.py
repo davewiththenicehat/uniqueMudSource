@@ -6,6 +6,7 @@ Commands describe the input the account can do to the game.
 """
 
 import re
+from datetime import datetime
 
 from evennia import default_cmds
 from world import status_functions
@@ -201,6 +202,9 @@ class Command(default_cmds.MuxCommand):
             1: 'very easy', 2: 'easy', 3: 'moderate', 4: 'hard', 5: 'daunting'
             difficulty rules in world.rules.skills
         skill_name = self.key  # the skill name this command uses for rank modification
+        start_time = datetime.datetime.now()  # time the command starts
+        end_time = False  # used to manually override the end time.
+            intended for unit testing.
 
     Methods:
         All methods are fully documented in their docstrings.
@@ -273,6 +277,8 @@ class Command(default_cmds.MuxCommand):
         self.comp_diff = 2  # How difficult the command is to complete
         self.skill_name = self.key  # the skill name this command uses of rank modification
         self.sl_split = (' from ', ' in ')  # list of words to split names from locations in commands
+        self.start_time = datetime.now()  # time the command starts
+        self.end_time = False  # used to manually override the end time.
         self.at_init()
 
     def at_init(self):
@@ -562,7 +568,6 @@ class Command(default_cmds.MuxCommand):
         Return:
             Return True if the command completes successfully.
         """
-        pass
 
     def stop_request(self, target=None, stop_message=None, stop_cmd=None):
         """
@@ -1252,3 +1257,45 @@ class Command(default_cmds.MuxCommand):
         caller = self.caller
         target = self.targets if self.targets else self.target
         um_emote(emote, caller, receivers, target, anonymous_add)
+
+    def gain_exp(self):
+        """Gain experience.
+
+        Called in world.rules.status_fucntions.status_delay_stop, where each
+        command's deferred_action method is called.
+
+        Returns:
+            exp_gained (int): experience gained or number of sendonds the command ran.
+
+        todo:
+            exclude dodge commands that were not used as a dodge.
+        """
+        if not self.cmd_type:  # this command can not gain experience
+            return 0
+        skill_name = self.skill_name  # the skill name this command uses of rank modification
+        # do not gain skill on test commands that have not set a proper skill name
+        if skill_name == 'cmd_func_test':
+            return 0
+        # get variables
+        start_time = self.start_time  # time the command starts
+        caller = self.caller  # Object that called the command
+        skill_set_name = self.cmd_type  # Should be a string of the cmd type.
+        end_time = self.end_time if self.end_time else datetime.now()
+        # if end_time is a string, it was received from unit testing.
+        # convert it into a datatime object
+        if isinstance(end_time, str) and '_' in end_time:
+            end_time = end_time.replace('_', ':')
+            end_time = datetime.strptime(end_time, '%Y-%m-%d %H:%M:%S.%f')
+        # get the skill set instance than the exp value for this command
+        skill_set = getattr(caller.skills, skill_set_name, False)
+        if not skill_set:
+            return 0
+        if skill_name+"_exp" not in skill_set:
+            return 0
+        # calculate the experience gained (time the command ran)
+        act_time = end_time - start_time
+        exp_gained = act_time. total_seconds()
+        current_exp = skill_set[skill_name+"_exp"]
+        # record the experience gained.
+        skill_set[skill_name+"_exp"] = current_exp + exp_gained
+        return exp_gained

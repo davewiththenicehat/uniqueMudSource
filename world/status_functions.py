@@ -103,9 +103,7 @@ def status_delay_stop(target, status_type, complete_cmd):
         try:
             # If the deffered command was not called by the twisted deferred instance cancel it
             if not delay_status_inst.called:
-                delay_status_inst.pause()  # tricks cancel into not shooting an error
                 delay_status_inst.cancel()
-                delay_status_inst.remove()
         except AttributeError:
             pass
         # remove commands waiting for user imput
@@ -115,7 +113,13 @@ def status_delay_stop(target, status_type, complete_cmd):
         # run the deffered command if it is not being cancelled
         if complete_cmd:
             target.ndb.deffered_command.deferred_action()
+            if delay_status_inst.called:
+                if target.ndb.deffered_command.cmd_type != 'evasion':
+                    target.ndb.deffered_command.gain_exp()
+            else:
+                target.ndb.deffered_command.gain_exp()
         # remove tmp attributes order of removal matters
+        delay_status_inst.remove()
         try:
             target.attributes.remove(status_type)  # remove time tracking attr
         except AttributeError:
