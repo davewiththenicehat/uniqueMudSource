@@ -1263,7 +1263,10 @@ class Command(default_cmds.MuxCommand):
         """Gain experience.
 
         Called in world.rules.status_fucntions.status_delay_stop, where each
-        command's deferred_action method is called.
+        command's deferred_action method is called. For all non-evasion cmds
+        Called in world.rules.actions.evade_roll for evade commands. Just after
+        the function stops the deferred instance, but before it echos the
+        evasion message.
 
         Returns:
             exp_gained (int): experience gained or number of sendonds the command ran.
@@ -1295,7 +1298,7 @@ class Command(default_cmds.MuxCommand):
             return 0
         # calculate the experience gained (time the command ran)
         act_time = end_time - start_time
-        exp_gained = act_time. total_seconds()
+        exp_gained = act_time.total_seconds()
         current_exp = skill_set[skill_name+"_exp"]
         # record the experience gained.
         skill_set[skill_name+"_exp"] = current_exp + exp_gained

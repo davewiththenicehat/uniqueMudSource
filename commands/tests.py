@@ -2422,3 +2422,10 @@ class TestCommands(UniqueMudCmdTest):
         self.call(command(), arg)
         self.assertTrue(self.char1.skills.evasion.dodge_exp == 0)
         self.char1.skills.evasion.dodge_exp = 0
+        # test a succesful dodge.
+        command = developer_cmds.CmdMultiCmd
+        arg = "= dodge"
+        self.call(command(), arg, caller=self.char2)
+        arg = "= punch char2, complete_cmd_early"
+        self.call(command(), arg)
+        self.assertTrue(self.char2.skills.evasion.dodge_exp > 0)
