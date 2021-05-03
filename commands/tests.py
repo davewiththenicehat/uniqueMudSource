@@ -2393,8 +2393,8 @@ class TestCommands(UniqueMudCmdTest):
         self.assertEqual(result, "name test name test. name")
 
     def test_gain_exp(self):
-        command = developer_cmds.CmdCmdFuncTest
         # punch command
+        command = developer_cmds.CmdCmdFuncTest
         end_time = f"{datetime.now() + timedelta(seconds=3.01)}".replace(':', '_')
         arg = f"/r gain_exp, char2, cmd_type:unarmed, end_time:{end_time}, skill_name:punch"
         wnt_msg = "gain_exp returned: 3.009"
@@ -2403,6 +2403,7 @@ class TestCommands(UniqueMudCmdTest):
         self.assertTrue(self.char1.skills.unarmed.punch_exp < 3.5)
         self.char1.skills.unarmed.punch_exp = 0
         # dodge command
+        command = developer_cmds.CmdCmdFuncTest
         end_time = f"{datetime.now() + timedelta(seconds=3.01)}".replace(':', '_')
         arg = f"/r gain_exp, char2, cmd_type:evasion, end_time:{end_time}, skill_name:dodge"
         wnt_msg = "gain_exp returned: 3.009"
@@ -2429,3 +2430,16 @@ class TestCommands(UniqueMudCmdTest):
         arg = "= punch char2, complete_cmd_early"
         self.call(command(), arg)
         self.assertTrue(self.char2.skills.evasion.dodge_exp > 0)
+        # test message on rank available.
+        command = developer_cmds.CmdCmdFuncTest
+        self.char1.skills.unarmed.punch_exp = 599
+        self.char1.skills.unarmed.punch_msg = True
+        end_time = f"{datetime.now() + timedelta(seconds=3.01)}".replace(':', '_')
+        arg = f"/r gain_exp, char2, cmd_type:unarmed, end_time:{end_time}, skill_name:punch"
+        wnt_msg = "You have enough experience with punch to learn rank 2."
+        self.call(command(), arg, wnt_msg)
+            # should not receive a message after the first one this rank.
+        end_time = f"{datetime.now() + timedelta(seconds=3.01)}".replace(':', '_')
+        arg = f"/r gain_exp, char2, cmd_type:unarmed, end_time:{end_time}, skill_name:punch"
+        wnt_msg = "gain_exp returned: 3.00"
+        self.call(command(), arg, wnt_msg)

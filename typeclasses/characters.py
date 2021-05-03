@@ -139,15 +139,18 @@ class Character(AllObjectsMixin, CharExAndObjMixin, ClothedCharacter, GenderChar
 
         skills=object, skills is a blank object that contains ListElement of objects.
             Each of those objects contains a skill set.
-            Skill sets are accessable as attributes.
+            ListElements function very simular to python's dict obect.
+                Full reference: utils.Element.ListElement
             For example:
                 skills.unarmed, to access the unarmed skill set.
-            If a skill set is accessed in any way that the __str__ descriptor would be used,
-            It returns a string example of the skills in that set with the ranks in each skill.
-            Any method that can be used to get attributes within an object is applicable here.
-                For example:
-                    punch_ranks = skills.unarmed.punch
-                    punch_ranks = getattr(skills.unarmed, 'punch')
+            The ListElement contains
+                For each skill name:
+                    skill_name, ranks in this skill
+                    skill_name_exp, experience with this skill
+                    skill_name_msg, If the new rank available msg should be shown.
+                skill_points, skill points in this skill set.
+                    Not there is one for each skill set.
+
 
         evd_max=ListElement, determins the roll_max of each stat in evade_roll.
             There is one for every stat in stats.STATS
@@ -238,6 +241,9 @@ class Character(AllObjectsMixin, CharExAndObjMixin, ClothedCharacter, GenderChar
         The ListElement keys are:
             skill_name, for each skill name
             skill_name_exp, for each skill name
+                skills current experience value
+            skill_name_msg, for each skill name
+                rank training available message has been shown.
             skill_points, One instance.
         The lists used to create these objects are in a dictionary world.rules.skill.SKILLS
 
@@ -259,13 +265,14 @@ class Character(AllObjectsMixin, CharExAndObjMixin, ClothedCharacter, GenderChar
             self._skills.attributes = self.attributes
             for skill_set_name, skill_names in skills_rules.SKILLS.items():
                 # create attributes to represent skill sets
-                exp_names = list()
+                skill_var_names = list()
                 for skill_name in skill_names:
-                    if skill_name is 'skill_points':
+                    if skill_name == 'skill_points':
                         continue
-                    exp_names.append(skill_name+'_exp')
-                exp_names = tuple(exp_names)
-                setattr(self._skills, skill_set_name, ListElement(self._skills, skill_names+exp_names))
+                    skill_var_names.append(skill_name+'_exp')
+                    skill_var_names.append(skill_name+'_msg')
+                skill_var_names = tuple(skill_var_names)
+                setattr(self._skills, skill_set_name, ListElement(self._skills, skill_names+skill_var_names))
                 # verify the newly created Element
                 set_inst = getattr(self._skills, skill_set_name)
                 set_inst.verify()

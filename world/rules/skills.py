@@ -92,11 +92,16 @@ SKILLS = {
 # this is created in function rank_requirement
 # It is added to as rank requirements are requested.
 _RANK_REQUIREMENTS = {
-    'very easy': [0,300],
-    'easy': [0,375],
-    'moderate': [0,450],
-    'hard': [0,525],
-    'daunting': [0,600]
+    1: [0, 300],
+    2: [0, 375],
+    3: [0, 450],
+    4: [0, 525],
+    5: [0, 600],
+    'very easy': [0, 300],
+    'easy': [0, 375],
+    'moderate': [0, 450],
+    'hard': [0, 525],
+    'daunting': [0, 600]
 }
 
 
@@ -225,6 +230,6 @@ def rank_requirement(rank, learn_diff):
     if rank not in _RANK_REQUIREMENTS[learn_diff]:
         array_size = len(_RANK_REQUIREMENTS[learn_diff])
         diff_array = _RANK_REQUIREMENTS[learn_diff]
-        for i in range(array_size, rank+1):
+        for _ in range(array_size, rank+1):
             diff_array.append(diff_array[(-1)] + diff_array[1])
     return _RANK_REQUIREMENTS[learn_diff][rank]

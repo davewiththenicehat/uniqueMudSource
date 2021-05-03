@@ -13,7 +13,7 @@ from world import status_functions
 from evennia import utils
 from evennia.utils.logger import log_info
 
-from world.rules import damage, actions, body
+from world.rules import damage, actions, body, skills
 from utils.um_utils import highlighter
 from utils.emote import um_emote
 
@@ -1300,6 +1300,11 @@ class Command(default_cmds.MuxCommand):
         act_time = end_time - start_time
         exp_gained = act_time.total_seconds()
         current_exp = skill_set[skill_name+"_exp"]
-        # record the experience gained.
+        # record the experience gained
         skill_set[skill_name+"_exp"] = current_exp + exp_gained
+        # message caller if new rank is possible
+        exp_required = skills.rank_requirement(skill_set[skill_name]+1, self.learn_diff)
+        if exp_required <= skill_set[skill_name+"_exp"] and skill_set[skill_name+"_msg"]:
+            caller.msg(f'You have enough experience with {skill_name} to learn rank {skill_set[skill_name]+1}.')
+            skill_set[skill_name+"_msg"] = False
         return exp_gained
