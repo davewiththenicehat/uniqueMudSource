@@ -112,11 +112,12 @@ def status_delay_stop(target, status_type, complete_cmd):
         target.cmdset.remove(utils.evmenu.CmdGetInput)
         # run the deffered command if it is not being cancelled
         if complete_cmd:
-            target.ndb.deffered_command.deferred_action()
-            # cost and gain exp for non evasion acts. Evasion do this in actions.evade_roll
-            if target.ndb.deffered_command.cmd_type != 'evasion':
-                target.ndb.deffered_command.gain_exp()
-                target.ndb.deffered_command.cost()  # subtract action cost
+            if target.nattributes.has("deffered_command"):
+                cmd = target.ndb.deffered_command
+                cmd_successful = cmd.deferred_action()
+                # Run command completion tasks. Evasion cmds do this in actions.evade_roll
+                if cmd.cmd_type != 'evasion' and cmd_successful:
+                    cmd.def_act_comp()
         # remove tmp attributes order of removal matters
         delay_status_inst.remove()
         try:

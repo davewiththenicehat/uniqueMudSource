@@ -150,8 +150,7 @@ def evade_roll(char=None, evade_mod_stat=None, log=False, unit_test=False):
                                       f"added {item.evd_roll_max_mod} to evasion."
                                 log_info(msg)
                 evade_cmd.stop_forced()  # stop the deffered evasion command
-                evade_cmd.gain_exp()  # gain exp, this is the evade action completing
-                evade_cmd.cost()  # subtract action cost
+                evade_cmd.def_act_comp()  # run command completion tasks
                 # message target and room of the evade action.
                 room_msg = f'/Me tries '+evade_cmd.evade_msg
                 char.location.emote_contents(room_msg, char, exclude=(char))

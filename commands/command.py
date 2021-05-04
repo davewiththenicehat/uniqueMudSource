@@ -566,9 +566,21 @@ class Command(default_cmds.MuxCommand):
 
         Usage:
             Intended to be overritten. Simply put the action portions of a command in this method.
-        Return:
-            Return True if the command completes successfully.
+        Returns:
+            successful (bool): True if the command completed sucessfully.
+                If this method returns True self.def_act_comp will be called after automatically.
         """
+
+    def def_act_comp(self):
+        """Called after deferred_action completes successfully.
+        If the deferred_action returned True.
+
+        By default it calls:
+            self.gain_exp()
+            self.cost()
+        """
+        self.gain_exp()
+        self.cost()
 
     def stop_request(self, target=None, stop_message=None, stop_cmd=None):
         """
