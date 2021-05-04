@@ -113,8 +113,10 @@ def status_delay_stop(target, status_type, complete_cmd):
         # run the deffered command if it is not being cancelled
         if complete_cmd:
             target.ndb.deffered_command.deferred_action()
+            # gain exp for non evasion acts. Evasion acts gain in actions.evade_roll
             if target.ndb.deffered_command.cmd_type != 'evasion':
                 target.ndb.deffered_command.gain_exp()
+                target.ndb.deffered_command.cost()  # subtract action cost
         # remove tmp attributes order of removal matters
         delay_status_inst.remove()
         try:
