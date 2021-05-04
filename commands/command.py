@@ -962,8 +962,6 @@ class Command(default_cmds.MuxCommand):
             self.send_emote(target_msg, receivers=target)
         # message the location
         caller.location.emote_contents(room_msg, caller, target, exclude=(target, caller))
-        # make the action cost something
-        self.cost(self.cost_level, self.cost_stat)
         if log:
             log_info(f'Command.combat_action, Character ID: {caller.id} | result {result}')
             log_info("caller message: "+caller_msg)
