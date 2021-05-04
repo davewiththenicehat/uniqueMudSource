@@ -971,34 +971,35 @@ class Command(default_cmds.MuxCommand):
             log_info("room message: "+room_msg)
         return True
 
-    def cost(self, cost_level='very easy', cost_stat='END', subt_cost=True,
-             deferred=True, log=False):
-        """
-        Take a cost from self.caller.
+    def cost(self, cost_level=None, cost_stat=None, subt_cost=True, log=False):
+        """remove that cost from the Character and return a numerical value of the cost.
 
-        Arguments:
-            cost_stat='END', The stat this function will use for this action.
-                If deferred argument is True. This variable will be overriden
-                with the action commands cost_stat attribute
-            cost_level='very easy', level this action should cost.
+        Unit test for this function is in commands.tests.TestCommands.test_methods
+
+        Equation, cost - (cost * stat_action_cost_mod)
+
+        Args:
+            char (Character), is the character commiting the action
+            cost_stat (str), The Character stat this function will use for this action.
+                If falsley action cost will attempt to collect it from a deferred command.
+                If passed a Falsey argument and no deferred command is available or cost_stat
+                    is falsey on the deferred. Function returns 0.
+            cost_level (str), level this action should cost.
                 Accepts: 'very easy', 'easy', 'moderate' 'hard', 'daunting' or a number or an integer
-                if a number, the cost is that number.
-                If Falsey this command has no cost and returns 0.
-                If deferred argument is True. This variable will be overriden
-                with the action commands cost_level attribute
-            subt_cost=True, if True, the cost will be subtracted from the
-                cost_stat.
-            deferred=True, get cost_level and cost_stat from char's deffered
-                command.
+                If a number, the cost is that number.
+                If falsley action cost will attempt to collect it from a deferred command.
+                If passed a Falsey argument and no deferred command is available or cost_level
+                    is falsey on the deferred. Function returns 0.
+            subt_cost=True, if True, the cost will be subtracted from the cost_stat.
             log=False, if True log the variables used
 
         Returns:
-            the numrical value that the stat will be drained.
-            False, the function found an error
-            None, the function failed on the python level
+            cost (int): the numrical value that the stat will be drained.
         """
         caller = self.caller
-        return actions.action_cost(caller, cost_level, cost_stat, subt_cost, deferred)
+        cost_level = cost_level if cost_level else self.cost_level
+        cost_stat = cost_stat if cost_stat else self.cost_stat
+        return actions.action_cost(caller, cost_level, cost_stat, subt_cost)
 
     def target_bad(self, target):
         """

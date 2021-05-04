@@ -58,6 +58,7 @@ Each skill set has skills (commands, actions or abilities) it grants access to l
             'moderate', 60% of skill ranks, rounded up
             'hard', 40% of skill ranks, rounded up
             'daunting', 20% of skill ranks, rounded up
+
     Difficulty levels are:
         'very easy': 1
         'easy': 2

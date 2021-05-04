@@ -1831,32 +1831,29 @@ class TestCommands(UniqueMudCmdTest):
                 modifier stat is adjust to 100, 0 and -100 for each test
         """
         from utils.element import Element
-
-        # test no deferred command when the cost deferred argument is True
+        # passing no arguments, no deferred command
         command = developer_cmds.CmdCmdFuncTest
         arg = "/r cost, self"
-        wnt_msg = "Error message: rules.action.cost, character: 6. Failed to find an active command."
+        wnt_msg = "cost returned: 0"
         self.call(command(), arg, wnt_msg)
-
         # test with an incorrect cost_level
         command = developer_cmds.CmdCmdFuncTest
-        arg = "/r/d cost, char, cost_level:low, cost_stat:END = low, END, True, True"
+        arg = "/r/d cost, char, cost_level:low, cost_stat:END = low, END"
         wnt_msg = "You will be busy for 3 seconds.|Error message: rules.action.cost, character: 6 action: cmd_func_test cost_level argument must equal 'very easy', 'easy', 'moderate' 'hard', 'daunting' or a number."
         cmd_result = self.call(command(), arg, wnt_msg)
         # test incorrect cost_level without a deferred command
         command = developer_cmds.CmdCmdFuncTest
-        arg = "/r cost, char, cost_level:low, cost_stat:END = low, END, True, False"
+        arg = "/r cost, char, cost_level:low, cost_stat:END = low, END"
         wnt_msg = "Error message: rules.action.cost, character: 6 cost_level argument must equal 'very easy', 'easy', 'moderate' 'hard', 'daunting' or a number."
         cmd_result = self.call(command(), arg, wnt_msg)
-
         # test with incorrect cost_stat
         command = developer_cmds.CmdCmdFuncTest
-        arg = "/r/d cost, char, cost_level:low, cost_stat:ZZZ = very_easy, ZZZ, True, True"
+        arg = "/r/d cost, char, cost_level:low, cost_stat:ZZZ = very_easy, ZZZ"
         wnt_msg = "You will be busy for 3 seconds.|Error message: rules.action.cost, character: 6, action: cmd_func_test, Failed to find an instance of stat ZZZ on character. Find acceptable stats in world.rules.stats.STATS."
         cmd_result = self.call(command(), arg, wnt_msg)
         # test without a deffered command, incorrect cost_stat
         command = developer_cmds.CmdCmdFuncTest
-        arg = "/r cost, char, cost_level:low, cost_stat:ZZZ = very_easy, ZZZ, True, False"
+        arg = "/r cost, char, cost_level:low, cost_stat:ZZZ = very_easy, ZZZ"
         wnt_msg = "Error message: rules.action.cost, character: 6, Failed to find an instance of stat ZZZ on character. Find acceptable stats in world.rules.stats.STATS."
         cmd_result = self.call(command(), arg, wnt_msg)
 
@@ -1866,7 +1863,6 @@ class TestCommands(UniqueMudCmdTest):
         std_cost_stats = ('WILL', 'willpower', 'END', 'endurance')
         stats_long_names = tuple(STAT_MAP_DICT.values())
         for stat in std_cost_stats + STATS + stats_long_names:
-
             # get variables needed for tests
             cost_stat_instance = getattr(self.char1, stat, False)
             if cost_stat_instance:
@@ -1882,7 +1878,6 @@ class TestCommands(UniqueMudCmdTest):
                 err_msg = "commands.tests.TestCommands.test_cost: failed to " \
                           f"find self.char1.{stat}"
                 raise AssertionError(err_msg)
-
             # test all cost levels
             for cost_level in COST_LEVELS:
                 # test multiple cost modifier levels
@@ -1895,7 +1890,7 @@ class TestCommands(UniqueMudCmdTest):
                     base_cost = COST_LEVELS[cost_level]
                     cost = base_cost - (base_cost * stat_action_cost_mod)
                     # Run command removing stat, where cost_mod_stat is 100
-                    arg = f"/r/d cost, char, cost_level:{cost_level}, cost_stat:{stat} = {cost_level}, {stat}, True, True"
+                    arg = f"/r/d cost, char, cost_level:{cost_level}, cost_stat:{stat} = {cost_level}, {stat}"
                     wnt_msg = f"You will be busy for 3 seconds.|cost returned: {cost}|You are no longer busy."
                     cmd_result = self.call(command(), arg, wnt_msg)
                     # verify correct ammount was taken
