@@ -213,6 +213,8 @@ class Command(default_cmds.MuxCommand):
         custom_req_met(), Verifies commands custom requirements are met. Stops the command if they are not.
         defer(int or float), defer the action of a command by calling Command.deferred_action after the number of seconds passed to defer
         deferred_action(), override to commit the action of a command to a later time.
+        def_act_comp(self), called if deferred_action returns True, runs completion tasks.
+            exp gain and action costs occur here.
         start_message(), Displays a message after a command has been successfully deffered.
         stop_request(self, target, stop_message, stop_cmd), request a Character to stop a deffered command early
         stop_forced(self, target, stop_message, stop_cmd, status_type), force a character to stop a deffered command early
