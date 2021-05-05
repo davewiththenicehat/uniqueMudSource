@@ -210,7 +210,7 @@ class Command(default_cmds.MuxCommand):
         All methods are fully documented in their docstrings.
         at_init, Called when the Command object is initialized.
         func, To more seamlessly support UniqueMud's deffered command system, evennia's Command.func has been overridden.
-        custom_req_met(), Verifies commands custom requirements are met. Stops the command if they are not.
+        custom_requirements(), Verifies commands custom requirements are met. Stops the command if they are not.
         defer(int or float), defer the action of a command by calling Command.deferred_action after the number of seconds passed to defer
         deferred_action(), override to commit the action of a command to a later time.
         def_act_comp(self), called if deferred_action returns True, runs completion tasks.
@@ -447,7 +447,7 @@ class Command(default_cmds.MuxCommand):
                             caller.msg(f'You can not find {target_name}.')
                             return True
         # stop the command if custom command requirements are not met
-        if not self.custom_req_met():
+        if not self.custom_requirements():
             return True
         return super().at_pre_cmd()
 
@@ -459,7 +459,7 @@ class Command(default_cmds.MuxCommand):
                 Does not require parse method call or target collection.
             target (bool): If True verify target(s) are good. Default is False.
                 Can only be used after at_pre_cmd method call.
-            custom (bool): calls custom_req_met. Default is False
+            custom (bool): calls custom_requirements. Default is False
 
         Returns:
             met (bool): True if requirements are met.
@@ -494,25 +494,22 @@ class Command(default_cmds.MuxCommand):
                     caller.msg(f'You must be wielding a {required_item_type} item to {self.key}.')
                     return False
         if custom:
-            if not self.custom_req_met():
+            if not self.custom_requirements():
                 return False
         return True
 
-    def custom_req_met(self):
-        """
-        Verifies commands custom requirements are met. this method returns False the command will end.
+    def custom_requirements(self):
+        """Verifies commands custom requirements are met. If this method returns False the command will end.
         This method must message the caller why the command failed.
 
+        This command is called automatically in at_pre_cmd and again just before deferred_action.
         self.target and self.targets will be available in this method.
 
         This method is intended to be overwritten.
 
-        Automatically called at the end of self.at_pre_cmd.
-
         Returns:
-            requirements_met=boolean
-            False: will stop the command
-            True: the command will continue
+            requirements_met (bool): If True the command continues. If Falsey the command ends.
+
         """
         return True  # custom requirements met, allow command to run
 

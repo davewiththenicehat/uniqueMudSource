@@ -485,24 +485,20 @@ class CmdWear(ClothingCommand):
 
     key = "wear"
     # self.target_in_hand = True  # has been manually written into
-    # custom_req_met so support showing an item is already worn
+    # custom_requirements so support showing an item is already worn
 
-    def custom_req_met(self):
-        """
-        Verifies commands custom requirements are met.
-        If this method returns False the command will end.
+    def custom_requirements(self):
+        """Verifies commands custom requirements are met. If this method returns False the command will end.
         This method must message the caller why the command failed.
 
+        This command is called automatically in at_pre_cmd and again just before deferred_action.
         self.target and self.targets will be available in this method.
 
         This method is intended to be overwritten.
 
-        Automatically called at the end of self.at_pre_cmd.
-
         Returns:
-            requirements_met=boolean
-            False: will stop the command
-            True: the command will continue
+            requirements_met (bool): If True the command continues. If Falsey the command ends.
+
         """
         caller = self.caller
         clothing = self.target
@@ -592,22 +588,18 @@ class CmdRemove(ClothingCommand):
 
     key = "remove"
 
-    def custom_req_met(self):
-        """
-        Verifies commands custom requirements are met.
-        If this method returns False the command will end.
+    def custom_requirements(self):
+        """Verifies commands custom requirements are met. If this method returns False the command will end.
         This method must message the caller why the command failed.
 
+        This command is called automatically in at_pre_cmd and again just before deferred_action.
         self.target and self.targets will be available in this method.
 
         This method is intended to be overwritten.
 
-        Automatically called at the end of self.at_pre_cmd.
-
         Returns:
-            requirements_met=boolean
-            False: will stop the command
-            True: the command will continue
+            requirements_met (bool): If True the command continues. If Falsey the command ends.
+
         """
         caller = self.caller
         clothing = self.target

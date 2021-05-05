@@ -240,22 +240,18 @@ class CmdLook(EvCmdLook, Command):
         """
         self.requires_ready = False  # if true this command requires the ready status before it can do anything. deferal commands still require ready to defer
 
-    def custom_req_met(self):
-        """
-        Verifies commands custom requirements are met.
-        If this method returns False the command will end.
+    def custom_requirements(self):
+        """Verifies commands custom requirements are met. If this method returns False the command will end.
         This method must message the caller why the command failed.
 
+        This command is called automatically in at_pre_cmd and again just before deferred_action.
         self.target and self.targets will be available in this method.
 
         This method is intended to be overwritten.
 
-        Automatically called at the end of self.at_pre_cmd.
-
         Returns:
-            requirements_met=boolean
-            False: will stop the command
-            True: the command will continue
+            requirements_met (bool): If True the command continues. If Falsey the command ends.
+
         """
         caller = self.caller
         if self.args:  # a target was provided in command
@@ -689,22 +685,18 @@ class CmdGet(Command):
         self.target_required = True  # if True and the command has no target, Command.func will stop execution and message the player
         self.can_not_target_self = True  # if True this command will end with a message if the Character targets themself
 
-    def custom_req_met(self):
-        """
-        Verifies commands custom requirements are met.
-        If this method returns False the command will end.
+    def custom_requirements(self):
+        """Verifies commands custom requirements are met. If this method returns False the command will end.
         This method must message the caller why the command failed.
 
+        This command is called automatically in at_pre_cmd and again just before deferred_action.
         self.target and self.targets will be available in this method.
 
         This method is intended to be overwritten.
 
-        Automatically called at the end of self.at_pre_cmd.
-
         Returns:
-            requirements_met=boolean
-            False: will stop the command
-            True: the command will continue
+            requirements_met (bool): If True the command continues. If Falsey the command ends.
+
         """
         caller = self.caller
         target = self.target
@@ -828,22 +820,18 @@ class CmdPut(Command):
         self.target_in_hand = False  # if True the target of the command must be in the Characters hand to complete successfully
         self.requires_ready = True  # if true this command requires the ready status before it can do anything.
 
-    def custom_req_met(self):
-        """
-        Verifies commands custom requirements are met.
-        If this method returns False the command will end.
-        This command must message the caller.
+    def custom_requirements(self):
+        """Verifies commands custom requirements are met. If this method returns False the command will end.
+        This method must message the caller why the command failed.
 
+        This command is called automatically in at_pre_cmd and again just before deferred_action.
         self.target and self.targets will be available in this method.
 
         This method is intended to be overwritten.
 
-        Automatically called in at the self.at_pre_cmd.
-
         Returns:
-            requirements_met=boolean
-            False: will stop the command
-            True: the command will continue
+            requirements_met (bool): If True the command continues. If Falsey the command ends.
+
         """
         caller = self.caller
         target = self.target
@@ -882,7 +870,7 @@ class CmdPut(Command):
         """
         caller = self.caller
         target = self.target
-        container = self.container  # collected in self.custom_req_met
+        container = self.container  # collected in self.custom_requirements
         # message caller, making sender the container
         caller_message = "You begin to put /target into /me."
         caller.emote(caller_message, target, container)
@@ -949,22 +937,18 @@ class CmdInventory(Command):
         """
         self.defer_time = 1  # time is seconds for the command to wait before running action of command
 
-    def custom_req_met(self):
-        """
-        Verifies commands custom requirements are met.
-        If this method returns False the command will end.
+    def custom_requirements(self):
+        """Verifies commands custom requirements are met. If this method returns False the command will end.
         This method must message the caller why the command failed.
 
+        This command is called automatically in at_pre_cmd and again just before deferred_action.
         self.target and self.targets will be available in this method.
 
         This method is intended to be overwritten.
 
-        Automatically called at the end of self.at_pre_cmd.
-
         Returns:
-            requirements_met=boolean
-            False: will stop the command
-            True: the command will continue
+            requirements_met (bool): If True the command continues. If Falsey the command ends.
+
         """
         caller = self.caller
         if not caller.contents:
@@ -1041,22 +1025,18 @@ class CmdSit(Command):
         """
         self.defer_time = 1  # time is seconds for the command to wait before running action of command
 
-    def custom_req_met(self):
-        """
-        Verifies commands custom requirements are met.
-        If this method returns False the command will end.
+    def custom_requirements(self):
+        """Verifies commands custom requirements are met. If this method returns False the command will end.
         This method must message the caller why the command failed.
 
+        This command is called automatically in at_pre_cmd and again just before deferred_action.
         self.target and self.targets will be available in this method.
 
         This method is intended to be overwritten.
 
-        Automatically called at the end of self.at_pre_cmd.
-
         Returns:
-            requirements_met=boolean
-            False: will stop the command
-            True: the command will continue
+            requirements_met (bool): If True the command continues. If Falsey the command ends.
+
         """
         caller = self.caller
         if caller.position == 'sitting':
@@ -1101,22 +1081,18 @@ class CmdStand(Command):
     locks = "cmd:all()"
     arg_regex = r"\s|$"
 
-    def custom_req_met(self):
-        """
-        Verifies commands custom requirements are met.
-        If this method returns False the command will end.
+    def custom_requirements(self):
+        """Verifies commands custom requirements are met. If this method returns False the command will end.
         This method must message the caller why the command failed.
 
+        This command is called automatically in at_pre_cmd and again just before deferred_action.
         self.target and self.targets will be available in this method.
 
         This method is intended to be overwritten.
 
-        Automatically called at the end of self.at_pre_cmd.
-
         Returns:
-            requirements_met=boolean
-            False: will stop the command
-            True: the command will continue
+            requirements_met (bool): If True the command continues. If Falsey the command ends.
+
         """
         caller = self.caller
         if caller.position == 'standing':
@@ -1170,22 +1146,18 @@ class CmdLay(Command):
         """
         self.defer_time = 1  # time is seconds for the command to wait before running action of command
 
-    def custom_req_met(self):
-        """
-        Verifies commands custom requirements are met.
-        If this method returns False the command will end.
+    def custom_requirements(self):
+        """Verifies commands custom requirements are met. If this method returns False the command will end.
         This method must message the caller why the command failed.
 
+        This command is called automatically in at_pre_cmd and again just before deferred_action.
         self.target and self.targets will be available in this method.
 
         This method is intended to be overwritten.
 
-        Automatically called at the end of self.at_pre_cmd.
-
         Returns:
-            requirements_met=boolean
-            False: will stop the command
-            True: the command will continue
+            requirements_met (bool): If True the command continues. If Falsey the command ends.
+
         """
         caller = self.caller
         if caller.position == 'laying':
