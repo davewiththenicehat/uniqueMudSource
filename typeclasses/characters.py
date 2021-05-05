@@ -579,19 +579,28 @@ class Character(AllObjectsMixin, CharExAndObjMixin, ClothedCharacter, GenderChar
         self.charisma.delete()
         del self.charisma
 
-    def ready(self):
-        """
-        Check if player is ready for a command that requires a ready status.
+    def ready(self, conscious_only=False):
+        """Check if player is ready for a command that requires a ready status.
         This command is automatically called in Command.defer.
         It will handle the player notification message automatically.
 
-        Usage:
-            if Character.ready():
+        Args:
+            conscious_only (bool): if True, only check if Character is conscious.
+                Default is False.
+
+        Returns:
+            is_ready (bool): True if the Character is ready. False if it is not.
+
         """
-        # Player is not ready if they are unconscious
-        if self.condition.unconscious:
-            self.msg("You can not do that while unconscious.", force=True)
+        # Player is not ready if they are unconscious or dead
+        if self.condition.dead:
+            self.msg("You can not do that while dead.", force=True)
             return False
+        if self.condition.unconscious:
+            self.msg("You can not do that while unconscious.", force_on_unconscious=True)
+            return False
+        if conscious_only:  # stop running if only testing consciousness
+            return True
         # Player is not ready if they have a status active.
         for status_type in status_functions.STATUS_TYPES:
             if self.attributes.has(status_type):

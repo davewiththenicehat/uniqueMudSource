@@ -357,17 +357,9 @@ class Command(default_cmds.MuxCommand):
         """
         # stop the command if a status requirement is not met.
         caller = self.caller
-        if self.requires_ready:
-            caller_ready = caller.ready()
-            if not caller_ready:
-                return True
-        elif self.requires_conscious:
-            if caller.condition.unconscious:
-                caller.msg("You can not do that while unconscious.", force_on_unconscious=True)
-                return True
-            elif caller.condition.dead:
-                caller.msg("You can not do that while dead.", force=True)
-                return True
+        # verify pre target requirements met.
+        if not self.requirements(basic=True):
+            return True
         # stop the command if ranks requirement are not met
         required_ranks = self.required_ranks
         if required_ranks:
@@ -382,7 +374,6 @@ class Command(default_cmds.MuxCommand):
         # it has to be manually called now
         super().parse()
         # find the name and if provided number of the target
-        caller = self.caller
         lhs = self.lhs.strip()
         args_lower = self.args.lower()
         targets = list()
@@ -414,7 +405,7 @@ class Command(default_cmds.MuxCommand):
             self.targets = targets
         else:
             target_name = lhs
-            target = self.target_search(target_name)  # if present, find target instnace
+            target = self.target_search(target_name)  # if present, find target instance
             if self.target_required:  # if a target is required and
                 if target:  # if a target was found
                     # if that target does not meet command requirements, stop the command
@@ -455,30 +446,54 @@ class Command(default_cmds.MuxCommand):
                         else:
                             caller.msg(f'You can not find {target_name}.')
                             return True
-        # check if required wielded weapon is being wielded.
-        if self.requires_wielding:
-            wielded_items = caller.wielding()
-            if not wielded_items:
-                required_item_type = self.cmd_type.replace('_', ' ')
-                caller.msg(f'You must be wielding a {required_item_type} item to {self.key}.')
-                return True
-            # look for required wielded item type among wielded items
-            for item in wielded_items:
-                if item.item_type == self.cmd_type:
-                    self.caller_weapon = item
-                    self.weapon_desc = item.key
-                    self.dmg_max = item.dmg_max
-                    if item.act_roll_max_mod:  # the item has a meaningful roll_max modifier add it
-                        self.roll_max += item.act_roll_max_mod
-                    break
-            if not self.caller_weapon:
-                required_item_type = self.cmd_type.replace('_', ' ')
-                caller.msg(f'You must be wielding a {required_item_type} item to {self.key}.')
-                return True
         # stop the command if custom command requirements are not met
         if not self.custom_req_met():
             return True
         return super().at_pre_cmd()
+
+    def requirements(self, basic=False, target=False, custom=False):
+        """Verify requirements for command are met.
+
+        Args:
+            basic (bool): If True check basic requirements. Default is False.
+                Does not require parse method call or target collection.
+            target (bool): If True verify target(s) are good. Default is False.
+                Can only be used after at_pre_cmd method call.
+            custom (bool): calls custom_req_met. Default is False
+
+        Returns:
+            met (bool): True if requirements are met.
+        """
+        caller = self.caller
+        if basic:  # check basic command requirements
+            if self.requires_ready:
+                caller_ready = caller.ready()
+                if not caller_ready:
+                    return False
+            elif self.requires_conscious:
+                if not caller.ready(conscious_only=True):
+                    return False
+            # check if required wielded weapon is being wielded.
+            if self.requires_wielding:
+                wielded_items = caller.wielding()
+                if not wielded_items:
+                    required_item_type = self.cmd_type.replace('_', ' ')
+                    caller.msg(f'You must be wielding a {required_item_type} item to {self.key}.')
+                    return False
+                # look for required wielded item type among wielded items
+                for item in wielded_items:
+                    if item.item_type == self.cmd_type:
+                        self.caller_weapon = item
+                        self.weapon_desc = item.key
+                        self.dmg_max = item.dmg_max
+                        if item.act_roll_max_mod:  # the item has a meaningful roll_max modifier add it
+                            self.roll_max += item.act_roll_max_mod
+                        break
+                if not self.caller_weapon:
+                    required_item_type = self.cmd_type.replace('_', ' ')
+                    caller.msg(f'You must be wielding a {required_item_type} item to {self.key}.')
+                    return False
+        return True
 
     def custom_req_met(self):
         """
