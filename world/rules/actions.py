@@ -60,8 +60,7 @@ def targeted_action(caller, target, log=False):
 
 
 def evade_roll(char=None, evade_mod_stat=None, log=False, unit_test=False):
-    """
-    evade roll is  a random roll between 1 and the evade's max roll.
+    """evade roll is  a random roll between 1 and the evade's max roll.
         Plus the evade's stat modifier
         Default max is 51
     evade_roll will check if the evading Character's active command is an
@@ -72,19 +71,7 @@ def evade_roll(char=None, evade_mod_stat=None, log=False, unit_test=False):
         If evade_mod_stat is in the item.evd_stats tuple
     evade_roll will display a message if the evasion command is used
 
-    Arguments:
-        char, is the character commiting the evade
-        evade_mod_stat, the stat required to evade the action
-            evade_roll was called to evade
-        log=False, if True log the variables used
-        unit_test=False, if True evade_roll will display variables to screen
-
-    Returns:
-        random int between 1 and roll max plus character's stat evade modifier
-        No lower than 5
-
-    Equation:
-        Evade Rolls:
+    Equation,
         Each attack action has a stat used to evade it.
             Physical attack usually require Agility to evade.
             Mental attacks usually require Wisdom to evade.
@@ -103,6 +90,17 @@ def evade_roll(char=None, evade_mod_stat=None, log=False, unit_test=False):
             Laying provides a 50 penalty
         If a Character is unconscious they always roll a 5 for Evade Rolls.
         An evade roll result can not be less than 5.
+
+    Args:
+        char (Character): is the character commiting the evade
+        evade_mod_stat (str): the stat required to evade the action
+        log (bool): If True log the variables used. Defaul False
+        unit_test (bool): If True evade_roll will display variables to screen. Default is False
+
+    Returns:
+        evade_rull (int): random int between 1 and roll max plus character's stat evade modifier
+            Minimum is 5
+
     """
     if not char:
         raise ValueError("world.rules.actions.evade_roll, argument 1 char required. " \

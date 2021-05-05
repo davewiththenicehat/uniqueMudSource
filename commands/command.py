@@ -1124,7 +1124,7 @@ class Command(default_cmds.MuxCommand):
                 return target_name, location_name
         return target_name, False
 
-    def evade_roll(self, evade_mod_stat='AGI', log=False, unit_test=False):
+    def evade_roll(self, evade_mod_stat=None, log=False, unit_test=False):
         """
         This was created with the intent of using it during unit testing.
         If called directly it likely will not work as you intend.
@@ -1164,7 +1164,7 @@ class Command(default_cmds.MuxCommand):
             return
         else:
             target = self.target
-        if not self.evade_mod_stat:
+        if not evade_mod_stat:
             evade_mod_stat = self.evade_mod_stat
         return actions.evade_roll(target, evade_mod_stat, log, unit_test)
 
