@@ -1902,9 +1902,33 @@ class TestCommands(UniqueMudCmdTest):
                                   f" is {cost_stat_instance.get()} when it " \
                                   f"should be {cost_stat_pre_run - cost}."
                         raise AssertionError(err_msg)
+
+                    # verify evasion commands taking cost
+                    cost_stat_instance.set(100)
+                    cost_mod_stat_inst.set(mod_stat_adj)
+                    cost_stat_pre_run = cost_stat_instance.get()
+                    # get the cost that should be removed.
+                    stat_action_cost_mod = getattr(self.char1, f"{cost_mod_stat}_action_cost_mod", 0)
+                    base_cost = COST_LEVELS[cost_level]
+                    cost = base_cost - (base_cost * stat_action_cost_mod)
+                    # Run command removing stat, where cost_mod_stat is 100
+                    arg = f"/r/d evade_roll, self, cost_level:{cost_level}, cost_stat:{stat}, cmd_type:evasion, " \
+                          "evade_msg:evasion_message, evade_mod_stat:AGI  = AGI"
+                    wnt_msg = f"You will be busy for 3 seconds.|You are no longer busy.|You try evasion_message|evade_roll returned: "
+                    cmd_result = self.call(command(), arg, wnt_msg)
+                    # verify correct ammount was taken
+                    try:
+                        self.assertEqual(cost_stat_instance, cost_stat_pre_run - cost)
+                    except AssertionError: # make the assert message meaningful
+                        err_msg = "commands.test.TestCommands.test_cost, " \
+                                  f"cost_stat_instance: {cost_stat_instance.name}" \
+                                  f" is {cost_stat_instance.get()} when it " \
+                                  f"should be {cost_stat_pre_run - cost}."
+                        raise AssertionError(err_msg)
                     # set the stat back to default max
                     cost_stat_instance.set(100)
                     cost_mod_stat_inst.set(100)
+
                     # make certain cost stat and modifier stat are still Elements
                     self.assertIsInstance(cost_stat_instance, Element)
                     self.assertIsInstance(cost_mod_stat_inst, Element)
