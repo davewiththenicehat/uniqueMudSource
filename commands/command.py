@@ -493,6 +493,9 @@ class Command(default_cmds.MuxCommand):
                     required_item_type = self.cmd_type.replace('_', ' ')
                     caller.msg(f'You must be wielding a {required_item_type} item to {self.key}.')
                     return False
+        if custom:
+            if not self.custom_req_met():
+                return False
         return True
 
     def custom_req_met(self):
