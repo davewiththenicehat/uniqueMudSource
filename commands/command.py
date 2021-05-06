@@ -149,10 +149,12 @@ class Command(default_cmds.MuxCommand):
         search_caller_only = False  # if True the command will only search the caller for targets
             Failure message is handled automatically.
         search_candidates (list): List of objects to search for the command's target.
-            Defaults to caller's location.
+            Defaults to caller.search() default.
+                The default is caller, caller's location and the contents of each.
             Over ride with Command method get_search_candidates.
                 get_search_candidates is automatically called to set search_candidates in at_pre_cmd
             Do not set in Command's at_init method.
+        self.range = []  # list of Objects. If list has objects, target's location must be in the range list.
         sl_split = (' from ', ' in ')  # Search Location split list
             A list of words to used to split the name of the object from it's location
             Locations specified must exist in caller.search()
@@ -233,7 +235,8 @@ class Command(default_cmds.MuxCommand):
             A command method intended to be a used to easily facilitate basic combat actions.
         cost(cost_level='very easy', cost_stat='END'), Calculate and remove the cost of this Command
         target_bad(target=object), returns True if object passed is not targetable by this command
-        get_search_candidates(self): Return a list of objects the command should use as search candidates.
+        get_search_candidates(): Return a list of objects the command should use as search candidates.
+        set_range(): Set self.range. Called automatically in self.at_pre_cmd
         target_search(target_name=str), Search for an instance of a target.
         split_target_name(target_name=str), accepts command target string.
             Returns the target_name and location_name
@@ -248,8 +251,7 @@ class Command(default_cmds.MuxCommand):
         Overiding to call the at_init method.
 
         """
-        if kwargs:
-            super().__init__(self, **kwargs)
+        super().__init__(**kwargs)
         self.dmg_types = None  # dictionary of damage types this command can manipulate.
         self.weapon_desc = None  # weapon description that will show up in Command.combat_action's automated messages
         self.caller_weapon = None  # instance of the caller's wielded weapon from requires_wielding
@@ -267,7 +269,8 @@ class Command(default_cmds.MuxCommand):
             # position 0 string of a class type, position 1 is a string to show on mismatch
         self.target_in_hand = False  # if True the target of the command must be in the Characters hand to complete successfully
         self.search_caller_only = False  # if True the command will only search the caller for targets
-        self.search_candidates = []  # List of objects to search for the command's target.
+        self.search_candidates = None  # List of objects to search for the command's target.
+        self.range = []  # list of Objects. If list has objects, target's location must be in the range list.
         self.caller_message_pass = None  # text to message the caller.
             # Will not call automatically, here to pass between Command functions
         self.target_message_pass = None  # text to message the target.
@@ -364,6 +367,7 @@ class Command(default_cmds.MuxCommand):
         """
         caller = self.caller
         self.search_candidates = self.get_search_candidates()
+        self.set_range()
         # stop the command if basic requirements are not met
         if not self.requirements(basic=True):
             return True
@@ -1092,6 +1096,14 @@ class Command(default_cmds.MuxCommand):
 
         """
         return None
+
+    def set_range(self):
+        """Set the range of the command.
+
+        To do this. self.range is a list. If it contains Objects the target's location must exist
+        in self.range.
+        Example, self.range = [self.caller.location]
+        """
 
     def target_search(self, target_name):
         """
