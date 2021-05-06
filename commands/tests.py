@@ -322,7 +322,7 @@ class TestCommands(UniqueMudCmdTest):
         # test a target leaving melee range
         command = developer_cmds.CmdMultiCmd
         arg = "= punch Char2, control_other Char2=out, complete_cmd_early"
-        wnt_msg = "You can no longer reach Char2\(#7\)\\."
+        wnt_msg = "Char2\(#7\) is not in range\.\nYou are no longer busy\."
         cmd_result = self.call(command(), arg)
         self.assertRegex(cmd_result, wnt_msg)
         # get Char2 back into the room.
@@ -446,9 +446,8 @@ class TestCommands(UniqueMudCmdTest):
         self.assertTrue(self.char1.is_holding(self.obj2))
         self.obj1.container = False
         arg = "= complete_cmd_early"
-        cmd_result = self.call(command(), arg, caller=self.char1)
-        wnt_msg = r"Obj2\(#5\) can not be put into obj\(#4\)\.\nError message: CmdPut: caller: #6, target: #5 container: #4\. target\.move_to returned false in Command\.deferred_action\.\r\nThis has NOT been logged\. System detects you are a developer\.\nYou are no longer busy\."
-        self.assertRegex(cmd_result, wnt_msg)
+        wnt_msg = "Obj(#4) is not a container.|You are no longer busy."
+        cmd_result = self.call(command(), arg, wnt_msg)
         self.assertTrue(self.char1.is_holding(self.obj2))
         # drop the first object
         arg = "= drop Obj"

@@ -368,6 +368,10 @@ class Command(default_cmds.MuxCommand):
         caller = self.caller
         self.set_instance_attributes()
         # stop the command if basic requirements are not met
+        if self.requires_ready:
+            caller_ready = caller.ready()
+            if not caller_ready:
+                return True
         if not self.requirements(basic=True):
             return True
         # stop the command if ranks requirement are not met
@@ -477,11 +481,7 @@ class Command(default_cmds.MuxCommand):
         """
         caller = self.caller
         if basic:  # check basic command requirements
-            if self.requires_ready:
-                caller_ready = caller.ready()
-                if not caller_ready:
-                    return False
-            elif self.requires_conscious:
+            if self.requires_conscious:
                 if not caller.ready(conscious_only=True):
                     return False
             # check if required wielded weapon is being wielded.
@@ -508,8 +508,8 @@ class Command(default_cmds.MuxCommand):
             if not self.custom_requirements():
                 return False
         if target:
-            if self.target_required:  # stop the requirement check if target is not required.
-                if self.target_bad():
+            if self.target_required:  # do not stop check if target is not required.
+                if self.target_bad(self.target):
                     return False
         return True
 
@@ -912,10 +912,6 @@ class Command(default_cmds.MuxCommand):
             add damage type messages.
 
         """
-        # stop the method if target is out of range
-        if self.target_out_of_melee():
-            return False
-
         # reference data types
         caller = self.caller
         target = self.target

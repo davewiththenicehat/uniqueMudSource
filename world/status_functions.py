@@ -114,10 +114,12 @@ def status_delay_stop(target, status_type, complete_cmd):
         if complete_cmd:
             if target.nattributes.has("deffered_command"):
                 cmd = target.ndb.deffered_command
-                cmd_successful = cmd.deferred_action()
-                # Run command completion tasks. Evasion cmds do this in actions.evade_roll
-                if cmd.cmd_type != 'evasion' and cmd_successful:
-                    cmd.def_act_comp()
+                # check all command requirements
+                if cmd.requirements(basic=True, custom=True, target=True):
+                    cmd_successful = cmd.deferred_action()  # run the action
+                    # Run command completion tasks. Evasion cmds do this in actions.evade_roll
+                    if cmd.cmd_type != 'evasion' and cmd_successful:
+                        cmd.def_act_comp()
         # remove tmp attributes order of removal matters
         delay_status_inst.remove()
         try:
