@@ -148,10 +148,10 @@ class Command(default_cmds.MuxCommand):
         target_in_hand = False  # if True the target of the command must be in the Characters hand to complete successfully
         search_caller_only = False  # if True the command will only search the caller for targets
             Failure message is handled automatically.
-        search_locations (list): List of objects to search for the command's target.
+        search_candidatess (list): List of objects to search for the command's target.
             Defaults to caller's location.
-            Over ride with Command method get_search_locations.
-                get_search_locations is automatically called to set search_locations in at_pre_cmd
+            Over ride with Command method get_search_candidatess.
+                get_search_candidatess is automatically called to set search_candidatess in at_pre_cmd
             Do not set in Command's at_init method.
         sl_split = (' from ', ' in ')  # Search Location split list
             A list of words to used to split the name of the object from it's location
@@ -233,7 +233,7 @@ class Command(default_cmds.MuxCommand):
             A command method intended to be a used to easily facilitate basic combat actions.
         cost(cost_level='very easy', cost_stat='END'), Calculate and remove the cost of this Command
         target_bad(target=object), returns True if object passed is not targetable by this command
-        get_search_locations(self): Return a list of objects the command should use as search candidates.
+        get_search_candidatess(self): Return a list of objects the command should use as search candidates.
         target_search(target_name=str), Search for an instance of a target.
         split_target_name(target_name=str), accepts command target string.
             Returns the target_name and location_name
@@ -267,7 +267,7 @@ class Command(default_cmds.MuxCommand):
             # position 0 string of a class type, position 1 is a string to show on mismatch
         self.target_in_hand = False  # if True the target of the command must be in the Characters hand to complete successfully
         self.search_caller_only = False  # if True the command will only search the caller for targets
-        self.search_locations = []  # List of objects to search for the command's target.
+        self.search_candidatess = []  # List of objects to search for the command's target.
         self.caller_message_pass = None  # text to message the caller.
             # Will not call automatically, here to pass between Command functions
         self.target_message_pass = None  # text to message the target.
@@ -363,7 +363,7 @@ class Command(default_cmds.MuxCommand):
             Behavior note: returning anything stops the exection of the command.
         """
         caller = self.caller
-        self.search_locations = self.get_search_locations()
+        self.search_candidatess = self.get_search_candidatess()
         # stop the command if basic requirements are not met
         if not self.requirements(basic=True):
             return True
@@ -438,11 +438,11 @@ class Command(default_cmds.MuxCommand):
                     else:
                         target_name, location_name = self.split_target_name(target_name)
                         if location_name:  # caller provided a search location
-                            # find a reference of the search_location
-                            search_location = self.target_search(location_name)
-                            if search_location:  # useable location provided
+                            # find a reference of the search_candidates
+                            search_candidates = self.target_search(location_name)
+                            if search_candidates:  # useable location provided
                                 msg = f"You could not find {target_name} " \
-                                      f"in {search_location.get_display_name(caller)}."
+                                      f"in {search_candidates.get_display_name(caller)}."
                                 caller.msg(msg)
                                 return True
                             else:  # caller did not provide a useable location
@@ -1080,15 +1080,26 @@ class Command(default_cmds.MuxCommand):
                 caller.msg(stop_msg)
                 return True
 
-    def get_search_locations(self):
+    def get_search_candidatess(self):
         """Return a list of objects the command should use as search candidates.
 
         When looking for the command's target.
 
         Returns:
-            search_locations (list): a list of Objects to search.
+            search_candidatess (list): a list of Objects to search.
+                Default is caller, caller's location and contents of each.
+
         """
-        return [self.caller.location]
+        caller = self.caller
+        location = caller.location
+        candidates = caller.contents
+        if location:
+            candidates = candidates + [location] + location.contents
+        else:
+            # normally we don't need this since we are
+            # included in location.contents
+            candidates.append(self)
+        return candidates
 
     def target_search(self, target_name):
         """
@@ -1129,11 +1140,11 @@ class Command(default_cmds.MuxCommand):
             target_name, location_name = self.split_target_name(target_name)
             if target_name and location_name:
                 standard_search = False  # a stanard search is not needed
-                # find a reference of the search_location
-                search_location = self.target_search(location_name)
+                # find a reference of the search candidates
+                search_candidates = self.target_search(location_name)
                 # search for the target
-                if search_location:  # caller provided useable search location
-                    target = caller.search(target_name, quiet=True, candidates=search_location.contents)
+                if search_candidates:  # caller provided useable search location
+                    target = caller.search(target_name, quiet=True, candidates=search_candidates.contents)
             if standard_search:  # a standard search is required.
                 target = caller.search(target_name, quiet=True)
         if target:  # a target(s) was found
@@ -1156,7 +1167,7 @@ class Command(default_cmds.MuxCommand):
                 # separate target and location names
                 target_name, location_name = target_name.split(split_text, 1)
                 location_name.replace(split_text, "", 1)
-                # find a reference of the search_location
+                # find a reference of the search_candidates
                 return target_name, location_name
         return target_name, False
 
