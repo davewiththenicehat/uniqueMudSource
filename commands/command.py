@@ -1086,20 +1086,12 @@ class Command(default_cmds.MuxCommand):
         When looking for the command's target.
 
         Returns:
-            search_candidates (list): a list of Objects to search.
-                Default is caller, caller's location and contents of each.
+            search_candidates (list or None): a list of Objects to search.
+                Default None to use caller.search default candidates.
+                    They are the caller, caller location and the contents of each.
 
         """
-        caller = self.caller
-        location = caller.location
-        candidates = caller.contents
-        if location:
-            candidates = candidates + [location] + location.contents
-        else:
-            # normally we don't need this since we are
-            # included in location.contents
-            candidates.append(self)
-        return candidates
+        return None
 
     def target_search(self, target_name):
         """
@@ -1116,6 +1108,7 @@ class Command(default_cmds.MuxCommand):
             object instance of the target if it was found.
         """
         caller = self.caller
+        search_candidates = self.search_candidates
         target = None
         target_name_starts_with_num = re.match(r"^(\d+)\s+(.+)", target_name)
         # the arguments of the command starts with a number
@@ -1146,7 +1139,7 @@ class Command(default_cmds.MuxCommand):
                 if search_candidates:  # caller provided useable search location
                     target = caller.search(target_name, quiet=True, candidates=search_candidates.contents)
             if standard_search:  # a standard search is required.
-                target = caller.search(target_name, quiet=True)
+                target = caller.search(target_name, quiet=True, candidates=search_candidates)
         if target:  # a target(s) was found
             target = target[target_number]  # get the correct target number
             return target
