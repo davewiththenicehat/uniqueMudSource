@@ -508,8 +508,9 @@ class Command(default_cmds.MuxCommand):
             if not self.custom_requirements():
                 return False
         if target:
-            if not self.target_required:  # stop the requirement check if target is not required.
-                return True
+            if self.target_required:  # stop the requirement check if target is not required.
+                if self.target_bad():
+                    return False
         return True
 
     def custom_requirements(self):
