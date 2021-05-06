@@ -295,13 +295,15 @@ class Command(default_cmds.MuxCommand):
         self.at_init()
 
     def at_init(self):
-        """
-        Called when the Command object is initialized.
-        Created to bulk set local none class attributes.
-        This allows for adjusting attributes on the object instances and not having those changes
-        shared among all instances of the Command.
+        """Called when the Command object is initialized.
         """
         pass
+
+    def set_instance_attributes(self):
+        """Called automatically at the start of at_pre_cmd.
+
+        Here to easily set command instance attributes.
+        """
 
     def parse(self):
         """
@@ -366,8 +368,7 @@ class Command(default_cmds.MuxCommand):
             Behavior note: returning anything stops the exection of the command.
         """
         caller = self.caller
-        self.search_candidates = self.get_search_candidates()
-        self.set_range()
+        self.set_instance_attributes()
         # stop the command if basic requirements are not met
         if not self.requirements(basic=True):
             return True
@@ -1083,27 +1084,6 @@ class Command(default_cmds.MuxCommand):
                 stop_msg += f"Try getting it with {get_suggestion}."
                 caller.msg(stop_msg)
                 return True
-
-    def get_search_candidates(self):
-        """Return a list of objects the command should use as search candidates.
-
-        When looking for the command's target.
-
-        Returns:
-            search_candidates (list or None): a list of Objects to search.
-                Default None to use caller.search default candidates.
-                    They are the caller, caller location and the contents of each.
-
-        """
-        return None
-
-    def set_range(self):
-        """Set the range of the command.
-
-        To do this. self.range is a list. If it contains Objects the target's location must exist
-        in self.range.
-        Example, self.range = [self.caller.location]
-        """
 
     def target_search(self, target_name):
         """

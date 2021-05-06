@@ -35,12 +35,10 @@ class UnarmedCommand(Command):
 
     help_category = "unarmed"
 
-    def at_init(self):
-        """
-        Called when the Command object is initialized.
-        Created to bulk set local none class attributes.
-        This allows for adjusting attributes on the object instances and not having those changes
-        shared among all instances of the Command.
+    def set_instance_attributes(self):
+        """Called automatically at the start of at_pre_cmd.
+
+        Here to easily set command instance attributes.
         """
         self.dmg_types = {'BLG': 0}  # dictionary of damage types this command can manipulate.
         self.unarmed_str_mod = 0  # half of the unarmed command caller's strength modifier
@@ -82,14 +80,12 @@ class CmdPunch(UnarmedCommand):
 
     key = "punch"
 
-    def at_init(self):
+    def set_instance_attributes(self):
+        """Called automatically at the start of at_pre_cmd.
+
+        Here to easily set command instance attributes.
         """
-        Called when the Command object is initialized.
-        Created to bulk set local none class attributes.
-        This allows for adjusting attributes on the object instances and not having those changes
-        shared among all instances of the Command.
-        """
-        super().at_init()
+        super().set_instance_attributes()
         self.dmg_max = 2  # the maximum damage this command can roll
         self.pres_tense_desc = "punches"  # a present tense description for the action of this command. IE: "kicks"
 
@@ -132,14 +128,12 @@ class CmdKick(UnarmedCommand):
 
     key = "kick"
 
-    def at_init(self):
+    def set_instance_attributes(self):
+        """Called automatically at the start of at_pre_cmd.
+
+        Here to easily set command instance attributes.
         """
-        Called when the Command object is initialized.
-        Created to bulk set local none class attributes.
-        This allows for adjusting attributes on the object instances and not having those changes
-        shared among all instances of the Command.
-        """
-        super().at_init()
+        super().set_instance_attributes()
         self.dmg_max = 4  # the maximum damage this command can roll
         self.defer_time = 5  # time is seconds for the command to wait before running action of command
         self.pres_tense_desc = "kicks"  # a present tense description for the action of this command. IE: "kicks"

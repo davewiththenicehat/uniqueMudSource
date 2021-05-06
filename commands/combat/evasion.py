@@ -35,24 +35,16 @@ class EvasionCommand(Command):
 
     help_category = 'evasion'
 
-    def at_init(self):
-        """
-        Called when the Command object is initialized.
-        Created to bulk set local none class attributes.
-        This allows for adjusting attributes on the object instances and not having those changes
-        shared among all instances of the Command.
+    def set_instance_attributes(self):
+        """Called automatically at the start of at_pre_cmd.
+
+        Here to easily set command instance attributes.
         """
         self.cmd_type = 'evasion'  # Should be a string of the cmd type. IE: 'evasion' for an evasion cmd
         self.cost_level = 'very easy' #  level this action should cost. Acceptable levels: 'very easy', 'easy', 'moderate' 'hard', 'daunting' or a number
         self.required_ranks = 1  # required ranks in the commands skill_name for this command to work.
-
-    def at_pre_cmd(self):
-        """
-        Make a message to display when evasion is successfully triggered by an oponent's attack.
-        Store is as Command.unarmed_str_mod.
-        """
+        self.defer_time = 10  # time is seconds for the command to wait before running action of command
         self.evade_msg = f'to {self.key} the incoming attack.'
-        return super().at_pre_cmd()
 
 
 class CmdDodge(EvasionCommand):
@@ -72,16 +64,6 @@ class CmdDodge(EvasionCommand):
     """
 
     key = "dodge"
-
-    def at_init(self):
-        """
-        Called when the Command object is initialized.
-        Created to bulk set local none class attributes.
-        This allows for adjusting attributes on the object instances and not having those changes
-        shared among all instances of the Command.
-        """
-        super().at_init()  # uncomment when overridden
-        self.defer_time = 10  # time is seconds for the command to wait before running action of command
 
     def start_message(self):
         """

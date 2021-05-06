@@ -62,12 +62,10 @@ class CmdStatus(Command):
     key = "stat"
     aliases = ["statistics", "stats"]
 
-    def at_init(self):
-        """
-        Called when the Command object is initialized.
-        Created to bulk set local none class attributes.
-        This allows for adjusting attributes on the object instances and not having those changes
-        shared among all instances of the Command.
+    def set_instance_attributes(self):
+        """Called automatically at the start of at_pre_cmd.
+
+        Here to easily set command instance attributes.
         """
         self.requires_ready = False  # if true this command requires the ready status before it can do anything. deferal commands still require ready to defer
         self.requires_conscious = False  # if true this command requires the caller to be conscious
@@ -131,12 +129,10 @@ class CmdCondition(Command):
     key = "condition"
     aliases = ["cond"]
 
-    def at_init(self):
-        """
-        Called when the Command object is initialized.
-        Created to bulk set local none class attributes.
-        This allows for adjusting attributes on the object instances and not having those changes
-        shared among all instances of the Command.
+    def set_instance_attributes(self):
+        """Called automatically at the start of at_pre_cmd.
+
+        Here to easily set command instance attributes.
         """
         self.requires_ready = False  # if true this command requires the ready status before it can do anything. deferal commands still require ready to defer
         self.requires_conscious = False  # if true this command requires the caller to be conscious
@@ -231,12 +227,10 @@ class CmdLook(EvCmdLook, Command):
     locks = "cmd:all()"
     arg_regex = r"\s|$"
 
-    def at_init(self):
-        """
-        Called when the Command object is initialized.
-        Created to bulk set local none class attributes.
-        This allows for adjusting attributes on the object instances and not having those changes
-        shared among all instances of the Command.
+    def set_instance_attributes(self):
+        """Called automatically at the start of at_pre_cmd.
+
+        Here to easily set command instance attributes.
         """
         self.requires_ready = False  # if true this command requires the ready status before it can do anything. deferal commands still require ready to defer
 
@@ -476,12 +470,10 @@ class CmdSay(Command):
     locks = "cmd:all()"
     rhs_split = ('=', '"')
 
-    def at_init(self):
-        """
-        Called when the Command object is initialized.
-        Created to bulk set local none class attributes.
-        This allows for adjusting attributes on the object instances and not having those changes
-        shared among all instances of the Command.
+    def set_instance_attributes(self):
+        """Called automatically at the start of at_pre_cmd.
+
+        Here to easily set command instance attributes.
         """
         self.requires_ready = False  # if true this command requires the ready status before it can do anything. deferal commands still require ready to defer
 
@@ -546,12 +538,10 @@ class CmdWhisper(Command):
     locks = "cmd:all()"
     rhs_split = ('=', '"')
 
-    def at_init(self):
-        """
-        Called when the Command object is initialized.
-        Created to bulk set local none class attributes.
-        This allows for adjusting attributes on the object instances and not having those changes
-        shared among all instances of the Command.
+    def set_instance_attributes(self):
+        """Called automatically at the start of at_pre_cmd.
+
+        Here to easily set command instance attributes.
         """
         self.target_required = True  # if True and the command has no target, Command.func will stop execution and message the player
 
@@ -617,12 +607,10 @@ class CmdDrop(Command):
     locks = "cmd:all()"
     arg_regex = r"\s|$"
 
-    def at_init(self):
-        """
-        Called when the Command object is initialized.
-        Created to bulk set local none class attributes.
-        This allows for adjusting attributes on the object instances and not having those changes
-        shared among all instances of the Command.
+    def set_instance_attributes(self):
+        """Called automatically at the start of at_pre_cmd.
+
+        Here to easily set command instance attributes.
         """
         self.target_required = True  # if True and the command has no target, Command.func will stop execution and message the player
         self.search_caller_only = True  # if True the command will only search the caller for targets
@@ -674,12 +662,10 @@ class CmdGet(Command):
     locks = "cmd:all()"
     arg_regex = r"\s|$"
 
-    def at_init(self):
-        """
-        Called when the Command object is initialized.
-        Created to bulk set local none class attributes.
-        This allows for adjusting attributes on the object instances and not having those changes
-        shared among all instances of the Command.
+    def set_instance_attributes(self):
+        """Called automatically at the start of at_pre_cmd.
+
+        Here to easily set command instance attributes.
         """
         self.defer_time = 1  # time is seconds for the command to wait before running action of command
         self.target_required = True  # if True and the command has no target, Command.func will stop execution and message the player
@@ -807,12 +793,10 @@ class CmdPut(Command):
     arg_regex = r"\s|$"
     rhs_split = ('=', ' in ')
 
-    def at_init(self):
-        """
-        Called when the Command object is initialized.
-        Created to bulk set local none class attributes.
-        This allows for adjusting attributes on the object instances and not having those changes
-        shared among all instances of the Command.
+    def set_instance_attributes(self):
+        """Called automatically at the start of at_pre_cmd.
+
+        Here to easily set command instance attributes.
         """
         self.defer_time = 1  # time is seconds for the command to wait before running action of command
         self.target_required = True  # if True and the command has no target, Command.func will stop execution and message the player
@@ -928,12 +912,10 @@ class CmdInventory(Command):
     locks = "cmd:all()"
     arg_regex = r"$"
 
-    def at_init(self):
-        """
-        Called when the Command object is initialized.
-        Created to bulk set local none class attributes.
-        This allows for adjusting attributes on the object instances and not having those changes
-        shared among all instances of the Command.
+    def set_instance_attributes(self):
+        """Called automatically at the start of at_pre_cmd.
+
+        Here to easily set command instance attributes.
         """
         self.defer_time = 1  # time is seconds for the command to wait before running action of command
 
@@ -1016,12 +998,10 @@ class CmdSit(Command):
     locks = "cmd:all()"
     arg_regex = r"\s|$"
 
-    def at_init(self):
-        """
-        Called when the Command object is initialized.
-        Created to bulk set local none class attributes.
-        This allows for adjusting attributes on the object instances and not having those changes
-        shared among all instances of the Command.
+    def set_instance_attributes(self):
+        """Called automatically at the start of at_pre_cmd.
+
+        Here to easily set command instance attributes.
         """
         self.defer_time = 1  # time is seconds for the command to wait before running action of command
 
@@ -1137,12 +1117,10 @@ class CmdLay(Command):
     locks = "cmd:all()"
     arg_regex = r"\s|$"
 
-    def at_init(self):
-        """
-        Called when the Command object is initialized.
-        Created to bulk set local none class attributes.
-        This allows for adjusting attributes on the object instances and not having those changes
-        shared among all instances of the Command.
+    def set_instance_attributes(self):
+        """Called automatically at the start of at_pre_cmd.
+
+        Here to easily set command instance attributes.
         """
         self.defer_time = 1  # time is seconds for the command to wait before running action of command
 
