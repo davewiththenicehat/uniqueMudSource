@@ -128,7 +128,7 @@ class Command(default_cmds.MuxCommand):
             If a command requires a wielded item. item.act_roll_max_mod is added to Command.roll_max
                 item.act_roll_max_mod can be a negative number.
         dmg_max = 4  # the maximum damage this command can roll
-        self.cmd_type = ''  # string of that command type. IE: 'evasion' for an evasion cmd
+        cmd_type = ''  # string of that command type. IE: 'evasion' for an evasion cmd
         begins_to_or_at = False  # becomes string "to" or "at" if the commands arguments starts with "to " or "at "
             collected in Command.parse
         target = None  # collected in Command.at_pre_cmd if the command has a target
@@ -451,15 +451,16 @@ class Command(default_cmds.MuxCommand):
             return True
         return super().at_pre_cmd()
 
-    def requirements(self, basic=False, target=False, custom=False):
+    def requirements(self, basic=False, custom=False, target=False):
         """Verify requirements for command are met.
 
         Args:
             basic (bool): If True check basic requirements. Default is False.
                 Does not require parse method call or target collection.
+            custom (bool): calls custom_requirements. Default is False
+                Should only be used after at_pre_cmd method call.
             target (bool): If True verify target(s) are good. Default is False.
                 Can only be used after at_pre_cmd method call.
-            custom (bool): calls custom_requirements. Default is False
 
         Returns:
             met (bool): True if requirements are met.
@@ -496,6 +497,9 @@ class Command(default_cmds.MuxCommand):
         if custom:
             if not self.custom_requirements():
                 return False
+        if target:
+            if not self.target_required:  # stop the requirement check if target is not required.
+                return True
         return True
 
     def custom_requirements(self):
