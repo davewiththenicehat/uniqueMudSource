@@ -128,7 +128,7 @@ class Command(default_cmds.MuxCommand):
             If a command requires a wielded item. item.act_roll_max_mod is added to Command.roll_max
                 item.act_roll_max_mod can be a negative number.
         dmg_max = 4  # the maximum damage this command can roll
-        cmd_type = False  # Should be a string of the cmd type. IE: 'evasion' for an evasion cmd
+        self.cmd_type = ''  # string of that command type. IE: 'evasion' for an evasion cmd
         begins_to_or_at = False  # becomes string "to" or "at" if the commands arguments starts with "to " or "at "
             collected in Command.parse
         target = None  # collected in Command.at_pre_cmd if the command has a target
@@ -256,7 +256,7 @@ class Command(default_cmds.MuxCommand):
         self.dmg_mod_stat = 'STR'  # the stat that will modifier damage this command manipulates
         self.target_required = False  # if True the command will stop without a target
         self.can_not_target_self = False  # if True this command will end with a message if the Character targets themself
-        self.cmd_type = False  # Should be a string of the cmd type. IE: 'evasion' for an evasion cmd
+        self.cmd_type = ''  # string of that command type. IE: 'evasion' for an evasion cmd
         self.target_inherits_from = False  # a tuple
             # position 0 string of a class type, position 1 is a string to show on mismatch
         self.target_in_hand = False  # if True the target of the command must be in the Characters hand to complete successfully
