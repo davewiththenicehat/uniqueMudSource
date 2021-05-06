@@ -28,12 +28,10 @@ class OneHandedCommand(Command):
 
     help_category = "one handed"
 
-    def at_init(self):
-        """
-        Called when the Command object is initialized.
-        Created to bulk set local none class attributes.
-        This allows for adjusting attributes on the object instances and not having those changes
-        shared among all instances of the Command.
+    def set_instance_attributes(self):
+        """Called automatically at the start of at_pre_cmd.
+
+        Here to easily set command instance attributes.
         """
         self.dmg_max = 1  # the maximum damage this command can roll
         self.target_required = True  # if True and the command has no target, Command.func will stop execution and message the player
@@ -42,6 +40,7 @@ class OneHandedCommand(Command):
         self.requires_wielding = True  # require a wielded item type for command to work.
         self.cost_level = 'easy' #  level this action should cost. Acceptable levels: 'very easy', 'easy', 'moderate' 'hard', 'daunting' or a number
         self.required_ranks = 1  # required ranks in the commands skill_name for this command to work.
+        self.range = [self.caller.location]  # caller and target must be in the same room.
 
 
 class CmdStab(OneHandedCommand):

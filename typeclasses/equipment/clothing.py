@@ -455,12 +455,10 @@ class ClothingCommand(Command):
     """A command class for clothing commands"""
     help_category = "clothing"
 
-    def at_init(self):
-        """
-        Called when the Command object is initialized.
-        Created to bulk set local none class attributes.
-        This allows for adjusting attributes on the object instances and not having those changes
-        shared among all instances of the Command.
+    def set_instance_attributes(self):
+        """Called automatically at the start of at_pre_cmd.
+
+        Here to easily set command instance attributes.
         """
         self.defer_time = 1  # time is seconds for the command to wait before running action of command
         self.target_required = True  # if True and the command has no target, Command.func will stop execution and message the player

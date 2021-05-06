@@ -233,12 +233,10 @@ class CmdWield(Command):
     key = "wield"
     aliases = ["equip", ]
 
-    def at_init(self):
-        """
-        Called when the Command object is initialized.
-        Created to bulk set local none class attributes.
-        This allows for adjusting attributes on the object instances and not having those changes
-        shared among all instances of the Command.
+    def set_instance_attributes(self):
+        """Called automatically at the start of at_pre_cmd.
+
+        Here to easily set command instance attributes.
         """
         self.target_required = True  # if True and the command has no target, Command.func will stop execution and message the player
         self.can_not_target_self = True  # if True this command will end with a message if the Character targets themself
@@ -288,12 +286,10 @@ class CmdUnwield(Command):
     key = "unwield"
     aliases = ["unequip",]
 
-    def at_init(self):
-        """
-        Called when the Command object is initialized.
-        Created to bulk set local none class attributes.
-        This allows for adjusting attributes on the object instances and not having those changes
-        shared among all instances of the Command.
+    def set_instance_attributes(self):
+        """Called automatically at the start of at_pre_cmd.
+
+        Here to easily set command instance attributes.
         """
         self.target_required = True  # if True and the command has no target, Command.func will stop execution and message the player
         self.can_not_target_self = True  # if True this command will end with a message if the Character targets themself

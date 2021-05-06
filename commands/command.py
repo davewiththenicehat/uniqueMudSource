@@ -154,7 +154,7 @@ class Command(default_cmds.MuxCommand):
             Over ride with Command method get_search_candidates.
                 get_search_candidates is automatically called to set search_candidates in at_pre_cmd
             Do not set in Command's at_init method.
-        self.range = []  # list of Objects. If list has objects, target's location must be in the range list.
+        range (list): list of Objects. If list has objects, target's location must be in the range list.
         sl_split = (' from ', ' in ')  # Search Location split list
             A list of words to used to split the name of the object from it's location
             Locations specified must exist in caller.search()
@@ -235,8 +235,6 @@ class Command(default_cmds.MuxCommand):
             A command method intended to be a used to easily facilitate basic combat actions.
         cost(cost_level='very easy', cost_stat='END'), Calculate and remove the cost of this Command
         target_bad(target=object), returns True if object passed is not targetable by this command
-        get_search_candidates(): Return a list of objects the command should use as search candidates.
-        set_range(): Set self.range. Called automatically in self.at_pre_cmd
         target_search(target_name=str), Search for an instance of a target.
         split_target_name(target_name=str), accepts command target string.
             Returns the target_name and location_name
@@ -1083,6 +1081,10 @@ class Command(default_cmds.MuxCommand):
                 get_suggestion = highlighter(get_cmd, click_cmd=get_cmd)
                 stop_msg += f"Try getting it with {get_suggestion}."
                 caller.msg(stop_msg)
+                return True
+        if self.range:  # check that target is in range
+            if not target.location in self.range:
+                caller.emote('/Target is not in range.', target)
                 return True
 
     def target_search(self, target_name):
