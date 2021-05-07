@@ -2413,18 +2413,18 @@ class TestCommands(UniqueMudCmdTest):
     def test_gain_exp(self):
         # punch command
         command = developer_cmds.CmdCmdFuncTest
-        end_time = f"{datetime.now() + timedelta(seconds=3.01)}".replace(':', '_')
+        end_time = f"{datetime.now() + timedelta(seconds=3.1)}".replace(':', '_')
         arg = f"/r gain_exp, char2, cmd_type:unarmed, end_time:{end_time}, skill_name:punch"
-        wnt_msg = "gain_exp returned: 3.009"
+        wnt_msg = "gain_exp returned: 3.0"
         self.call(command(), arg, wnt_msg)
         self.assertTrue(self.char1.skills.unarmed.punch_exp > 3)
         self.assertTrue(self.char1.skills.unarmed.punch_exp < 3.5)
         self.char1.skills.unarmed.punch_exp = 0
         # dodge command
         command = developer_cmds.CmdCmdFuncTest
-        end_time = f"{datetime.now() + timedelta(seconds=3.01)}".replace(':', '_')
+        end_time = f"{datetime.now() + timedelta(seconds=3.1)}".replace(':', '_')
         arg = f"/r gain_exp, char2, cmd_type:evasion, end_time:{end_time}, skill_name:dodge"
-        wnt_msg = "gain_exp returned: 3.009"
+        wnt_msg = "gain_exp returned: 3.0"
         self.call(command(), arg, wnt_msg)
         self.assertTrue(self.char1.skills.evasion.dodge_exp > 3)
         self.assertTrue(self.char1.skills.evasion.dodge_exp < 3.5)
@@ -2452,12 +2452,12 @@ class TestCommands(UniqueMudCmdTest):
         command = developer_cmds.CmdCmdFuncTest
         self.char1.skills.unarmed.punch_exp = 599
         self.char1.skills.unarmed.punch_msg = True
-        end_time = f"{datetime.now() + timedelta(seconds=3.01)}".replace(':', '_')
+        end_time = f"{datetime.now() + timedelta(seconds=3.1)}".replace(':', '_')
         arg = f"/r gain_exp, char2, cmd_type:unarmed, end_time:{end_time}, skill_name:punch"
         wnt_msg = "You have enough experience with punch to learn rank 2."
         self.call(command(), arg, wnt_msg)
             # should not receive a message after the first one this rank.
-        end_time = f"{datetime.now() + timedelta(seconds=3.01)}".replace(':', '_')
+        end_time = f"{datetime.now() + timedelta(seconds=3.1)}".replace(':', '_')
         arg = f"/r gain_exp, char2, cmd_type:unarmed, end_time:{end_time}, skill_name:punch"
-        wnt_msg = "gain_exp returned: 3.00"
+        wnt_msg = "gain_exp returned: 3.0"
         self.call(command(), arg, wnt_msg)

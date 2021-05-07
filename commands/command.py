@@ -209,7 +209,8 @@ class Command(default_cmds.MuxCommand):
             1: 'very easy', 2: 'easy', 3: 'moderate', 4: 'hard', 5: 'daunting'
             difficulty rules in world.rules.skills
         skill_name = self.key  # the skill name this command uses for rank modification
-        start_time = datetime.datetime.now()  # time the command starts
+        start_time = datetime.now()  # time the command starts
+            Called at the end of at_pre_cmd
         end_time = False  # used to manually override the end time.
             intended for unit testing.
 
@@ -288,7 +289,7 @@ class Command(default_cmds.MuxCommand):
         self.comp_diff = 2  # How difficult the command is to complete
         self.skill_name = self.key  # the skill name this command uses of rank modification
         self.sl_split = (' from ', ' in ')  # list of words to split names from locations in commands
-        self.start_time = datetime.now()  # time the command starts
+        self.start_time = None  # time the command starts
         self.end_time = False  # used to manually override the end time.
         self.at_init()
 
@@ -463,6 +464,7 @@ class Command(default_cmds.MuxCommand):
         # stop the command if custom command requirements are not met
         if not self.custom_requirements():
             return True
+        self.start_time = datetime.now()  # time the command starts
         return super().at_pre_cmd()
 
     def requirements(self, basic=False, custom=False, target=False):
