@@ -6,7 +6,7 @@ Commands describe the input the account can do to the game.
 """
 
 import re
-from datetime import datetime
+import time
 
 from evennia import default_cmds
 from world import status_functions
@@ -209,7 +209,7 @@ class Command(default_cmds.MuxCommand):
             1: 'very easy', 2: 'easy', 3: 'moderate', 4: 'hard', 5: 'daunting'
             difficulty rules in world.rules.skills
         skill_name = self.key  # the skill name this command uses for rank modification
-        start_time = datetime.now()  # time the command starts
+        start_time = time.time()  # time the command starts
             Called at the end of at_pre_cmd
         end_time = False  # used to manually override the end time.
             intended for unit testing.
@@ -464,7 +464,7 @@ class Command(default_cmds.MuxCommand):
         # stop the command if custom command requirements are not met
         if not self.custom_requirements():
             return True
-        self.start_time = datetime.now()  # time the command starts
+        self.start_time = time.time()  # time the command starts
         return super().at_pre_cmd()
 
     def requirements(self, basic=False, custom=False, target=False):
@@ -1330,12 +1330,11 @@ class Command(default_cmds.MuxCommand):
         start_time = self.start_time  # time the command starts
         caller = self.caller  # Object that called the command
         skill_set_name = self.cmd_type  # Should be a string of the cmd type.
-        end_time = self.end_time if self.end_time else datetime.now()
+        end_time = self.end_time if self.end_time else time.time()
         # if end_time is a string, it was received from unit testing.
         # convert it into a datatime object
-        if isinstance(end_time, str) and '_' in end_time:
-            end_time = end_time.replace('_', ':')
-            end_time = datetime.strptime(end_time, '%Y-%m-%d %H:%M:%S.%f')
+        if isinstance(end_time, str):
+            end_time = float(end_time)
         # get the skill set instance than the exp value for this command
         skill_set = getattr(caller.skills, skill_set_name, False)
         if not skill_set:
@@ -1343,11 +1342,12 @@ class Command(default_cmds.MuxCommand):
         if skill_name+"_exp" not in skill_set:
             return 0
         # calculate the experience gained (time the command ran)
-        act_time = end_time - start_time
-        exp_gained = act_time.total_seconds()
-        current_exp = skill_set[skill_name+"_exp"]
+        #act_time = end_time - start_time
+        #exp_gained = act_time.total_seconds()
+        #current_exp = skill_set[skill_name+"_exp"]
         # record the experience gained
-        skill_set[skill_name+"_exp"] = current_exp + exp_gained
+        exp_gained = end_time - start_time
+        skill_set[skill_name+"_exp"] += exp_gained
         # message caller if new rank is possible
         exp_required = skills.rank_requirement(skill_set[skill_name]+1, self.learn_diff)
         if exp_required <= skill_set[skill_name+"_exp"] and skill_set[skill_name+"_msg"]:
