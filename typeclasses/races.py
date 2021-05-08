@@ -25,8 +25,11 @@ class Humanoid(Character):
     def at_object_creation(self):
         # all humanoid objects should have access to these basic attacks
         self.skills.unarmed.punch = 1
+        self.skills.unarmed.punch_msg = True
         self.skills.unarmed.kick = 1
+        self.skills.unarmed.kick_msg = True
         self.skills.evasion.dodge = 1
+        self.skills.unarmed.dodge = True
         return super().at_object_creation()
 
 

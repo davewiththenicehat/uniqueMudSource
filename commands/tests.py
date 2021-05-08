@@ -2451,7 +2451,6 @@ class TestCommands(UniqueMudCmdTest):
         # test message on rank available.
         command = developer_cmds.CmdCmdFuncTest
         self.char1.skills.unarmed.punch_exp = 599
-        self.char1.skills.unarmed.punch_msg = True
         end_time = time.time() + 3.1
         arg = f"/r gain_exp, char2, cmd_type:unarmed, end_time:{end_time}, skill_name:punch"
         wnt_msg = "You have enough experience with punch to learn rank 2."

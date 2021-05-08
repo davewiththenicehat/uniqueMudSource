@@ -218,12 +218,14 @@ class TestObjects(CommandTest):
 
         # test Character skills
         from world.rules import skills
-        for skill_set in skills.SKILLS.keys():
-            skill_set_inst = getattr(char.skills, skill_set)
-            for skill in skill_set_inst.el_list:
-                skill_inst = getattr(skill_set_inst, skill)
+        for skill_set_name, skill_names in skills.SKILLS.items():
+            skill_set_inst = getattr(char.skills, skill_set_name)
+            for skill_name in skill_names:
+                if skill_name == 'skill_points':
+                    continue
+                skill_inst = skill_set_inst[skill_name]
                 # humanoids have 1 rank in punch, kick and dodge
-                if skill in ('punch', 'kick', 'dodge'):
+                if skill_name in ('punch', 'kick', 'dodge'):
                     self.assertEqual(skill_inst, 1)
                 else:
                     self.assertEqual(skill_inst, 0)

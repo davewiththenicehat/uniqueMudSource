@@ -1332,7 +1332,7 @@ class Command(default_cmds.MuxCommand):
         skill_set_name = self.cmd_type  # Should be a string of the cmd type.
         end_time = self.end_time if self.end_time else time.time()
         # if end_time is a string, it was received from unit testing.
-        # convert it into a datatime object
+        # convert it to a float
         if isinstance(end_time, str):
             end_time = float(end_time)
         # get the skill set instance than the exp value for this command
@@ -1342,9 +1342,6 @@ class Command(default_cmds.MuxCommand):
         if skill_name+"_exp" not in skill_set:
             return 0
         # calculate the experience gained (time the command ran)
-        #act_time = end_time - start_time
-        #exp_gained = act_time.total_seconds()
-        #current_exp = skill_set[skill_name+"_exp"]
         # record the experience gained
         exp_gained = end_time - start_time
         skill_set[skill_name+"_exp"] += exp_gained
@@ -1352,5 +1349,5 @@ class Command(default_cmds.MuxCommand):
         exp_required = skills.rank_requirement(skill_set[skill_name]+1, self.learn_diff)
         if exp_required <= skill_set[skill_name+"_exp"] and skill_set[skill_name+"_msg"]:
             caller.msg(f'You have enough experience with {skill_name} to learn rank {skill_set[skill_name]+1}.')
-            skill_set[skill_name+"_msg"] = False
+            skill_set[skill_name+"_msg"] = 0
         return exp_gained
