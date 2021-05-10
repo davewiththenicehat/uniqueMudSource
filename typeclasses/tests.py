@@ -322,6 +322,15 @@ class TestObjects(CommandTest):
         del self.sword.evd_stats
         self.assertFalse(self.sword.attributes.has('evd_stats'))
 
+    def test_learning(self):
+        self.assertFalse(self.char1.learning)
+        self.char1.learning = True
+        self.assertTrue(self.char1.learning)
+        del self.char1.learning
+        self.assertFalse(self.char1.learning)
+        self.char1.learning = "Truthy"
+        self.assertEqual(self.char1.learning, True)
+
 
 # Testing of emoting / sdesc / recog system
 

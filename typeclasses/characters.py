@@ -278,6 +278,23 @@ class Character(AllObjectsMixin, CharExAndObjMixin, ClothedCharacter, GenderChar
                 set_inst.verify()
         return self._skills
 
+
+    @property
+    def learning(self):
+        """Bool attribute to track if a Character is learning a skill."""
+        return self.attributes.get('learning', False)
+
+    @learning.setter
+    def learning(self, value):
+        if value:
+            self.attributes.add('learning', True)
+        else:
+            self.attributes.remove('learning')
+
+    @learning.deleter
+    def learning(self):
+        self.attributes.remove('learning')
+
     # define objects's condition
     @property
     def condition(self):
