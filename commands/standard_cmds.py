@@ -1,3 +1,5 @@
+from datetime import timedelta
+
 from evennia.utils import evtable, evmore
 from evennia.utils.utils import fill, dedent, inherits_from, make_iter
 from evennia import default_cmds
@@ -72,6 +74,7 @@ class CmdLearn(Command):
     Usage:
       learn, display skills your Character can currently learn.
       learn [skill name], increase a skill rank.
+      learn [skill name]?, Show information about upgrading a skill.
     """
     key = 'learn'
 
@@ -84,16 +87,20 @@ class CmdLearn(Command):
         self.defer_time = 30  # time is seconds for the command to wait before running
 
     def increaseable_ranks_msg(self, increaseable_skills):
-        """Show available skill increase."""
-        msg = None
+        """Message caller available skill increase."""
+        caller = self.caller
+        msg = ""
         for skill_name in increaseable_skills:
             cmd_suggestion = highlighter("learn "+skill_name,
                                          click_cmd=f"learn {skill_name}")
-            msg = f"{skill_name.capitalize()} is ready for a new rank. " \
-                  f"Increase {skill_name} with {cmd_suggestion}."
+            learn_time = skills.learn_time(caller, skill_name)
+            learn_time = timedelta(seconds=learn_time)
+            msg += f"\n{skill_name.capitalize()} is ready for a new rank.\n" \
+                   f"It will take {learn_time} to learn this rank.\n" \
+                   f"Increase {skill_name} with {cmd_suggestion}."
         if not msg:
             msg = "None of your skills are ready for a rank increase."
-        self.caller.msg(msg)
+        caller.msg(msg)
 
     def func(self):
         """
@@ -110,7 +117,7 @@ class CmdLearn(Command):
         caller = self.caller
         args = self.args
         # create a list of skills that have an increase available
-        increaseable_skills = []
+        increaseable_skills = {}
         for skill_set_name, skill_names in skills.SKILLS.items():
             skill_set = getattr(caller.skills, skill_set_name, False)
             for skill_name in skill_names:
@@ -130,23 +137,32 @@ class CmdLearn(Command):
                     increase_resource = skill_set[skill_name+'_exp']
                 # If the skill is ready for an increase, add it to the list
                 if increase_resource >= exp_required:
-                    increaseable_skills.append(skill_name)
+                    increaseable_skills.update({skill_name: skill_set[skill_name]+1})
         if args:  # check if argument is ready for a rank increase
             if not caller.ready():  # stop the if that caller is not ready
                 return False
             args = args.lower()
-            if args in increaseable_skills:  # argument is a skill ready for a rank increase
+            if args in increaseable_skills:  # args is a skill ready for a rank increase
                 # defer the command
                 defer_successful = self.defer()
-                # show a message to player that their command is waiting
+                # message the caller and location
                 if defer_successful:
-                    caller.msg(f'You begin to study {args}.')
+                    learn_time = skills.learn_time(caller, args)
+                    learn_time = timedelta(seconds=learn_time)
+                    stop_sugg = highlighter("stop", click_cmd=f"stop")
+                    caller_msg = f'You begin to study {args} to rank {increaseable_skills.get(args)}.\n' \
+                                 f'When you complete studing {args}, it will take {learn_time} to learn ' \
+                                 'the new rank.\nYou can not learn another skill during this time. ' \
+                                 'You will be fully functional otherwise.\n' \
+                                 'You can not stop learning after you have started. ' \
+                                 'If you do not want learning to be locked out for this time use ' \
+                                 f'{stop_sugg} before you have completed studing.'
+                    caller.msg(caller_msg)
                     caller.emote_location(f'/Me begins to study {args}.')
                     self.requires_ready = True  # Does the command require the ready status
             else:  # argument is not an skill with an increasable rank
                 self.msg(f'{args}, is not an increasable skill.')
                 self.increaseable_ranks_msg(increaseable_skills)
-
         else:  # no arguments show available rank increases
             self.increaseable_ranks_msg(increaseable_skills)
 
@@ -160,9 +176,16 @@ class CmdLearn(Command):
             successful (bool): True if the command completed sucessfully.
                 If this method returns True self.def_act_comp will be called after automatically.
         """
+        # return the commnad to not requiring ready
         self.requires_ready = False  # Does the command require the ready status
         caller = self.caller
-        msg = f'You complete studing {self.args.lower()}, it will take time ' \
+        skill_name = self.args.lower()
+        # cause the learning delay
+        # utils.delay(delay_time, skill.learn, caller.dbref, persistent=True))
+        # message players
+        learn_time = skills.learn_time(caller, skill_name)
+        learn_time = timedelta(seconds=learn_time)
+        msg = f'You complete studing {skill_name}, it will take {learn_time} ' \
               f'for you to fully learn the new rank.'
         caller.msg(msg)
         caller.emote_location(f'/Me completes studing {self.args.lower()}.')

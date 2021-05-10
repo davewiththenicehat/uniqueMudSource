@@ -236,6 +236,30 @@ def rank_requirement(rank, learn_diff):
     return _RANK_REQUIREMENTS[learn_diff][rank]
 
 
+def learn_time(char, skill_name):
+    """Get time it takes to learn a new rank in a skill.
+
+    This function assumes you have verified skill_name is in Character.skills.
+
+    Args:
+        char (Character): A instance of a Character that is requesting the increase time.
+        skill_name (str): A name of a skill to increase
+
+    Returns:
+        time_required (int): Time required to learn a new rank in skill_name.
+    """
+    for skill_set_name in char.skills.skills:
+        skill_set = getattr(char.skills, skill_set_name, False)
+        if skill_name in skill_set:
+            break
+    # get an instance of the command
+    for cmd_set in char.cmdset.get():
+        cmd_inst = cmd_set.get(skill_name)
+        if cmd_inst:
+            continue
+    return rank_requirement(skill_set[skill_name]+1, cmd_inst.learn_diff)
+
+
 def learn(char_id, skill_name):
     """Cause a Character to learn a new skil rank.
 
