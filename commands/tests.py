@@ -2460,3 +2460,24 @@ class TestCommands(UniqueMudCmdTest):
         arg = f"/r gain_exp, char2, cmd_type:unarmed, end_time:{end_time}, skill_name:punch"
         wnt_msg = "gain_exp returned: 3.0"
         self.call(command(), arg, wnt_msg)
+
+    def test_learn(self):
+        # no skills ready for increase
+        command = developer_cmds.CmdMultiCmd
+        arg = "= learn"
+        wnt_msg = "None of your skills are ready for a rank increase."
+        self.call(command(), arg, wnt_msg)
+        # Make punch ready for an increase
+        self.char1.skills.unarmed.punch_exp = 600
+        command = developer_cmds.CmdMultiCmd
+        arg = "= learn"
+        wnt_msg = "Punch is ready for a new rank. Increase punch with learn punch."
+        self.call(command(), arg, wnt_msg)
+        self.char1.skills.unarmed.punch_exp = 0
+        # make a skill that there are no
+        self.char1.skills.one_handed.skill_points = 300
+        command = developer_cmds.CmdMultiCmd
+        arg = "= learn"
+        wnt_msg = "Stab is ready for a new rank. Increase stab with learn stab."
+        self.call(command(), arg, wnt_msg)
+        self.char1.skills.one_handed.skill_points = 0

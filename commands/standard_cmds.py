@@ -8,7 +8,7 @@ from evennia.commands.default.system import CmdObjects
 from evennia.commands.default.general import CmdLook as EvCmdLook
 
 from commands.command import Command
-from world.rules import stats
+from world.rules import stats, skills
 from utils.um_utils import highlighter, error_report
 from typeclasses.exits import STANDARD_EXITS
 from world.rules.body import CHARACTER_CONDITIONS
@@ -45,11 +45,83 @@ class StandardCmdsCmdSet(default_cmds.CharacterCmdSet):
         self.add(UMCmdObjects)
         self.add(CmdPut)
         self.add(CmdCondition)
+        self.add(CmdLearn)
 
 
 class UMCmdObjects(CmdObjects):
     # overidding to remove 'stats' as an alias
     aliases = ["listobjects", "listobjs", "db"]
+
+
+class CmdLearn(Command):
+    """
+    Learn new skill ranks and display available learning.
+
+    Usage:
+      learn, display what you can currently learn.
+      learn [skill name], increase a skill rank.
+    """
+    key = 'learn'
+
+    def set_instance_attributes(self):
+        """Called automatically at the start of at_pre_cmd.
+
+        Here to easily set command instance attributes.
+        """
+        self.requires_ready = False  # Does the command require the ready status
+
+    def func(self):
+        """
+        To more seamlessly support UniqueMud's deffered command system, evennia's Command.func has been overridden.
+
+        UniqueMud:
+            UniqueMud's func will:
+                defer the action of the command.
+                call Command.start_message if the command deffered successfully.
+            If your command does not defer an action, override Command.func
+            It is possible to use this method within your overidden one with:
+                super().self.func()
+        """
+        caller = self.caller
+        args = self.args
+        increaseable_skills = []
+        for skill_set_name, skill_names in skills.SKILLS.items():
+            skill_set = getattr(caller.skills, skill_set_name, False)
+            for skill_name in skill_names:
+                if skill_name == 'skill_points':  # skip skill points attr
+                    continue
+                # get an instance of the command
+                for set in caller.cmdset.get():
+                    cmd_inst = set.get(skill_name)
+                    if cmd_inst:
+                        continue
+                exp_required = skills.rank_requirement(skill_set[skill_name]+1,
+                                                       cmd_inst.learn_diff)
+                # rank 0 commands require skill points to purchase
+                if skill_set[skill_name] == 0:
+                    increase_resource = skill_set['skill_points']
+                else:
+                    increase_resource = skill_set[skill_name+'_exp']
+                # If the skill is ready for an increase, add it to the list
+                if increase_resource >= exp_required:
+                    increaseable_skills.append(skill_name)
+        if args:
+            pass
+            # defer the command
+            #defer_successful = self.defer()
+            # show a message to player that their command is waiting
+            #if defer_successful:
+            #    self.start_message()
+        else:  # no arguments show available rank increases
+            msg = None
+            for skill_name in increaseable_skills:
+                cmd_suggestion = highlighter("learn "+skill_name,
+                                             click_cmd=f"learn {skill_name}")
+                msg = f"{skill_name.capitalize()} is ready for a new rank. " \
+                      f"Increase {skill_name} with {cmd_suggestion}."
+            if not msg:
+                msg = "None of your skills are ready for a rank increase."
+            caller.msg(msg)
 
 
 class CmdStatus(Command):
