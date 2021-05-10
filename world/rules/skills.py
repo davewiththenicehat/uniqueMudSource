@@ -234,3 +234,14 @@ def rank_requirement(rank, learn_diff):
         for _ in range(array_size, rank+1):
             diff_array.append(diff_array[(-1)] + diff_array[1])
     return _RANK_REQUIREMENTS[learn_diff][rank]
+
+
+def learn(char_id, skill_name):
+    """Cause a Character to learn a new skil rank.
+
+    Made to survive serialization into database.
+
+    Args:
+        char_id (str): the db_ref of the Character learning a new skill rank.
+        skill_name (str): The skill the Character is learning.
+    """

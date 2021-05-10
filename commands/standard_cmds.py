@@ -57,8 +57,20 @@ class CmdLearn(Command):
     """
     Learn new skill ranks and display available learning.
 
+    A skill takes 30 seconds to study.
+    Your Character is busy during this time.
+
+    When your Character has completed studing the skill they will
+    then begin to learn it.
+    Your Character is not busy while learning. It can interact in the game as
+    normal. With one exception. Your Character can not learn more than one
+    skill at a time.
+
+    You can not stop a Character from learning once they are done studing.
+    As your Character increases in skill ranks new ranks will take longer to learn.
+
     Usage:
-      learn, display what you can currently learn.
+      learn, display skills your Character can currently learn.
       learn [skill name], increase a skill rank.
     """
     key = 'learn'
@@ -69,6 +81,19 @@ class CmdLearn(Command):
         Here to easily set command instance attributes.
         """
         self.requires_ready = False  # Does the command require the ready status
+        self.defer_time = 30  # time is seconds for the command to wait before running
+
+    def increaseable_ranks_msg(self, increaseable_skills):
+        """Show available skill increase."""
+        msg = None
+        for skill_name in increaseable_skills:
+            cmd_suggestion = highlighter("learn "+skill_name,
+                                         click_cmd=f"learn {skill_name}")
+            msg = f"{skill_name.capitalize()} is ready for a new rank. " \
+                  f"Increase {skill_name} with {cmd_suggestion}."
+        if not msg:
+            msg = "None of your skills are ready for a rank increase."
+        self.caller.msg(msg)
 
     def func(self):
         """
@@ -84,6 +109,7 @@ class CmdLearn(Command):
         """
         caller = self.caller
         args = self.args
+        # create a list of skills that have an increase available
         increaseable_skills = []
         for skill_set_name, skill_names in skills.SKILLS.items():
             skill_set = getattr(caller.skills, skill_set_name, False)
@@ -105,23 +131,41 @@ class CmdLearn(Command):
                 # If the skill is ready for an increase, add it to the list
                 if increase_resource >= exp_required:
                     increaseable_skills.append(skill_name)
-        if args:
-            pass
-            # defer the command
-            #defer_successful = self.defer()
-            # show a message to player that their command is waiting
-            #if defer_successful:
-            #    self.start_message()
+        if args:  # check if argument is ready for a rank increase
+            if not caller.ready():  # stop the if that caller is not ready
+                return False
+            args = args.lower()
+            if args in increaseable_skills:  # argument is a skill ready for a rank increase
+                # defer the command
+                defer_successful = self.defer()
+                # show a message to player that their command is waiting
+                if defer_successful:
+                    caller.msg(f'You begin to study {args}.')
+                    caller.emote_location(f'/Me begins to study {args}.')
+                    self.requires_ready = True  # Does the command require the ready status
+            else:  # argument is not an skill with an increasable rank
+                self.msg(f'{args}, is not an increasable skill.')
+                self.increaseable_ranks_msg(increaseable_skills)
+
         else:  # no arguments show available rank increases
-            msg = None
-            for skill_name in increaseable_skills:
-                cmd_suggestion = highlighter("learn "+skill_name,
-                                             click_cmd=f"learn {skill_name}")
-                msg = f"{skill_name.capitalize()} is ready for a new rank. " \
-                      f"Increase {skill_name} with {cmd_suggestion}."
-            if not msg:
-                msg = "None of your skills are ready for a rank increase."
-            caller.msg(msg)
+            self.increaseable_ranks_msg(increaseable_skills)
+
+    def deferred_action(self):
+        """
+        This method is called after defer_time seconds when the Command.defer method is used.
+
+        Usage:
+            Intended to be overritten. Simply put the action portions of a command in this method.
+        Returns:
+            successful (bool): True if the command completed sucessfully.
+                If this method returns True self.def_act_comp will be called after automatically.
+        """
+        self.requires_ready = False  # Does the command require the ready status
+        caller = self.caller
+        msg = f'You complete studing {self.args.lower()}, it will take time ' \
+              f'for you to fully learn the new rank.'
+        caller.msg(msg)
+        caller.emote_location(f'/Me completes studing {self.args.lower()}.')
 
 
 class CmdStatus(Command):
