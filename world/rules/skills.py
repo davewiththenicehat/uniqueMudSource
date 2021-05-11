@@ -236,28 +236,65 @@ def rank_requirement(rank, learn_diff):
     return _RANK_REQUIREMENTS[learn_diff][rank]
 
 
-def learn_time(char, skill_name):
+def learn_time(char, skill_name=False, rank=False, learn_diff=False):
     """Get time it takes to learn a new rank in a skill.
 
     This function assumes you have verified skill_name is in Character.skills.
 
     Args:
         char (Character): A instance of a Character that is requesting the increase time.
-        skill_name (str): A name of a skill to increase
+        skill_name (str, optional): A name of a skill to increase.
+        rank (int, optional): Ignore Character's ranks and calculate for rank instead.
+            False by default.
+            Required if skill_name is not passed.
+        learn_diff (int or str, optional): The learn difficulty for a skill.
+            False by default.
+            Overrides skill_name if both skill_name and learn_diff are passed.
 
     Returns:
         time_required (int): Time required to learn a new rank in skill_name.
+
+    Equation:
+        experience required for the rank multiplied
+        ranks 1 - 9, exp required * 3
+        ranks 10 - 19, exp required * 5
+        ranks 20 - 29, exp required * 10
+        ranks 30 - 39, exp required * 20
+        ranks 40 - 49, exp required * 40
+        ranks 50+, exp required * rank
+
     """
-    for skill_set_name in char.skills.skills:
-        skill_set = getattr(char.skills, skill_set_name, False)
-        if skill_name in skill_set:
-            break
-    # get an instance of the command
-    for cmd_set in char.cmdset.get():
-        cmd_inst = cmd_set.get(skill_name)
-        if cmd_inst:
-            continue
-    return rank_requirement(skill_set[skill_name]+1, cmd_inst.learn_diff)
+    if skill_name:
+        # get an instance of the skill set the skill is in.
+        for skill_set_name in char.skills.skills:
+            skill_set = getattr(char.skills, skill_set_name, False)
+            if skill_name in skill_set:
+                break
+        # get an instance of the command
+        for cmd_set in char.cmdset.get():
+            cmd_inst = cmd_set.get(skill_name)
+            if cmd_inst:
+                continue
+    rank = rank if rank else skill_set[skill_name] + 1
+    # get base exp required by rank and learning difficulty
+    if learn_diff:
+        exp_required = rank_requirement(rank, learn_diff)
+    else:
+        exp_required = rank_requirement(rank, cmd_inst.learn_diff)
+    # calculate the learning time required
+    if rank < 10:
+        time_required = exp_required * 3
+    elif rank < 20:
+        time_required = exp_required * 5
+    elif rank < 30:
+        time_required = exp_required * 10
+    elif rank < 40:
+        time_required = exp_required * 20
+    elif rank < 50:
+        time_required = exp_required * 40
+    else:
+        time_required = exp_required * rank
+    return time_required
 
 
 def learn(char_id, skill_name):
