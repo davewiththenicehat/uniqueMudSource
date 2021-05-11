@@ -122,18 +122,14 @@ def status_delay_stop(target, status_type, complete_cmd):
                         cmd.def_act_comp()
         # remove tmp attributes order of removal matters
         delay_status_inst.remove()
-        try:
-            target.attributes.remove(status_type)  # remove time tracking attr
-        except AttributeError:
-            pass
-        try:
+        if target.attributes.has(status_type):
+            target.attributes.remove(status_type)
+        if target.nattributes.has("deffered_command"):
+            # reset attributes that may have been changed in command run
+            target.ndb.deffered_command.set_instance_attributes()
             target.nattributes.remove('deffered_command')
-        except AttributeError:
-            pass
-        try:
+        if target.nattributes.has(f'{status_type}_status'):
             target.nattributes.remove(f'{status_type}_status')
-        except AttributeError:
-            pass
         target.msg(f"You are no longer {status_type}.")
         return True
 

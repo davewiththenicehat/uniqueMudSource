@@ -304,6 +304,16 @@ class Command(default_cmds.MuxCommand):
         Here to easily set command instance attributes.
         """
 
+    def at_post_cmd(self):
+        """
+        This hook is called after the command has finished executing
+        (after self.func()).
+
+        """
+        # If this is not a deferred command. Clean up attributes changed during command run.
+        if not self.caller.nattributes.has("deffered_command"):
+            self.set_instance_attributes()
+
     def parse(self):
         """
         parse has been overridden. It is manually called in self.at_pre_cmd
