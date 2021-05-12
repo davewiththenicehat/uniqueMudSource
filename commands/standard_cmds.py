@@ -1,7 +1,8 @@
-from datetime import timedelta
+import time
+from datetime import timedelta, datetime
 
 from evennia.utils import evtable, evmore
-from evennia.utils.utils import fill, dedent, inherits_from, make_iter
+from evennia.utils.utils import fill, dedent, inherits_from, make_iter, delay
 from evennia import default_cmds
 from evennia.contrib import rpsystem
 from evennia import CmdSet
@@ -141,24 +142,23 @@ class CmdLearn(Command):
         if args:  # check if argument is ready for a rank increase
             if not caller.ready():  # stop the if that caller is not ready
                 return False
-            args = args.lower()
-            if args in increaseable_skills:  # args is a skill ready for a rank increase
+            skill_name = args.lower()
+            if skill_name in increaseable_skills:  # args is a skill ready for a rank increase
                 # defer the command
                 defer_successful = self.defer()
                 # message the caller and location
                 if defer_successful:
-                    learn_time = skills.learn_time(caller, args)
-                    learn_time = timedelta(seconds=learn_time)
+                    learn_time = skills.learn_time(caller, skill_name)
                     stop_sugg = highlighter("stop", click_cmd=f"stop")
-                    caller_msg = f'You begin to study {args} to rank {increaseable_skills.get(args)}.\n' \
-                                 f'When you complete studing {args}, it will take {learn_time} to learn ' \
+                    caller_msg = f'You begin to study {skill_name} to rank {increaseable_skills.get(skill_name)}.\n' \
+                                 f'When you complete studing {skill_name}, it will take {timedelta(seconds=learn_time)} to learn ' \
                                  'the new rank.\nYou can not learn another skill during this time. ' \
                                  'You will be fully functional otherwise.\n' \
                                  'You can not stop learning after you have started. ' \
                                  'If you do not want learning to be locked out for this time use ' \
                                  f'{stop_sugg} before you have completed studing.'
                     caller.msg(caller_msg)
-                    caller.emote_location(f'/Me begins to study {args}.')
+                    caller.emote_location(f'/Me begins to study {skill_name}.')
                     self.requires_ready = True  # Does the command require the ready status
             else:  # argument is not an skill with an increasable rank
                 self.msg(f'{args}, is not an increasable skill.')
@@ -180,13 +180,17 @@ class CmdLearn(Command):
         self.requires_ready = False  # Does the command require the ready status
         caller = self.caller
         skill_name = self.args.lower()
-        # cause the learning delay
-        # utils.delay(delay_time, skill.learn, caller.dbref, persistent=True))
-        # message players
+        # get the learn time
         learn_time = skills.learn_time(caller, skill_name)
-        learn_time = timedelta(seconds=learn_time)
-        msg = f'You complete studing {skill_name}, it will take {learn_time} ' \
-              f'for you to fully learn the new rank.'
+        # create a persistent task
+        task = delay(learn_time, skills.learn, caller.dbref, skill_name, persistent=True)
+        #comp_date = datetime.now() + timedelta(seconds=learn_time)
+        comp_date = time.time() + learn_time
+        caller.learning = {'task_id':task.get_id(), 'comp_date':comp_date}
+        # message caller and location
+        #comp_date = timedelta(seconds=caller.learning.get("comp_date"))
+        comp_date = time.strftime('%Y-%m-%d %H:%M:%S', time.localtime(caller.learning.get("comp_date")))
+        msg = f'You complete studing {skill_name}, this rank increase will complete on {comp_date}.'
         caller.msg(msg)
         caller.emote_location(f'/Me completes studing {self.args.lower()}.')
 

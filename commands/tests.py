@@ -12,6 +12,7 @@ from world.rules.stats import STATS, STAT_MAP_DICT
 from world.rules.body import HUMANOID_BODY
 from world.rules.actions import COST_LEVELS
 from utils.element import Element
+from twisted.internet import task
 
 ANSI_RED = "\033[1m" + "\033[31m"
 ANSI_NORMAL = "\033[0m"
@@ -2462,10 +2463,21 @@ class TestCommands(UniqueMudCmdTest):
         self.call(command(), arg, wnt_msg)
 
 
+_TASK_HANDLER = None
+
+
 class TestLearn(UniqueMudCmdTest):
     """verify the successfull learning messages, including the room
     verify learning survives a restart
     """
+
+    def setUp(self):
+        super().setUp()
+        # get a reference of TASK_HANDLER
+        global _TASK_HANDLER
+        if _TASK_HANDLER is None:
+            from evennia.scripts.taskhandler import TASK_HANDLER as _TASK_HANDLER
+        _TASK_HANDLER.clock = task.Clock()
 
     def test_no_rank_ready(self):
         command = developer_cmds.CmdMultiCmd
@@ -2506,3 +2518,17 @@ class TestLearn(UniqueMudCmdTest):
         arg = "= complete_cmd_early"
         self.call(command(), arg)
         self.assertFalse(cmd_inst.requires_ready)
+
+    def test_task_creation(self):
+        self.char1.skills.unarmed.punch_exp = 600
+        command = developer_cmds.CmdMultiCmd
+        arg = "= learn punch, complete_cmd_early"
+        cmd_result = self.call(command(), arg)
+        wnt_msg = "complete on \d+-\d+-\d+ \d+:\d+:\d+\.\n"
+        self.assertRegex(cmd_result, wnt_msg)
+        learning_dict = self.char1.learning
+        self.assertTrue(isinstance(learning_dict.get('comp_date'), float))
+        self.assertTrue(isinstance(learning_dict.get('task_id'), int))
+        self.assertEqual(self.char1.skills.unarmed.punch, 1)
+        _TASK_HANDLER.clock.advance(1801)
+        self.assertEqual(self.char1.skills.unarmed.punch, 2)

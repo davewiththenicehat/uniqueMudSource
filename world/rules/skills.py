@@ -1,5 +1,7 @@
 import math
 
+from evennia.objects.models import ObjectDB
+
 """
 Variables used to describe UM skills.
 
@@ -297,12 +299,24 @@ def learn_time(char, skill_name=False, rank=False, learn_diff=False):
     return time_required
 
 
-def learn(char_id, skill_name):
+def learn(char_dbref, skill_name):
     """Cause a Character to learn a new skil rank.
 
     Made to survive serialization into database.
 
     Args:
-        char_id (str): the db_ref of the Character learning a new skill rank.
+        char_dbref (str): the db_ref of the Character learning a new skill rank.
         skill_name (str): The skill the Character is learning.
+
+    Returns:
+        finished (True): Returns true to support twisted's deferred chain methods.
     """
+    # get a reference of the Character
+    char = ObjectDB.objects.object_search(char_dbref)
+    char = char[0]
+    # Get a reference of the skill set and increase the skill
+    for skill_set_name, skill_names in SKILLS.items():
+        if skill_name in skill_names:
+            skill_set = getattr(char.skills, skill_set_name, False)
+            skill_set[skill_name] += 1
+    return True

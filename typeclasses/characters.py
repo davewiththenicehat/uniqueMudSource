@@ -281,13 +281,13 @@ class Character(AllObjectsMixin, CharExAndObjMixin, ClothedCharacter, GenderChar
 
     @property
     def learning(self):
-        """Bool attribute to track if a Character is learning a skill."""
+        """dict attribute to track the global task ID and completion date of a Characters learning task."""
         return self.attributes.get('learning', False)
 
     @learning.setter
     def learning(self, value):
         if value:
-            self.attributes.add('learning', True)
+            self.attributes.add('learning', value)
         else:
             self.attributes.remove('learning')
 

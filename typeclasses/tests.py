@@ -328,8 +328,8 @@ class TestObjects(CommandTest):
         self.assertTrue(self.char1.learning)
         del self.char1.learning
         self.assertFalse(self.char1.learning)
-        self.char1.learning = "Truthy"
-        self.assertEqual(self.char1.learning, True)
+        self.char1.learning = 1
+        self.assertEqual(self.char1.learning, 1)
 
 
 # Testing of emoting / sdesc / recog system
