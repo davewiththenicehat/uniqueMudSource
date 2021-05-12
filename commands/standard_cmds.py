@@ -91,6 +91,8 @@ class CmdLearn(Command):
         """Message caller available skill increase."""
         caller = self.caller
         msg = ""
+        caller_learning = caller.learning
+        # message for increaseable skills.
         for skill_name in increaseable_skills:
             cmd_suggestion = highlighter("learn "+skill_name,
                                          click_cmd=f"learn {skill_name}")
@@ -99,6 +101,13 @@ class CmdLearn(Command):
             msg += f"\n{skill_name.capitalize()} is ready for a new rank.\n" \
                    f"It will take {learn_time} to learn this rank.\n" \
                    f"Increase {skill_name} with {cmd_suggestion}."
+        # message for skill currently being learned
+        if caller_learning:
+            skill_name = caller_learning.get('skill_name')
+            rank = caller_learning.get('rank')
+            comp_date = time.strftime('%Y-%m-%d %H:%M:%S', time.localtime(caller.learning.get("comp_date")))
+            msg += f"\nYou are currently learning {skill_name} to rank {rank}.\n" \
+                   f"Learning will complete on {comp_date}."
         if not msg:
             msg = "None of your skills are ready for a rank increase."
         caller.msg(msg)
@@ -117,6 +126,7 @@ class CmdLearn(Command):
         """
         caller = self.caller
         args = self.args
+        caller_learning = caller.learning
         # create a list of skills that have an increase available
         increaseable_skills = {}
         for skill_set_name, skill_names in skills.SKILLS.items():
@@ -124,6 +134,9 @@ class CmdLearn(Command):
             for skill_name in skill_names:
                 if skill_name == 'skill_points':  # skip skill points attr
                     continue
+                if caller_learning:  # skip skill currently being learned
+                    if skill_name == caller_learning.get('skill_name'):
+                        continue
                 # get an instance of the command
                 for set in caller.cmdset.get():
                     cmd_inst = set.get(skill_name)
@@ -151,8 +164,8 @@ class CmdLearn(Command):
                     learn_time = skills.learn_time(caller, skill_name)
                     stop_sugg = highlighter("stop", click_cmd=f"stop")
                     caller_msg = f'You begin to study {skill_name} to rank {increaseable_skills.get(skill_name)}.\n' \
-                                 f'When you complete studing {skill_name}, it will take {timedelta(seconds=learn_time)} to learn ' \
-                                 'the new rank.\nYou can not learn another skill during this time. ' \
+                                 f'When you complete studing {skill_name}, it will take {timedelta(seconds=learn_time)} ' \
+                                 'to learn the new rank.\nYou can not learn another skill during this time. ' \
                                  'You will be fully functional otherwise.\n' \
                                  'You can not stop learning after you have started. ' \
                                  'If you do not want learning to be locked out for this time use ' \
@@ -180,19 +193,35 @@ class CmdLearn(Command):
         self.requires_ready = False  # Does the command require the ready status
         caller = self.caller
         skill_name = self.args.lower()
+        rank = None
         # get the learn time
         learn_time = skills.learn_time(caller, skill_name)
         # create a persistent task
         task = delay(learn_time, skills.learn, caller.dbref, skill_name, persistent=True)
-        #comp_date = datetime.now() + timedelta(seconds=learn_time)
+        # get the time learning will complete
         comp_date = time.time() + learn_time
-        caller.learning = {'task_id':task.get_id(), 'comp_date':comp_date}
+        # get the rank this skill is upgrading to
+        for skill_set_name, skill_names in skills.SKILLS.items():
+            if skill_name in skill_names:
+                skill_set = getattr(caller.skills, skill_set_name, False)
+                rank = skill_set[skill_name] + 1
+        if not rank:
+            err_msg = f"Command learn, caller: {caller.id} | " \
+                      f"failed to find skill {skill_name} in skills."
+            error_report(err_msg, caller)
+            return False
+        caller.learning = {
+                            'task_id': task.get_id(),
+                            'comp_date': comp_date,
+                            'skill_name': skill_name,
+                            'rank': rank
+                          }
         # message caller and location
-        #comp_date = timedelta(seconds=caller.learning.get("comp_date"))
         comp_date = time.strftime('%Y-%m-%d %H:%M:%S', time.localtime(caller.learning.get("comp_date")))
         msg = f'You complete studing {skill_name}, this rank increase will complete on {comp_date}.'
         caller.msg(msg)
         caller.emote_location(f'/Me completes studing {self.args.lower()}.')
+        return True
 
 
 class CmdStatus(Command):

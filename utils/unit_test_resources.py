@@ -1,6 +1,7 @@
 import types, re
 from unittest.mock import patch, Mock, MagicMock
 
+from twisted.internet import task
 from evennia.utils.test_resources import EvenniaTest
 from evennia.commands.default.tests import CommandTest
 from evennia import create_object
@@ -21,21 +22,24 @@ from commands import developer_cmds
 # set up signal here since we are not starting the server
 _RE = re.compile(r"^\+|-+\+|\+-+|--+|\|(?:\s|$)", re.MULTILINE)
 
+_TASK_HANDLER = None
+
 class UniqueMudTest(EvenniaTest):
     """
     Base test for UniqueMud, sets up a basic environment.
 
-    Objects in EvenniaTest
-        self.obj1 = "Obj"
-        self.obj2 = "Obj2"
-        self.char1 = "Char"
-            self.char1.account = self.account
-            self.char1.permissions.add("Developer")
-            self.account.permissions.add("Developer")
-        self.char2 = "Char2"
-            self.char2.account = self.account2
-        self.exit = "out"
-        self.room1 = "Room"
+    Attributes:
+        task_handler (TASK_HANDLER): A local reference to the global task handler.
+            The clock attribute is replaced with an instance of twisted.task.clock.
+            Primarily to use task_handler.adavnace
+        char1 (Character): Default choice for call's caller kwarg
+        char2 (Character):
+        exit (exit):
+        room1 (Room):
+        test_hat (Clothing):
+        test_shirt (Clothing):
+        test_helmet (HumanoidArmor):
+
     """
 
     account_typeclass = Account
@@ -74,6 +78,16 @@ class UniqueMudTest(EvenniaTest):
 
 
 class UniqueMudCmdTest(UniqueMudTest):
+
+    def setUp(self):
+        super().setUp()
+        # create a local reference
+        global _TASK_HANDLER
+        if _TASK_HANDLER is None:
+            from evennia.scripts.taskhandler import TASK_HANDLER as _TASK_HANDLER
+        self.task_handler = _TASK_HANDLER
+        # replace the reactor clock with twisted's task clock.
+        _TASK_HANDLER.clock = task.Clock()
 
     def call(
         self,

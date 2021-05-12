@@ -12,7 +12,6 @@ from world.rules.stats import STATS, STAT_MAP_DICT
 from world.rules.body import HUMANOID_BODY
 from world.rules.actions import COST_LEVELS
 from utils.element import Element
-from twisted.internet import task
 
 ANSI_RED = "\033[1m" + "\033[31m"
 ANSI_NORMAL = "\033[0m"
@@ -2463,21 +2462,10 @@ class TestCommands(UniqueMudCmdTest):
         self.call(command(), arg, wnt_msg)
 
 
-_TASK_HANDLER = None
-
-
 class TestLearn(UniqueMudCmdTest):
     """verify the successfull learning messages, including the room
     verify learning survives a restart
     """
-
-    def setUp(self):
-        super().setUp()
-        # get a reference of TASK_HANDLER
-        global _TASK_HANDLER
-        if _TASK_HANDLER is None:
-            from evennia.scripts.taskhandler import TASK_HANDLER as _TASK_HANDLER
-        _TASK_HANDLER.clock = task.Clock()
 
     def test_no_rank_ready(self):
         command = developer_cmds.CmdMultiCmd
@@ -2489,21 +2477,60 @@ class TestLearn(UniqueMudCmdTest):
         self.char1.skills.unarmed.punch_exp = 600
         command = developer_cmds.CmdMultiCmd
         arg = "= learn"
-        #wnt_msg = "Punch is ready for a new rank. Increase punch with learn punch."
-        #self.call(command(), arg, wnt_msg)
+        wnt_msg = "Punch is ready for a new rank.\n" \
+                  "It will take 0:30:00 to learn this rank.\n" \
+                  "Increase punch with learn punch."
+        self.call(command(), arg, wnt_msg)
 
     def test_skill_point_rank_ready(self):
         self.char1.skills.one_handed.skill_points = 300
         command = developer_cmds.CmdMultiCmd
         arg = "= learn"
-        #wnt_msg = "Stab is ready for a new rank. Increase stab with learn stab."
-        #self.call(command(), arg, wnt_msg)
+        wnt_msg = "Stab is ready for a new rank.\n" \
+                  "It will take 0:15:00 to learn this rank.\n" \
+                  "Increase stab with learn stab."
+        self.call(command(), arg, wnt_msg)
 
     def test_incorrect_skill_name(self):
         command = developer_cmds.CmdMultiCmd
         arg = "= learn int_fail"
         wnt_msg = "int_fail, is not an increasable skill.|None of your skills are ready for a rank increase."
         self.call(command(), arg, wnt_msg)
+
+    def test_successful_study(self):
+        self.char1.skills.unarmed.punch_exp = 600
+        command = developer_cmds.CmdMultiCmd
+        arg = "= learn punch, complete_cmd_early"
+        cmd_result = self.call(command(), arg)
+        wnt_msg = "^You will be busy for 30 seconds.|You begin to study punch to rank 2."
+        self.assertRegex(cmd_result, wnt_msg)
+        wnt_msg = "When you complete studing punch, it will take 0:30:00 to learn the new rank."
+        self.assertRegex(cmd_result, wnt_msg)
+        wnt_msg = "You can not learn another skill during this time. You will be fully functional otherwise."
+        self.assertRegex(cmd_result, wnt_msg)
+        wnt_msg = "You can not stop learning after you have started. "
+        self.assertRegex(cmd_result, wnt_msg)
+        wnt_msg = "If you do not want learning to be locked out for this time use stop before you have completed studing.|"
+        self.assertRegex(cmd_result, wnt_msg)
+        wnt_msg = "You complete studing punch, this rank increase will complete on \d+-\d+-\d+ \d+:\d+:\d+\.|"
+        self.assertRegex(cmd_result, wnt_msg)
+        wnt_msg = "You are no longer busy\.$"
+        self.assertRegex(cmd_result, wnt_msg)
+
+    def test_learning_message(self):
+        self.char1.skills.unarmed.punch_exp = 600
+        self.char1.skills.one_handed.skill_points = 300
+        command = developer_cmds.CmdMultiCmd
+        arg = "= learn punch, complete_cmd_early"
+        self.call(command(), arg)
+        arg = "= learn"
+        cmd_result = self.call(command(), arg)
+        wnt_msg = "^Stab is ready for a new rank.\n" \
+                  "It will take 0:15:00 to learn this rank.\n" \
+                  "Increase stab with learn stab.\n" \
+                  "You are currently learning punch to rank 2\.\n" \
+                  "Learning will complete on \d+-\d+-\d+ \d+:\d+:\d+\.$"
+        self.assertRegex(cmd_result, wnt_msg)
 
     def test_requires_ready(self):
         set = self.char1.cmdset.get()[0]
@@ -2519,16 +2546,30 @@ class TestLearn(UniqueMudCmdTest):
         self.call(command(), arg)
         self.assertFalse(cmd_inst.requires_ready)
 
-    def test_task_creation(self):
+    def test_rank_increase(self):
         self.char1.skills.unarmed.punch_exp = 600
         command = developer_cmds.CmdMultiCmd
         arg = "= learn punch, complete_cmd_early"
         cmd_result = self.call(command(), arg)
-        wnt_msg = "complete on \d+-\d+-\d+ \d+:\d+:\d+\.\n"
-        self.assertRegex(cmd_result, wnt_msg)
+        self.assertEqual(self.char1.skills.unarmed.punch, 1)
+        self.task_handler.clock.advance(1801)
+        self.assertEqual(self.char1.skills.unarmed.punch, 2)
+
+    def test_learning_dict(self):
+        self.char1.skills.unarmed.punch_exp = 600
+        command = developer_cmds.CmdMultiCmd
+        arg = "= learn punch, complete_cmd_early"
+        cmd_result = self.call(command(), arg)
         learning_dict = self.char1.learning
         self.assertTrue(isinstance(learning_dict.get('comp_date'), float))
         self.assertTrue(isinstance(learning_dict.get('task_id'), int))
-        self.assertEqual(self.char1.skills.unarmed.punch, 1)
-        _TASK_HANDLER.clock.advance(1801)
-        self.assertEqual(self.char1.skills.unarmed.punch, 2)
+        self.assertTrue(isinstance(learning_dict.get('rank'), int))
+        self.assertTrue(isinstance(learning_dict.get('skill_name'), str))
+
+    def test_task(self):
+        self.char1.skills.unarmed.punch_exp = 600
+        command = developer_cmds.CmdMultiCmd
+        arg = "= learn punch, complete_cmd_early"
+        self.call(command(), arg)
+        task_id = self.char1.learning.get('task_id')
+        self.assertTrue(self.task_handler.exists(task_id))
