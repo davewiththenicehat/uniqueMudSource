@@ -15,7 +15,7 @@ from world.rules import stats, skills
 from utils.um_utils import highlighter, error_report
 from typeclasses.exits import STANDARD_EXITS
 from world.rules.body import CHARACTER_CONDITIONS
-from world.status_functions import status_delay_get
+from world.status_functions import status_delay_get, status_delay_stop
 
 
 class StandardCmdsCmdSet(default_cmds.CharacterCmdSet):
@@ -49,11 +49,52 @@ class StandardCmdsCmdSet(default_cmds.CharacterCmdSet):
         self.add(CmdPut)
         self.add(CmdCondition)
         self.add(CmdLearn)
+        self.add(CmdStop)
 
 
 class UMCmdObjects(CmdObjects):
     # overidding to remove 'stats' as an alias
     aliases = ["listobjects", "listobjs", "db"]
+
+
+class CmdStop(Command):
+    """
+    Stop an action you are currently commited to.
+
+    Usage:
+        stop, stops your current action.
+    """
+    key = 'stop'
+
+    def set_instance_attributes(self):
+        """Called automatically at the start of at_pre_cmd.
+
+        Here to easily set command instance attributes.
+        """
+        self.requires_ready = False  # Does the command require the ready status
+
+    def func(self):
+        """
+        To more seamlessly support UniqueMud's deffered command system, evennia's Command.func has been overridden.
+
+        UniqueMud:
+            UniqueMud's func will:
+                defer the action of the command.
+                call Command.start_message if the command deffered successfully.
+            If your command does not defer an action, override Command.func
+            It is possible to use this method within your overidden one with:
+                super().self.func()
+        """
+        caller = self.caller
+        deferred_cmd = caller.nattributes.get('deffered_command')
+        if deferred_cmd:
+            if deferred_cmd.unstoppable:  # do not stop unstoppable commands
+                caller.msg(f'{deferred_cmd.key.capitalize()} can not be stopped.')
+            else:  # all other commands can be stopped with stop
+                status_delay_stop(caller, 'busy', False)
+        else:  # has no action deferred
+            caller.msg('You are not commited to an action.')
+        return True
 
 
 class CmdLearn(Command):

@@ -213,6 +213,7 @@ class Command(default_cmds.MuxCommand):
             Called at the end of at_pre_cmd
         end_time = False  # used to manually override the end time.
             intended for unit testing.
+        unstoppable = False  # this command can not be stopped with the stop command.
 
     Methods:
         All methods are fully documented in their docstrings.
@@ -291,11 +292,11 @@ class Command(default_cmds.MuxCommand):
         self.sl_split = (' from ', ' in ')  # list of words to split names from locations in commands
         self.start_time = None  # time the command starts
         self.end_time = False  # used to manually override the end time.
+        self.unstoppable = False  # this command can not be stopped with the stop command.
         self.at_init()
 
     def at_init(self):
-        """Called when the Command object is initialized.
-        """
+        """Called when the Command object is initialized."""
         pass
 
     def set_instance_attributes(self):
