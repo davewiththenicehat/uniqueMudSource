@@ -2512,9 +2512,9 @@ class TestLearn(UniqueMudCmdTest):
         self.assertRegex(cmd_result, wnt_msg)
         wnt_msg = "If you do not want learning to be locked out for this time use stop before you have completed studing.|"
         self.assertRegex(cmd_result, wnt_msg)
-        wnt_msg = "You complete studing punch, this rank increase will complete on \d+-\d+-\d+ \d+:\d+:\d+\.|"
+        wnt_msg = r"You complete studing punch, this rank increase will complete on \d+-\d+-\d+ \d+:\d+:\d+\.|"
         self.assertRegex(cmd_result, wnt_msg)
-        wnt_msg = "You are no longer busy\.$"
+        wnt_msg = r"You are no longer busy\.$"
         self.assertRegex(cmd_result, wnt_msg)
 
     def test_learning_message(self):
@@ -2528,13 +2528,13 @@ class TestLearn(UniqueMudCmdTest):
         wnt_msg = "^Stab is ready for a new rank.\n" \
                   "It will take 0:15:00 to learn this rank.\n" \
                   "Increase stab with learn stab.\n" \
-                  "You are currently learning punch to rank 2\.\n" \
-                  "Learning will complete on \d+-\d+-\d+ \d+:\d+:\d+\.$"
+                  r"You are currently learning punch to rank 2\.\n" \
+                  r"Learning will complete on \d+-\d+-\d+ \d+:\d+:\d+\.$"
         self.assertRegex(cmd_result, wnt_msg)
 
     def test_requires_ready(self):
-        set = self.char1.cmdset.get()[0]
-        cmd_inst = set.get('learn')
+        cmd_set = self.char1.cmdset.get()[0]
+        cmd_inst = cmd_set.get('learn')
         cmd_inst.set_instance_attributes()
         self.assertFalse(cmd_inst.requires_ready)
         self.char1.skills.unarmed.punch_exp = 600
@@ -2550,7 +2550,7 @@ class TestLearn(UniqueMudCmdTest):
         self.char1.skills.unarmed.punch_exp = 600
         command = developer_cmds.CmdMultiCmd
         arg = "= learn punch, complete_cmd_early"
-        cmd_result = self.call(command(), arg)
+        self.call(command(), arg)
         self.assertEqual(self.char1.skills.unarmed.punch, 1)
         self.task_handler.clock.advance(1801)
         self.assertEqual(self.char1.skills.unarmed.punch, 2)
@@ -2559,7 +2559,7 @@ class TestLearn(UniqueMudCmdTest):
         self.char1.skills.unarmed.punch_exp = 600
         command = developer_cmds.CmdMultiCmd
         arg = "= learn punch, complete_cmd_early"
-        cmd_result = self.call(command(), arg)
+        self.call(command(), arg)
         learning_dict = self.char1.learning
         self.assertTrue(isinstance(learning_dict.get('comp_date'), float))
         self.assertTrue(isinstance(learning_dict.get('task_id'), int))
