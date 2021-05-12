@@ -2573,3 +2573,13 @@ class TestLearn(UniqueMudCmdTest):
         self.call(command(), arg)
         task_id = self.char1.learning.get('task_id')
         self.assertTrue(self.task_handler.exists(task_id))
+
+    def test_single_skill(self):
+        self.char1.skills.unarmed.punch_exp = 600
+        self.char1.skills.one_handed.skill_points = 300
+        command = developer_cmds.CmdMultiCmd
+        arg = "= learn punch?"
+        wnt_msg = "Punch is ready for a new rank.\n" \
+                  "It will take 0:30:00 to learn this rank.\n" \
+                  "Increase punch with learn punch."
+        self.call(command(), arg, wnt_msg)

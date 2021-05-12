@@ -75,7 +75,7 @@ class CmdLearn(Command):
     Usage:
       learn, display skills your Character can currently learn.
       learn [skill name], increase a skill rank.
-      learn [skill name]?, Show information about upgrading a skill.
+      learn [skill name]?, Show information about upgrading a single skill.
     """
     key = 'learn'
 
@@ -127,6 +127,7 @@ class CmdLearn(Command):
         caller = self.caller
         args = self.args
         caller_learning = caller.learning
+        single_skill = args.replace('?', '') if args.endswith('?') else False
         # create a list of skills that have an increase available
         increaseable_skills = {}
         for skill_set_name, skill_names in skills.SKILLS.items():
@@ -155,8 +156,11 @@ class CmdLearn(Command):
         if args:  # check if argument is ready for a rank increase
             if not caller.ready():  # stop the if that caller is not ready
                 return False
-            skill_name = args.lower()
+            skill_name = single_skill if single_skill else args.lower()
             if skill_name in increaseable_skills:  # args is a skill ready for a rank increase
+                if single_skill:
+                    self.increaseable_ranks_msg({skill_name: increaseable_skills.get(skill_name)})
+                    return True
                 # defer the command
                 defer_successful = self.defer()
                 # message the caller and location
@@ -176,8 +180,10 @@ class CmdLearn(Command):
             else:  # argument is not an skill with an increasable rank
                 self.msg(f'{args}, is not an increasable skill.')
                 self.increaseable_ranks_msg(increaseable_skills)
+                return True
         else:  # no arguments show available rank increases
             self.increaseable_ranks_msg(increaseable_skills)
+            return True
 
     def deferred_action(self):
         """
