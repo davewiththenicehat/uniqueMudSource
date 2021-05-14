@@ -2613,3 +2613,45 @@ class TestStop(UniqueMudCmdTest):
         arg = "= stop"
         wnt_msg = 'Punch can not be stopped.'
         self.call(command(), arg, wnt_msg)
+
+
+class TestSkills(UniqueMudCmdTest):
+
+    def test_skills(self):
+        command = developer_cmds.CmdMultiCmd
+        arg = "= skills"
+        cmd_result = self.call(command(), arg)
+        wnt_msg = 'Evasion\nskill points: 0\n    skill name     ranks     exp     next rank \n' \
+        '    dodge          1         0       600       \n\r\n\n' \
+        'Unarmed\nskill points: 0\n    skill name     ranks     exp     next rank \n' \
+        '    punch          1         0       600       \n    kick           1         0       600'
+        self.assertRegex(cmd_result, wnt_msg)
+
+    def test_single_set(self):
+        command = developer_cmds.CmdMultiCmd
+        arg = "= skills unarmed"
+        cmd_result = self.call(command(), arg)
+        wnt_msg = 'Unarmed\nskill points: 0\n    skill name     ranks     exp     next rank \n' \
+                  '    punch          1         0       600       \n    kick           1         0       600'
+        self.assertRegex(cmd_result, wnt_msg)
+
+    def test_set_with_no_rank_or_sp(self):
+        command = developer_cmds.CmdMultiCmd
+        arg = "= skills one handed"
+        wnt_msg = 'You do not know skills or have skill points in the one handed skill set.'
+        self.call(command(), arg, wnt_msg)
+
+    def test_non_existent_set(self):
+        command = developer_cmds.CmdMultiCmd
+        arg = "= skills fail"
+        wnt_msg = 'fail, is not a skill set name.|Skill sets are: '
+        cmd_result = self.call(command(), arg, wnt_msg)
+        wnt_msg = ", and "
+        self.assertRegex(cmd_result, wnt_msg)
+
+    def test_set_with_sp_only(self):
+        self.char1.skills.one_handed.skill_points = 150
+        command = developer_cmds.CmdMultiCmd
+        arg = "= skills one handed"
+        wnt_msg = 'One handed|skill points: 150|'
+        self.call(command(), arg, wnt_msg)

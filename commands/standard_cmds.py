@@ -1,4 +1,5 @@
 import time
+import math
 from datetime import timedelta, datetime
 
 from evennia.utils import evtable, evmore
@@ -50,6 +51,118 @@ class StandardCmdsCmdSet(default_cmds.CharacterCmdSet):
         self.add(CmdCondition)
         self.add(CmdLearn)
         self.add(CmdStop)
+        self.add(CmdSkills)
+
+
+class CmdSkills(Command):
+    """
+    Show your skill ranks, experience and experience required for next rank.
+
+    Usage:
+        skills, Show all know skills.
+        skills [set name], Show skills for only the set name.
+    """
+
+    key = 'skills'
+
+    def set_instance_attributes(self):
+        """Called automatically at the start of at_pre_cmd.
+
+        Here to easily set command instance attributes.
+        """
+        self.requires_ready = False  # Does the command require the ready status
+        self.requires_conscious = True  # if true this command requires the caller to be conscious
+
+    def func(self):
+        """
+        To more seamlessly support UniqueMud's deffered command system, evennia's Command.func has been overridden.
+
+        UniqueMud:
+            UniqueMud's func will:
+                defer the action of the command.
+                call Command.start_message if the command deffered successfully.
+            If your command does not defer an action, override Command.func
+            It is possible to use this method within your overidden one with:
+                super().self.func()
+        """
+        caller = self.caller
+        # check if argument is a skill set name.
+        args = self.args.lower().strip().replace(' ', '_') if self.args else None
+        #single_set = args if args in caller.skills.skills.keys() else False
+        if args:
+            if args in caller.skills.skills.keys():
+                single_set = args
+            else:
+                caller.msg(f"{args}, is not a skill set name.")
+                msg = "Skill sets are: "
+                skill_sets = [*caller.skills.skills.keys()]
+                for set_name in skill_sets[:-1]:
+                    set_title = set_name.replace('_', ' ')
+                    set_title = highlighter(set_title, click_cmd="skills "+set_title)
+                    msg += set_title+', '
+                set_title = skill_sets[-1].replace('_', ' ')
+                set_title = highlighter(set_title, click_cmd="skills "+set_title)
+                msg += f"and {set_title.replace('_', ' ')}."
+                caller.msg(msg)
+                return True
+        else: # run as standard skills call
+            single_set = False
+        # loop through all skills
+        for set_name, skill_names in caller.skills.skills.items():
+            # if a set name was provided as an argument, show only that set.
+            if single_set:
+                if set_name != single_set:
+                    continue
+            skill_set = getattr(caller.skills, set_name, False)  # skill set instance
+            skill_points = skill_set.get('skill_points')  # collect skill set's skill points
+            # lists to be used as rows in the
+            known_skills = []
+            known_skills_ranks = []
+            known_skills_exp = []
+            known_skills_next_rank = []
+            # loop through skills in the skill set
+            for skill_name in skill_names:
+                if skill_name == 'skill_points':
+                    continue
+                skill_ranks = skill_set[skill_name]
+                # if there are ranks in this skill gather data for the skill
+                if skill_ranks:
+                    # make the skill name clickable to get help on it
+                    skill_title = highlighter(skill_name, click_cmd="help "+skill_name)
+                    known_skills.append(skill_title)
+                    known_skills_ranks.append(skill_set[skill_name])
+                    known_skills_exp.append(math.floor(skill_set[skill_name+'_exp']))
+                    # get the command instance for the skill
+                    for cmd_set in caller.cmdset.get():
+                        cmd_inst = cmd_set.get(skill_name)
+                        if cmd_inst:
+                            break
+                    # get exp required for next rank in this skill
+                    exp_required = skills.rank_requirement(skill_set[skill_name]+1,
+                                                           cmd_inst.learn_diff)
+                    known_skills_next_rank.append(exp_required)
+            # display the skill if it has ranks or skill points
+            if skill_points or known_skills:
+                set_list = []
+                set_list.append(known_skills)
+                set_list.append(known_skills_ranks)
+                set_list.append(known_skills_exp)
+                set_list.append(known_skills_next_rank)
+                # make the set title clickable to get help on it.
+                set_title = set_name.replace('_', ' ').capitalize()
+                set_title = highlighter(set_title, click_cmd="help "+set_title)
+                caller.msg(set_title, force=True)
+                caller.msg(f"skill points: {skill_points}", force=True)
+                if known_skills:  # only show skills if some are known
+                    set_header = ('skill name', 'ranks', 'exp', 'next rank')
+                    set_table = evtable.EvTable(*set_header, table=set_list, border=None, pad_left=4)
+                    caller.msg(set_table, force=True)
+                caller.msg('|/', force=True)
+            elif single_set:
+                set_title = single_set.replace('_', ' ')
+                set_title = highlighter(set_title, click_cmd="help "+set_title)
+                caller.msg(f'You do not know skills or have skill points in the {set_title} skill set.')
+        return True
 
 
 class UMCmdObjects(CmdObjects):
@@ -183,7 +296,7 @@ class CmdLearn(Command):
                 for set in caller.cmdset.get():
                     cmd_inst = set.get(skill_name)
                     if cmd_inst:
-                        continue
+                        break
                 exp_required = skills.rank_requirement(skill_set[skill_name]+1,
                                                        cmd_inst.learn_diff)
                 # rank 0 commands require skill points to purchase
