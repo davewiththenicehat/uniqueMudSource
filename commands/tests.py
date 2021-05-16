@@ -2554,6 +2554,8 @@ class TestLearn(UniqueMudCmdTest):
         self.assertEqual(self.char1.skills.unarmed.punch, 1)
         self.task_handler.clock.advance(1801)
         self.assertEqual(self.char1.skills.unarmed.punch, 2)
+        self.task_handler.clock.advance(1801)
+        self.assertEqual(self.char1.skills.unarmed.punch, 2)
 
     def test_learning_dict(self):
         self.char1.skills.unarmed.punch_exp = 600
@@ -2586,6 +2588,8 @@ class TestLearn(UniqueMudCmdTest):
         self.call(command(), arg)
         task_id = self.char1.learning.get('task_id')
         self.assertTrue(self.task_handler.exists(task_id))
+        self.task_handler.clock.advance(1801)
+        self.assertFalse(self.task_handler.exists(task_id))
 
     def test_single_skill(self):
         self.char1.skills.unarmed.punch_exp = 600
