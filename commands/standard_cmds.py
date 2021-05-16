@@ -257,14 +257,22 @@ class CmdLearn(Command):
                    f"Increase {skill_name} with {cmd_suggestion}."
         # message for skill currently being learned
         if caller_learning:
-            skill_name = caller_learning.get('skill_name')
-            rank = caller_learning.get('rank')
-            comp_date = time.strftime('%Y-%m-%d %H:%M:%S', time.localtime(caller.learning.get("comp_date")))
-            msg += f"\nYou are currently learning {skill_name} to rank {rank}.\n" \
-                   f"Learning will complete on {comp_date}."
+            msg = self.currently_learning_msg(msg)
         if not msg:
             msg = "None of your skills are ready for a rank increase."
         caller.msg(msg)
+
+    def currently_learning_msg(self, msg):
+        caller = self.caller
+        caller_learning = caller.learning
+        if not caller_learning:
+            return msg
+        skill_name = caller_learning.get('skill_name')
+        rank = caller_learning.get('rank')
+        comp_date = time.strftime('%Y-%m-%d %H:%M:%S', time.localtime(caller_learning.get("comp_date")))
+        msg += f"\nYou are currently learning {skill_name} to rank {rank}.\n" \
+               f"Learning will complete on {comp_date}."
+        return msg
 
     def func(self):
         """
@@ -315,6 +323,9 @@ class CmdLearn(Command):
                 if single_skill:
                     self.increaseable_ranks_msg({skill_name: increaseable_skills.get(skill_name)})
                     return True
+                if caller_learning:
+                    caller.msg(self.currently_learning_msg(''))
+                    return True
                 # defer the command
                 defer_successful = self.defer()
                 # message the caller and location
@@ -331,8 +342,12 @@ class CmdLearn(Command):
                     caller.msg(caller_msg)
                     caller.emote_location(f'/Me begins to study {skill_name}.')
                     self.requires_ready = True  # Does the command require the ready status
-            else:  # argument is not an skill with an increasable rank
-                self.msg(f'{args}, is not an increasable skill.')
+            else:  # argument is not a skill with an increasable rank
+                if caller_learning:
+                    if not skill_name == caller_learning.get('skill_name'):
+                        self.msg(f'{args}, is not an increasable skill.')
+                else:
+                    self.msg(f'{args}, is not an increasable skill.')
                 self.increaseable_ranks_msg(increaseable_skills)
                 return True
         else:  # no arguments show available rank increases

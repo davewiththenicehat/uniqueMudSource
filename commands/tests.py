@@ -2565,6 +2565,19 @@ class TestLearn(UniqueMudCmdTest):
         self.assertTrue(isinstance(learning_dict.get('task_id'), int))
         self.assertTrue(isinstance(learning_dict.get('rank'), int))
         self.assertTrue(isinstance(learning_dict.get('skill_name'), str))
+        self.task_handler.clock.advance(1801)
+        self.assertFalse(self.char1.learning)
+
+    def test_learn_one_skill_at_a_time(self):
+        self.char1.skills.unarmed.punch_exp = 600
+        command = developer_cmds.CmdMultiCmd
+        arg = "= learn punch, complete_cmd_early"
+        self.call(command(), arg)
+        arg = "= learn punch"
+        cmd_result = self.call(command(), arg)
+        wnt_msg = r"^You are currently learning punch to rank 2\.\n" \
+                  r"Learning will complete on \d+-\d+-\d+ \d+:\d+:\d+\.$"
+        self.assertRegex(cmd_result, wnt_msg)
 
     def test_task(self):
         self.char1.skills.unarmed.punch_exp = 600

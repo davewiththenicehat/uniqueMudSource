@@ -319,4 +319,6 @@ def learn(char_dbref, skill_name):
         if skill_name in skill_names:
             skill_set = getattr(char.skills, skill_set_name, False)
             skill_set[skill_name] += 1
+    # remove the learning dictionary from the character.
+    del char.learning
     return True
