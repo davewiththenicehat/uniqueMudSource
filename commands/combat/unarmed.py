@@ -48,6 +48,7 @@ class UnarmedCommand(Command):
         self.cost_level = 'easy' #  level this action should cost. Acceptable levels: 'very easy', 'easy', 'moderate' 'hard', 'daunting' or a number
         self.required_ranks = 1  # required ranks in the commands skill_name for this command to work.
         self.range = [self.caller.location]  # caller and target must be in the same room.
+        self.requires_standing = True  # Does this command require caller to be standing? False by default
 
     def at_pre_cmd(self):
         """

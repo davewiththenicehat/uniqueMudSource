@@ -2672,3 +2672,22 @@ class TestSkills(UniqueMudCmdTest):
         arg = "= skills one handed"
         wnt_msg = 'One handed|skill points: 150|'
         self.call(command(), arg, wnt_msg)
+
+
+class TestRequiresStanding(UniqueMudCmdTest):
+
+    def test_requires_standing(self):
+        self.char1.sit()
+        command = developer_cmds.CmdMultiCmd
+        test_cmds = ('punch', 'kick')
+        for cmd_name in test_cmds:
+            arg = f"= {cmd_name} char2"
+            wnt_msg = f'You must be standing to {cmd_name}.'
+            self.call(command(), arg, wnt_msg)
+
+    def test_exits_requires_standing(self):
+        self.char1.sit()
+        command = developer_cmds.CmdMultiCmd
+        arg = "= out"
+        wnt_msg = 'You must stand up first.'
+        self.call(command(), arg, wnt_msg)

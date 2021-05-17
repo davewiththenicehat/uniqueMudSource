@@ -179,6 +179,7 @@ class Command(default_cmds.MuxCommand):
             item types will match command set names in world.rules.skills.SKILLS
             The item.item_type attribute must match the command's Command.cmd_type
             Example: 'one_handed'
+        requires_standing (bool): Does this command require caller to be standing? False by default
         required_ranks = 0  # required ranks in the commands skill_name for this command to work.
         dmg_mod_stat = 'STR'  # the stat that will modifier damage this command manipulates
         dmg_types = None  # dictionary of damage types this command can manipulate.
@@ -282,6 +283,7 @@ class Command(default_cmds.MuxCommand):
             # deferal commands still require ready to defer
         self.requires_conscious = True  # if true this command requires the caller to be conscious
         self.requires_wielding = None  # require a wielded item type for command to work.
+        self.requires_standing = False  # Does this command require caller to be standing? False by default
         self.required_ranks = 0  # required ranks in the commands skill_name for this command to work.
         self.cost_stat = 'END'  # stat this command will use for the action's cost
         self.cost_level = None  # level this action should cost. Acceptable levels: 'very easy', 'easy', 'moderate' 'hard', 'daunting' or a number
@@ -496,6 +498,11 @@ class Command(default_cmds.MuxCommand):
         if basic:  # check basic command requirements
             if self.requires_conscious:
                 if not caller.ready(conscious_only=True):
+                    return False
+            # check if the command requires caller to be standing
+            if self.requires_standing:
+                if not caller.position == 'standing':
+                    caller.msg(f'You must be standing to {self.key}.')
                     return False
             # check if required wielded weapon is being wielded.
             if self.requires_wielding:
