@@ -3,6 +3,11 @@ Function and variable to represent Object and Character bodies.
 
 Some character races many have many hands or hands with odd names.
 Avoid using right_hand left_hand logic.
+
+For a full reference on how the body functions on objects refer to:
+    typeclasses.mixins.CharExAndObjMixin
+
+Rooms do not have bodies.
 """
 
 from evennia.utils.logger import log_info

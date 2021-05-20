@@ -2691,3 +2691,73 @@ class TestRequiresStanding(UniqueMudCmdTest):
         arg = "= out"
         wnt_msg = 'You must stand up first.'
         self.call(command(), arg, wnt_msg)
+
+
+class TestArmor(UniqueMudCmdTest):
+
+    def test_no_dr(self):
+        command = developer_cmds.CmdMultiCmd
+        wnt_msg = '^You will be busy for 1 second.\nYou begin to check your armor.\n' \
+                  '    Body Part     Armor Name     ACD     BLG     CLD     FIR     ELC     MNT     PRC     POI     RAD     SLS \n' \
+                  'You are no longer busy.$'
+        for armor_aliase in ('armor', 'dr', 'damage reduction'):
+            arg = f"= {armor_aliase}, complete_cmd_early"
+            cmd_result = self.call(command(), arg)
+            self.assertRegex(cmd_result, wnt_msg)
+
+    def test_armor_worn(self):
+        command = developer_cmds.CmdMultiCmd
+        # wear armor
+        for dr_type, _ in self.test_helmet.dr.items():
+            self.test_helmet.dr[dr_type] = 1
+        arg = "= get helmet, complete_cmd_early, wear helmet, complete_cmd_early"
+        self.call(command(), arg)
+        self.assertTrue(self.test_helmet.db.worn)
+        # test armor command
+        wnt_msg = '^You will be busy for 1 second.\nYou begin to check your armor.\n' \
+                  '    Body Part     Armor Name           ACD     BLG     CLD     FIR     ELC     MNT     PRC     POI     RAD     SLS \n' \
+                  '    head          test helmet\(#11\)     1       1       1       1       1       1       1       1       1       1   \n' \
+                  'You are no longer busy.$'
+        for armor_aliase in ('armor', 'dr', 'damage reduction'):
+            arg = f"= {armor_aliase}, complete_cmd_early"
+            cmd_result = self.call(command(), arg)
+            self.assertRegex(cmd_result, wnt_msg)
+
+    def test_natural_dr(self):
+        self.char1.dr.BLG = 1
+        command = developer_cmds.CmdMultiCmd
+        wnt_msg = '^You will be busy for 1 second.\nYou begin to check your armor.\n' \
+                  '    Body Part     Armor Name     ACD     BLG     CLD     FIR     ELC     MNT     PRC     POI     RAD     SLS \n' \
+                  '    -all-         natural        0       1       0       0       0       0       0       0       0       0   \n' \
+                  'You are no longer busy.$'
+        for armor_aliase in ('armor', 'dr', 'damage reduction'):
+            arg = f"= {armor_aliase}, complete_cmd_early"
+            cmd_result = self.call(command(), arg)
+            self.assertRegex(cmd_result, wnt_msg)
+
+    def test_clothing_and_armor(self):
+        command = developer_cmds.CmdMultiCmd
+        # wear armor and clothing
+        for dr_type, _ in self.test_helmet.dr.items():
+            self.test_helmet.dr[dr_type] = 1
+        arg = "= get helmet, complete_cmd_early, wear helmet, complete_cmd_early," \
+              'get shirt, complete_cmd_early, wear shirt, complete_cmd_early'
+        self.call(command(), arg)
+        self.assertTrue(self.test_helmet.db.worn)
+        self.assertTrue(self.test_shirt.db.worn)
+        # test armor command
+        wnt_msg = '^You will be busy for 1 second.\nYou begin to check your armor.\n' \
+                  '    Body Part     Armor Name           ACD     BLG     CLD     FIR     ELC     MNT     PRC     POI     RAD     SLS \n' \
+                  '    head          test helmet\(#11\)     1       1       1       1       1       1       1       1       1       1   \n' \
+                  'You are no longer busy.$'
+        for armor_aliase in ('armor', 'dr', 'damage reduction'):
+            arg = f"= {armor_aliase}, complete_cmd_early"
+            cmd_result = self.call(command(), arg)
+            self.assertRegex(cmd_result, wnt_msg)
+
+    def test_room_msg(self):
+        command = developer_cmds.CmdMultiCmd
+        wnt_msg = 'Char begins to check their armor.|Char completes the check of their armor.'
+        for armor_aliase in ('armor', 'dr', 'damage reduction'):
+            arg = f"= {armor_aliase}, complete_cmd_early"
+            self.call(command(), arg, wnt_msg, receiver=self.char2)

@@ -45,9 +45,9 @@ class CharExAndObjMixin:
                Changing this will result in a temp change until the character wears anything,
                the server restarts, or the Character is initialized for any reason.
            body.head.dr.el_list, a list of dr values this body part is covered with.
-           body.head.dr.DAMAGE_TYPE=int, dr value of a type from the DAMAGE_TYPES list
+           body.head.dr.DAMAGE_TYPE (int), dr value of a type from the DAMAGE_TYPES list
                for example body.head.dr.PRC for peirce
-           body.head.PART_STATUS=boolean, a status from the PART_STATUS list.
+           body.head.PART_STATUS (boolean), a status from the PART_STATUS list.
                for example body.head.bleeding, for bleeding
 
     Methods:
@@ -154,6 +154,7 @@ class CharExAndObjMixin:
                 for dmg_type in DAMAGE_TYPES:
                     if hasattr(part_inst.dr, dmg_type):
                         delattr(part_inst.dr, dmg_type)
+            setattr(part_inst.dr, 'el_list', [])
         # cache worn dr
         for item in self.contents:
             if item.db.worn:

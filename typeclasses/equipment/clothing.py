@@ -81,6 +81,7 @@ from evennia.utils import evtable
 from typeclasses.objects import Object
 from commands.command import Command
 from world.rules.body import HUMANOID_BODY
+from world.rules.damage import TYPES as DAMAGE_TYPES
 from utils.um_utils import highlighter
 
 # Options start here.
@@ -650,6 +651,99 @@ class CmdRemove(ClothingCommand):
                 open_hand.occupied = clothing.dbref
 
 
+class CmdArmor(Command):
+    """
+    Display the armor status of your Character.
+
+    Usage:
+        armor: Show armor worn on entire body.
+        armor [body part name]: show the armor worn on a single body part.
+
+    Time:
+        By default completion time is 1 second.
+    """
+
+    key = 'armor'
+    aliases = ['dr', 'damage reduction']
+
+    def set_instance_attributes(self):
+        """Called automatically at the start of at_pre_cmd.
+
+        Here to easily set command instance attributes.
+        """
+        self.defer_time = 1  # time is seconds for the command to wait before running action of command
+
+    def start_message(self):
+        """
+        Display a message after a command has been successfully deffered.
+
+        Automatically called at the end of Command.func
+        """
+        caller = self.caller
+        room_message = f'/Me begins to check {caller.get_pronoun("|p")} armor.'
+        caller.emote_location(room_message)
+        caller.msg('You begin to check your armor.')
+
+    def deferred_action(self):
+        """This method is called after defer_time seconds when the Command.defer method is used.
+
+        Notes:
+            Intended to be overritten. Simply put the action portions of a command in this method.
+        Returns:
+            successful (bool): True if the command completed sucessfully.
+                If this method returns True self.def_act_comp will be called after automatically.
+        """
+        caller = self.caller
+        # collect only body parts with damage reduction, from armor only
+        armored_body_parts = {}
+        for part in caller.body.parts:
+            body_part_inst = getattr(caller.body, part, False)
+            for dr in body_part_inst.dr.el_list:  # body parts dr is not a list element, it is a cache
+                if dr:
+                    armored_body_parts.update({part:  None})
+                    continue
+        # get worn armor dr values
+        for item in caller.contents:
+            if item.attributes.has('worn'):
+                # the item is worn and is armor
+                if item.db.worn and item.db.clothing_type in armored_body_parts:
+                    part_name = item.db.clothing_type
+                    armored_body_parts.update({part_name: item})
+        # get natural dr values
+        for dr in caller.dr:
+            if dr:
+                armored_body_parts.update({'natural': caller})
+                break
+        part_names = []
+        armor_names = []
+        dr_values = []
+        # create empty holder lists for each damage type to be used as headers in an evtable
+        for dmg_type in DAMAGE_TYPES:
+            dr_values.append([])
+        # Collect body part and item names into lists for evtable
+        for part_name, item in armored_body_parts.items():
+            if part_name == 'natural':
+                part_names.append(highlighter('-all-', click_cmd='echo Natural armor applies to all body parts.'))
+                click_cmd="echo Natural armor applies damage redution to a Character's entire body."
+                armor_names.append(highlighter('natural', click_cmd=click_cmd))
+            else:
+                part_names.append(part_name)
+                armor_names.append(item.get_display_name(caller))
+            # create lists for each damage type in the same order as body part names
+            i = 0
+            for dmg_type in DAMAGE_TYPES:
+                dr_values[i].append(item.dr[dmg_type])
+                i += 1
+        dmg_types_header = []
+        for dmg_type in DAMAGE_TYPES:
+            dmg_types_header.append(highlighter(dmg_type, click_cmd=f'help {dmg_type}'))
+        msg_header = ['Body Part', 'Armor Name'] + dmg_types_header
+        msg_list = [part_names, armor_names] + dr_values
+        msg_table = evtable.EvTable(*msg_header, table=msg_list, border=None, pad_left=4)
+        caller.msg(msg_table, force=True)
+        room_message = f'/Me completes the check of {caller.get_pronoun("|p")} armor.'
+        caller.emote_location(room_message)
+
 class ClothedCharacterCmdSet(default_cmds.CharacterCmdSet):
     """
     Command set for clothing, including new versions of 'drop'
@@ -672,3 +766,4 @@ class ClothedCharacterCmdSet(default_cmds.CharacterCmdSet):
         #
         self.add(CmdWear())
         self.add(CmdRemove())
+        self.add(CmdArmor())
