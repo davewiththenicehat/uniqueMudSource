@@ -52,7 +52,47 @@ class StandardCmdsCmdSet(default_cmds.CharacterCmdSet):
         self.add(CmdLearn)
         self.add(CmdStop)
         self.add(CmdSkills)
+        self.add(CmdEcho)
 
+class CmdEcho(Command):
+    """
+    echo a message to command caller.
+
+    Notes:
+        Message will echo to unconcious or dead Characters also.
+
+    Usage:
+        echo [message], echo message to the command's caller.
+        Intended for making clickable links in commands that show a message.
+    """
+
+    key = 'echo'
+    auto_help = False
+
+    def set_instance_attributes(self):
+        """Called automatically at the start of at_pre_cmd.
+
+        Here to easily set command instance attributes.
+        """
+        self.requires_ready = False  # Does the command require the ready status
+        self.requires_conscious = False  # if true this command requires the caller to be conscious
+
+    def func(self):
+        """
+        To more seamlessly support UniqueMud's deffered command system, evennia's Command.func has been overridden.
+
+        UniqueMud:
+            UniqueMud's func will:
+                defer the action of the command.
+                call Command.start_message if the command deffered successfully.
+            If your command does not defer an action, override Command.func
+            It is possible to use this method within your overidden one with:
+                super().self.func()
+        """
+        caller = self.caller
+        args = self.args
+        if args:
+            caller.msg(args, force=True)
 
 class CmdSkills(Command):
     """

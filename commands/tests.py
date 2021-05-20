@@ -2761,3 +2761,24 @@ class TestArmor(UniqueMudCmdTest):
         for armor_aliase in ('armor', 'dr', 'damage reduction'):
             arg = f"= {armor_aliase}, complete_cmd_early"
             self.call(command(), arg, wnt_msg, receiver=self.char2)
+
+
+class TestEcho(UniqueMudCmdTest):
+
+    def test_echo(self):
+        command = developer_cmds.CmdMultiCmd
+        arg = "= echo Test message."
+        wnt_msg = 'Test message.'
+        self.call(command(), arg, wnt_msg)
+
+    def test_silent(self):
+        command = developer_cmds.CmdMultiCmd
+        arg = "= echo Test message."
+        wnt_msg = ''
+        self.call(command(), arg, wnt_msg, receiver=self.char2)
+
+    def test_no_help_entry(self):
+        command = developer_cmds.CmdMultiCmd
+        arg = "= help echo"
+        wnt_msg = "No help entry found for 'echo'"
+        self.call(command(), arg, wnt_msg)
