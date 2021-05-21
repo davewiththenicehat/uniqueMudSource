@@ -583,3 +583,35 @@ class TestUtils(UniqueMudCmdTest):
         self.assertRegex(report_msg, r"^An error was found and has been logged")
         report_msg = um_utils.error_report("test error", self.char1)
         self.assertRegex(report_msg, r"System detects you are a developer\.$")
+
+
+from world.rules.help import ENTRIES as HELP_ENTRIES, refresh_entries, remove_empty_entries
+from evennia.utils.search import search_help
+from evennia import create_help_entry
+
+
+class TestHelp(UniqueMudCmdTest):
+
+    def test_entries(self):
+        # do tasks that would normally occur at server startup
+        refresh_entries()
+        # verify wanted entries exist
+        for category, entries in HELP_ENTRIES.items():
+            for entry_name, entry in entries.items():
+                help_entry = list(search_help(entry_name, help_category=category))[0]
+                self.assertEqual(help_entry.entrytext, entry)
+
+    def test_auto_remove(self):
+        # Create the help entries.
+        refresh_entries()
+        # create a temp entry for testing, verify it exists
+        entry_name = 'test entry'
+        entry = 'test entry message'
+        category = 'temp test'
+        create_help_entry(entry_name, entry, category=category, locks="view:all()")
+        help_entry = list(search_help(entry_name, help_category=category))[0]
+        self.assertEqual(help_entry.entrytext, entry)
+        # remove entries not in static help list, verify 'test entry' no longer exists
+        remove_empty_entries()
+        help_entry = list(search_help(entry_name, help_category=category))
+        self.assertFalse(help_entry)
