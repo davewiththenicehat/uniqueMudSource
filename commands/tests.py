@@ -7,7 +7,7 @@ from typeclasses.objects import Object
 from typeclasses.equipment import clothing
 from commands import standard_cmds, developer_cmds
 from utils.unit_test_resources import UniqueMudCmdTest
-from utils.um_utils import replace_cap
+from utils.emote import replace_cap
 from world.rules.stats import STATS, STAT_MAP_DICT
 from world.rules.body import HUMANOID_BODY
 from world.rules.actions import COST_LEVELS
