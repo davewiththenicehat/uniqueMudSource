@@ -4,26 +4,8 @@ from evennia import GLOBAL_SCRIPTS
 from evennia.help.models import HelpEntry
 
 from typeclasses.scripts import Script
+from world.rules.help_entries import ENTRIES
 
-DMG_TYPES_ENTRIES = {
-    'ACD': """Acid
-    Special:
-        entry
-    """,
-    'BLG': 'bludgeoning',
-    #'CLD': 'cold',
-    #'FIR': 'fire',
-    #'ELC': 'electric',
-    #'MNT': 'mental',
-    #'PRC': 'piercing',
-    #'POI': 'poison',
-    #'RAD': 'radiation',
-    #'SLS': 'slashing'
-}
-
-ENTRIES = {
-    'rules': DMG_TYPES_ENTRIES
-}
 
 REFRESH_INTERVALS = 86400
 
@@ -32,6 +14,8 @@ def refresh_entries():
     """Refreshes old and create new entries in the help system."""
     for category, entries in ENTRIES.items():
         for entry_name, entry in entries.items():
+            entry_inst = HelpEntry.objects.search_help(entry_name, help_category=category)
+            entry_inst.delete()
             create_help_entry(entry_name, entry, category=category, locks="view:all()")
 
 

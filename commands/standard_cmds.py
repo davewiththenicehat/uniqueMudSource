@@ -715,7 +715,7 @@ _DEFAULT_WIDTH = settings.CLIENT_DEFAULT_WIDTH
 _SEP = "|C" + "-" * _DEFAULT_WIDTH + "|n"
 
 
-class CmdHelp(EvCmdHelp):
+class CmdHelp(EvCmdHelp, Command):
     """
     View help or a list of topics
 
@@ -738,6 +738,16 @@ class CmdHelp(EvCmdHelp):
 
     # number of suggestions (set to 0 to remove suggestions from help)
     suggestion_maxnum = 5
+
+    def set_instance_attributes(self):
+        """Called automatically at the start of at_pre_cmd.
+
+        Here to easily set command instance attributes.
+        """
+        self.requires_ready = False  # if true this command requires the ready status before it can do anything. deferal commands still require ready to defer
+        self.requires_conscious = False  # if true this command requires the caller to be conscious
+        if not self.args:
+            self.args = 'basic'
 
     def msg_help(self, text):
         """

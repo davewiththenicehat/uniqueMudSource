@@ -18,6 +18,7 @@ at_server_cold_stop()
 
 from world.rules.help import at_start_refresh_help
 
+
 def at_server_start():
     """
     This is called every time the server starts up, regardless of
