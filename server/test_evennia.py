@@ -69,7 +69,7 @@ class TestHelp(TestHelp):
     room_typeclass = Room
     def test_help(self):
         self.account.puppet_object(self.session, self.char1)
-        self.call(help.CmdHelp(), "", "Command help entries", cmdset=StandardCmdsCmdSet())
+        self.call(help.CmdHelp(), "", "Commands", cmdset=StandardCmdsCmdSet())
 
     def test_set_help(self):
         self.account.puppet_object(self.session, self.char1)

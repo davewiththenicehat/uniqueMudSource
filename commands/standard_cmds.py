@@ -709,11 +709,6 @@ class CmdLook(EvCmdLook, Command):
                     caller.location.emote_contents(room_msg, caller, em_targ, exclude=(caller, target))
                     target.emote(target_msg, sender=caller)
 
-# separator used to format help cmd
-from django.conf import settings
-_DEFAULT_WIDTH = settings.CLIENT_DEFAULT_WIDTH
-_SEP = "|C" + "-" * _DEFAULT_WIDTH + "|n"
-
 
 class CmdHelp(EvCmdHelp, Command):
     """
@@ -771,66 +766,6 @@ class CmdHelp(EvCmdHelp, Command):
                 return
 
         self.msg(text=(text, {"type": "help"}))
-
-    @staticmethod
-    def format_help_entry(title, help_text, aliases=None, suggested=None):
-        """
-        This visually formats the help entry.
-        This method can be overriden to customize the way a help
-        entry is displayed.
-
-        Args:
-            title (str): the title of the help entry.
-            help_text (str): the text of the help entry.
-            aliases (list of str or None): the list of aliases.
-            suggested (list of str or None): suggested reading.
-
-        Returns the formatted string, ready to be sent.
-
-        """
-        string = _SEP + "\n"
-        if title:
-            string += "|CHelp for |w%s|n" % title
-        if aliases:
-            string += " |C(aliases: %s|C)|n" % ("|C,|n ".join("|w%s|n" % ali for ali in aliases))
-        if help_text:
-            string += "\n%s" % dedent(help_text.rstrip())
-        if suggested:
-            string += "\n\n|CSuggested:|n "
-            string += "%s" % fill("|C, ".join(f"|w|lchelp {sug}|lt{sug}|le" for sug in suggested))
-            #f"|C, |G|lchelp {cmd}|lt{cmd}|le"
-        string.strip()
-        string += "\n" + _SEP
-        return string
-
-    @staticmethod
-    def format_help_list(hdict_cmds, hdict_db):
-        """
-        Output a category-ordered list. The input are the
-        pre-loaded help files for commands and database-helpfiles
-        respectively.  You can override this method to return a
-        custom display of the list of commands and topics.
-        """
-        string = ""
-        if hdict_cmds and any(hdict_cmds.values()):
-            string += "\n" + _SEP + "\n   |CCommand help entries|n\n" + _SEP
-            for category in sorted(hdict_cmds.keys()):
-                string += "\n  |w%s|n:\n" % (str(category).title())
-                category_list = hdict_cmds[category]
-                string += f"    |C|G|lchelp {category_list[0]}|lt{category_list[0]}|le"
-                for cmd in category_list[1:]:
-                    # make clickable help commands that strech the screen width
-                    string += f"|C, |G|lchelp {cmd}|lt{cmd}|le"
-        if hdict_db and any(hdict_db.values()):
-            string += "\n\n" + _SEP + "\n\r  |COther help entries|n\n" + _SEP
-            for category in sorted(hdict_db.keys()):
-                string += "\n\r  |w%s|n:\n" % (str(category).title())
-                string += (
-                    "|G"
-                    + fill(", ".join(sorted([str(topic) for topic in hdict_db[category]])))
-                    + "|n"
-                )
-        return string
 
     def msg(self, text=None, to_obj=None, from_obj=None, session=None, **kwargs):
         """
