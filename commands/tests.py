@@ -2777,8 +2777,17 @@ class TestEcho(UniqueMudCmdTest):
         wnt_msg = ''
         self.call(command(), arg, wnt_msg, receiver=self.char2)
 
-    # def test_no_help_entry(self):
-    #    command = developer_cmds.CmdMultiCmd
-    #    arg = "= help echo"
-    #    wnt_msg = "No help entry found for 'echo'"
-    #    self.call(command(), arg, wnt_msg)
+    def test_no_help_entry(self):
+        command = developer_cmds.CmdMultiCmd
+        arg = "= help echo"
+        wnt_msg = "No help found"
+        self.call(command(), arg, wnt_msg)
+
+
+class TestUMHelp(UniqueMudCmdTest):
+
+    def test_help(self):
+        command = developer_cmds.CmdMultiCmd
+        arg = "= help"
+        wnt_msg = "Help for basic"
+        self.call(command(), arg, wnt_msg)

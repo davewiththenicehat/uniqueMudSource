@@ -20,6 +20,8 @@ Each dict is on the form
 
 """
 
+from utils.um_utils import highlighter
+
 HELP_ENTRY_DICTS = [
     {
         "key": "evennia",
@@ -49,11 +51,10 @@ HELP_ENTRY_DICTS = [
         """
     },
     {
-        "key": "building",
-        "category": "building",
-        "text": """
-            Evennia comes with a bunch of default building commands. You can
-            find a building tutorial in the evennia documentation.
+        "key": "basic",
+        "category": "General",
+        "text": f"""
+        For all commands and help topics: {highlighter("help all", click_cmd="help all")}
 
         """
     }

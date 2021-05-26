@@ -1,11 +1,15 @@
+from unittest import mock
+
 from evennia.commands.default.tests import CommandTest
+from evennia.utils.test_resources import TestCase
+from evennia import create_object
+
 from typeclasses.races import Human
 from typeclasses.exits import Exit
 from typeclasses.rooms import Room
 from typeclasses.objects import Object
 from commands import developer_cmds
 from world.rules import body
-from evennia import create_object
 from utils.element import Element
 from utils import um_utils
 from utils.unit_test_resources import UniqueMudCmdTest
@@ -583,3 +587,27 @@ class TestUtils(UniqueMudCmdTest):
         self.assertRegex(report_msg, r"^An error was found and has been logged")
         report_msg = um_utils.error_report("test error", self.char1)
         self.assertRegex(report_msg, r"System detects you are a developer\.$")
+
+
+from world.help_entries import HELP_ENTRY_DICTS
+from evennia.help import filehelp
+
+class TestFileHelp(TestCase):
+    """
+    Test the File-help system
+
+    """
+
+    @mock.patch("evennia.help.filehelp.variable_from_module")
+    def test_file_help(self, mock_variable_from_module):
+        mock_variable_from_module.return_value = HELP_ENTRY_DICTS
+
+        # we just need anything here since we mock the load anyway
+        storage = filehelp.FileHelpStorageHandler(help_file_modules=["dummypath"])
+        result = storage.all()
+
+        for inum, helpentry in enumerate(result):
+            self.assertEqual(HELP_ENTRY_DICTS[inum]['key'], helpentry.key)
+            self.assertEqual(HELP_ENTRY_DICTS[inum].get('aliases', []), helpentry.aliases)
+            self.assertEqual(HELP_ENTRY_DICTS[inum]['category'], helpentry.help_category)
+            self.assertEqual(HELP_ENTRY_DICTS[inum]['text'], helpentry.entrytext)

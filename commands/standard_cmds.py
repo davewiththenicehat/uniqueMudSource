@@ -743,6 +743,8 @@ class CmdHelp(EvCmdHelp, Command):
         self.requires_conscious = False  # if true this command requires the caller to be conscious
         if not self.args:
             self.args = 'basic'
+        elif 'all' == self.args.lower().strip():
+            self.args = ''
 
     def msg_help(self, text):
         """
