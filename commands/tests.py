@@ -639,7 +639,7 @@ class TestCommands(UniqueMudCmdTest):
         self.test_helmet2.db.clothing_type = "head"
         self.test_helmet2.location = self.room1
         # make an undershirt
-        test_undershirt = create_object(clothing.Clothing, key="test undershirt")
+        test_undershirt = create_object(clothing.UMClothing, key="test undershirt")
         test_undershirt.db.clothing_type = "undershirt"
         test_undershirt.location = self.room1
 

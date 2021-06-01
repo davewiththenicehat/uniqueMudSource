@@ -528,15 +528,15 @@ class TestClothingFunc(EvenniaTest):
         room = create_object(Room, key="room")
         wearer.location = room
         # Make a test hat
-        test_hat = create_object(clothing.Clothing, key="test hat")
+        test_hat = create_object(clothing.UMClothing, key="test hat")
         test_hat.db.clothing_type = "hat"
         test_hat.location = wearer
         # Make a test shirt
-        test_shirt = create_object(clothing.Clothing, key="test shirt")
+        test_shirt = create_object(clothing.UMClothing, key="test shirt")
         test_shirt.db.clothing_type = "top"
         test_shirt.location = wearer
         # Make a test pants
-        test_pants = create_object(clothing.Clothing, key="test pants")
+        test_pants = create_object(clothing.UMClothing, key="test pants")
         test_pants.db.clothing_type = "bottom"
         test_pants.location = wearer
 

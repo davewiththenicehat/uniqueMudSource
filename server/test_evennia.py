@@ -62,23 +62,8 @@ class TestDefaultAccountEv(TestDefaultAccountEv):
             self.account.msg.assert_called_with("You are already puppeting this object.")
 
 
-class TestHelp(TestHelp):
-    object_typeclass = Object
-    character_typeclass = Human
-    exit_typeclass = Exit
-    room_typeclass = Room
-    def test_help(self):
-        self.account.puppet_object(self.session, self.char1)
-        self.call(help.CmdHelp(), "", "Commands", cmdset=StandardCmdsCmdSet())
-
-    def test_set_help(self):
-        self.account.puppet_object(self.session, self.char1)
-        self.call(
-            help.CmdSetHelp(),
-            "testhelp, General = This is a test",
-            "Topic 'testhelp' was successfully created.",
-        )
-        self.call(help.CmdHelp(), "testhelp", "Help for testhelp", cmdset=CharacterCmdSet())
+class TestHelp():
+    """Custom help tests due to large change in help system."""
 
 
 class TestSystem(TestSystem):

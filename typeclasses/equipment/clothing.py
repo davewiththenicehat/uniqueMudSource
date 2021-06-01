@@ -45,16 +45,16 @@ can easily be made more restrictive, and can even be tied into a
 system for armor or other equipment.
 
 To install, import this module and have your default character
-inherit from ClothedCharacter in your game's characters.py file:
+inherit from UMClothedCharacter in your game's characters.py file:
 
-    from typeclasses.equipment.clothing. import ClothedCharacter
+    from typeclasses.equipment.clothing. import UMClothedCharacter
 
-    class Character(ClothedCharacter):
+    class Character(UMClothedCharacter):
 
-And then add ClothedCharacterCmdSet in your character set in your
+And then add UMClothedCharacterCmdSet in your character set in your
 game's commands/default_cmdsets.py:
 
-    from typeclasses.equipment.clothing. import ClothedCharacterCmdSet
+    from typeclasses.equipment.clothing. import UMClothedCharacterCmdSet
 
     class CharacterCmdSet(default_cmds.CharacterCmdSet):
          ...
@@ -62,12 +62,12 @@ game's commands/default_cmdsets.py:
 
              super().at_cmdset_creation()
              ...
-             self.add(ClothedCharacterCmdSet)    # <-- add this
+             self.add(UMClothedCharacterCmdSet)    # <-- add this
 
 From here, you can use the default builder commands to create clothes
 with which to test the system:
 
-    @create a pretty shirt : typeclasses.equipment.clothing.Clothing
+    @create a pretty shirt : typeclasses.equipment.clothing.UMClothing
     @set shirt/clothing_type = 'top'
     wear shirt
 
@@ -141,7 +141,7 @@ CLOTHING_TYPE_AUTOCOVER = {
 # Types of clothes that can't be used to cover other clothes.
 CLOTHING_TYPE_CANT_COVER_WITH = ["jewelry"]
 # used to refer to the clothing class, to make this easier to create instances of
-CLOTHING_OBJECT_CLASS = "typeclasses.equipment.clothing.Clothing"
+CLOTHING_OBJECT_CLASS = "typeclasses.equipment.clothing.UMClothing"
 
 # HELPER FUNCTIONS START HERE
 
@@ -249,7 +249,7 @@ def single_type_count(clothes_list, type):
     return type_count
 
 
-class Clothing(Object):
+class UMClothing(Object):
     """
     Class of clothing objects.
 
@@ -368,9 +368,9 @@ class Clothing(Object):
         """
         self.db.worn = False
 
-class HumanoidArmor(Clothing):
+class HumanoidArmor(UMClothing):
     """
-    inherits typeclasses.equipment.Clothing
+    inherits typeclasses.equipment.UMClothing
 
     Armor tested in commands.tests
     """
@@ -399,7 +399,7 @@ class HumanoidArmor(Clothing):
         })
         return super().at_init()  # Here only to support future change to evennia's Object.at_init
 
-class ClothedCharacter(DefaultCharacter):
+class UMClothedCharacter(DefaultCharacter):
     """
     Character that displays worn clothing when looked at. You can also
     just copy the return_appearance hook defined below to your own game's
@@ -744,7 +744,7 @@ class CmdArmor(Command):
         room_message = f'/Me completes the check of {caller.get_pronoun("|p")} armor.'
         caller.emote_location(room_message)
 
-class ClothedCharacterCmdSet(default_cmds.CharacterCmdSet):
+class UMClothedCharacterCmdSet(default_cmds.CharacterCmdSet):
     """
     Command set for clothing, including new versions of 'drop'
     that take worn and covered clothing into account, as well as a new

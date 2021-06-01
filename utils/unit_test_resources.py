@@ -36,8 +36,8 @@ class UniqueMudTest(EvenniaTest):
         char2 (Character):
         exit (exit):
         room1 (Room):
-        test_hat (Clothing):
-        test_shirt (Clothing):
+        test_hat (UMClothing):
+        test_shirt (UMClothing):
         test_helmet (HumanoidArmor):
 
     """
@@ -64,11 +64,11 @@ class UniqueMudTest(EvenniaTest):
         self.sword = create_object(OneHandedWeapon, key="a sword")
         self.sword.targetable = True
         self.sword.location = self.char1.location
-        self.test_hat = create_object(clothing.Clothing, key="test hat")
+        self.test_hat = create_object(clothing.UMClothing, key="test hat")
         self.test_hat.db.clothing_type = "hat"
         self.test_hat.location = self.room1
         # Make a test shirt
-        self.test_shirt = create_object(clothing.Clothing, key="test shirt")
+        self.test_shirt = create_object(clothing.UMClothing, key="test shirt")
         self.test_shirt.db.clothing_type = "top"
         self.test_shirt.location = self.room1
         # Make a test helmet

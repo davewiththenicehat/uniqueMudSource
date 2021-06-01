@@ -15,7 +15,7 @@ from world import status_functions
 from evennia import utils
 from world.rules import stats, body, damage, actions, skills as skills_rules
 from evennia.contrib.rpsystem import ContribRPCharacter
-from typeclasses.equipment.clothing import ClothedCharacter
+from typeclasses.equipment.clothing import UMClothedCharacter
 from evennia.contrib.rpsystem import RPSystemCmdSet
 from evennia import DefaultScript
 
@@ -33,7 +33,7 @@ CHARACTER_STAT_SETTINGS = {
 }
 
 
-class Character(AllObjectsMixin, CharExAndObjMixin, ClothedCharacter, GenderCharacter, ContribRPCharacter):
+class Character(AllObjectsMixin, CharExAndObjMixin, UMClothedCharacter, GenderCharacter, ContribRPCharacter):
     """
     The Character defaults to reimplementing some of base Object's hook methods with the
     following functionality:

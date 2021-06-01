@@ -138,8 +138,8 @@ class CharExAndObjMixin:
             for example body.head.dr.PRC for peirce
 
         This is automatically called in:
-        typeclasses.equipment.clothing.Clothing.wear
-        typeclasses.equipment.clothing.Clothing.Clothing.remove
+        typeclasses.equipment.clothing.UMClothing.wear
+        typeclasses.equipment.clothing.UMClothing.Clothing.remove
         typeclasses.objects.at_init
         typeclasses.characters.at_init
         typeclasses.exits.at_init

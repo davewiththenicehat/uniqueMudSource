@@ -143,7 +143,7 @@ class Command(default_cmds.MuxCommand):
         can_not_target_self = False  # if True this command will end with a message if the Character targets themself
             Failure message is handled automatically.
         target_inherits_from = False  # a tuple, position 0 string of a class type, position 1 is a string to show on mismatch
-            example: target_inherits_from = ("typeclasses.equipment.clothing.Clothing", 'clothing and armor')
+            example: target_inherits_from = ("typeclasses.equipment.clothing.UMClothing", 'clothing and armor')
             Failure message is handled automatically.
         target_in_hand = False  # if True the target of the command must be in the Characters hand to complete successfully
         search_caller_only = False  # if True the command will only search the caller for targets
