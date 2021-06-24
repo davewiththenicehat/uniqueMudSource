@@ -2791,3 +2791,23 @@ class TestUMHelp(UniqueMudCmdTest):
         arg = "= help"
         wnt_msg = "Help for basic"
         self.call(command(), arg, wnt_msg)
+
+    def test_help_args(self):
+
+        # test with the all argument
+        command = developer_cmds.CmdMultiCmd
+        arg = "= help all"
+        cmd_results = self.call(command(), arg)
+        self.assertTrue('Commands' in cmd_results)
+        self.assertTrue('Game & World' in cmd_results)
+
+        # test with the commands argument
+        command = developer_cmds.CmdMultiCmd
+        arg = "= help commands"
+        cmd_results = self.call(command(), arg)
+        self.assertTrue('punch' in cmd_results)
+
+        # test with the rules argument
+        arg = "= help rules"
+        cmd_results = self.call(command(), arg)
+        self.assertFalse('punch' in cmd_results)

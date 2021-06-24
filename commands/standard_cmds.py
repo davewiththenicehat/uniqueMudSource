@@ -741,10 +741,35 @@ class CmdHelp(EvCmdHelp, Command):
         """
         self.requires_ready = False  # if true this command requires the ready status before it can do anything. deferal commands still require ready to defer
         self.requires_conscious = False  # if true this command requires the caller to be conscious
+
+    def parse(self):
+        """
+        input is a string containing the command or topic to match.
+
+        The allowed syntax is
+        ::
+
+            help <topic>[/<subtopic>[/<subtopic>[/...]]]
+
+        The database/command query is always for `<topic>`, and any subtopics
+        is then parsed from there. If a `<topic>` has spaces in it, it is
+        always matched before assuming the space begins a subtopic.
+
+        """
+        # parse the query
+        if self.args:
+            self.subtopics = [part.strip().lower()
+                              for part in self.args.split(self.subtopic_separator_char)]
+            self.topic = self.subtopics.pop(0)
+        else:
+            self.topic = ""
+            self.subtopics = []
+
         if not self.args:
-            self.args = 'basic'
-        elif 'all' == self.args.lower().strip():
-            self.args = ''
+            self.topic = 'basic'
+        elif self.topic in ('all', 'commands', 'rules'):
+            self.topic = ''
+
 
     def msg_help(self, text):
         """
@@ -775,6 +800,45 @@ class CmdHelp(EvCmdHelp, Command):
         """
         kwargs.update({"force": True})
         super().msg(text, to_obj, from_obj, session, **kwargs)
+
+    def format_help_index(self, cmd_help_dict=None, db_help_dict=None, title_lone_category=False,
+                          click_topics=True):
+        """Output a category-ordered g for displaying the main help, grouped by
+        category.
+
+        Args:
+            cmd_help_dict (dict): A dict `{"category": [topic, topic, ...]}` for
+                command-based help.
+            db_help_dict (dict): A dict `{"category": [topic, topic], ...]}` for
+                database-based help.
+            title_lone_category (bool, optional): If a lone category should
+                be titled with the category name or not. While pointless in a
+                general index, the title should probably show when explicitly
+                listing the category itself.
+            click_topics (bool, optional): If help-topics are clickable or not
+                (for webclient or telnet clients with MXP support).
+        Returns:
+            str: The help index organized into a grid.
+
+        Notes:
+            The input are the pre-loaded help files for commands and database-helpfiles
+            respectively. You can override this method to return a custom display of the list of
+            commands and topics.
+
+            Overridden in UniqueMud to allow for 'commands' or 'rules' arguments to show only
+            commands or rules.
+
+        """
+        if self.args:
+            topics = [part.strip().lower()
+                              for part in self.args.split(self.subtopic_separator_char)]
+            if topics[0] == 'commands':
+                db_help_dict = {}
+                title_lone_category = True
+            elif topics[0] == 'rules':
+                cmd_help_dict = {}
+                title_lone_category = True
+        return super().format_help_index(cmd_help_dict, db_help_dict, title_lone_category, click_topics)
 
 
 class CmdSay(Command):
