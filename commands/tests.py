@@ -1964,161 +1964,6 @@ class TestCommands(UniqueMudCmdTest):
         self.assertRegex(cmd_result, ": target_message but you successfully evade the cmd_func_test\.")
         self.assertRegex(cmd_result, "room_message and misses\.")
 
-    def test_look(self):
-        """
-        test the look command
-
-        Clothing appearances is tested in test_wear_remove
-        """
-        from commands.standard_cmds import CmdLook
-        self.obj3 = create.create_object(
-            self.object_typeclass, key="Obj3", location=self.room2, home=self.room2
-        )
-        self.room2.db.desc = "Room2 description"
-        self.exit2 = create.create_object(
-            self.exit_typeclass, key="a door", location=self.room1, destination=None
-        )
-        self.char3 = create.create_object(
-            self.character_typeclass, key="Char3", location=self.room1, home=self.room1
-        )
-
-        # using aliases
-        for aliase in CmdLook.aliases:
-            # run a standard look at a room
-            command = developer_cmds.CmdMultiCmd
-            arg = f"= {aliase}"
-            receivers = {
-                self.char1: 'Room_desc\nOn the ground are an Obj(#4), an Obj2(#5), a sword(#8), a test hat(#9), a test helmet(#11) and a test shirt(#10).\nChar2(#7) is here. A normal person(#14) is here.\nYou may leave by out(#3) or a door(#13).',
-                self.char2: None
-            }
-            cmd_result = self.call_multi_receivers(command(), arg, receivers)
-            # look at a room with no description.
-            old_room_desc = self.room1.db.desc
-            self.room1.db.desc = None
-            command = developer_cmds.CmdMultiCmd
-            arg = f"= {aliase}"
-            receivers = {
-                self.char1: 'You are in a space devoid of description.\nOn the ground are an Obj(#4), an Obj2(#5), a sword(#8), a test hat(#9), a test helmet(#11) and a test shirt(#10).\nChar2(#7) is here. A normal person(#14) is here.\nYou may leave by out(#3) or a door(#13).',
-                self.char2: None
-            }
-            cmd_result = self.call_multi_receivers(command(), arg, receivers)
-            self.room1.db.desc = old_room_desc
-            # Character looks at another Character
-            command = developer_cmds.CmdMultiCmd
-            arg = f"= {aliase} Char2"
-            receivers = {
-                self.char1: "Char2(#7) is not wearing anything.",
-                self.char2: "Char looks at you.",
-                self.obj1: "Char looks at char2"
-            }
-            self.call_multi_receivers(command(), arg, receivers)
-            # Character looks at self
-            command = developer_cmds.CmdMultiCmd
-            arg = f"= {aliase} me"
-            receivers = {
-                self.char1: "You are not wearing anything.",
-                self.char2: "Char looks at themself."
-            }
-            self.call_multi_receivers(command(), arg, receivers)
-            # character looks at an exit
-            command = developer_cmds.CmdMultiCmd
-            arg = f"= {aliase} out"
-            receivers = {
-                self.char1: 'Through out(#3) you see:\r\nRoom2 description\nOn the ground is an Obj3(#12)',
-                self.char2: "Char looks through out."
-            }
-            self.call_multi_receivers(command(), arg, receivers)
-            # now look at an exit with no destination
-            command = developer_cmds.CmdMultiCmd
-            arg = f"= {aliase} door"
-            receivers = {
-                self.char1: "A door(#13) does not appear to lead anywhere.",
-                self.char2: "Char looks through a door."
-            }
-            self.call_multi_receivers(command(), arg, receivers)
-            # look at an object without a description
-            command = developer_cmds.CmdMultiCmd
-            arg = f"= {aliase} Obj"
-            receivers = {
-                self.char1: "Obj(#4) is devoid of description.",
-                self.char2: "Char looks at obj.",
-                self.obj1: "Char looks at you."
-            }
-            self.call_multi_receivers(command(), arg, receivers)
-            # give the object a description.
-            self.obj1.db.desc = 'This is a plain object.'
-            command = developer_cmds.CmdMultiCmd
-            arg = f"= {aliase} Obj"
-            receivers = {
-                self.char1: "This is a plain object.",
-                self.char2: "Char looks at obj.",
-                self.obj1: "Char looks at you."
-            }
-            self.call_multi_receivers(command(), arg, receivers)
-            # look at a container
-            self.obj1.container = True
-            command = developer_cmds.CmdMultiCmd
-            arg = f"= {aliase} Obj"
-            receivers = {
-                self.char1: "This is a plain object.\nIt contains nothing.",
-                self.char2: "Char looks at obj.",
-                self.obj1: "Char looks at you."
-            }
-            cmd_result = self.call_multi_receivers(command(), arg, receivers)
-            self.assertRegex(cmd_result, "^This is a plain object\.\nIt contains nothing\.Char looks at obj\.Char looks at you\.$")
-            # look at a container with an object in it
-            self.obj3.location = self.obj1
-            command = developer_cmds.CmdMultiCmd
-            arg = f"= {aliase} Obj"
-            receivers = {
-                self.char1: "This is a plain object.\nIt contains an Obj3(#12).",
-                self.char2: "Char looks at obj.",
-                self.obj1: "Char looks at you."
-            }
-            cmd_result = self.call_multi_receivers(command(), arg, receivers)
-            self.assertRegex(cmd_result, '^This is a plain object\.\\nIt contains an Obj3\(\#12\)\.Char looks')
-            # look at a container with multiple objects in it
-            self.test_shirt.location = self.obj1
-            command = developer_cmds.CmdMultiCmd
-            arg = f"= {aliase} Obj"
-            receivers = {
-                self.char1: "This is a plain object.\nIt contains an Obj3(#12) and a test shirt(#10).",
-                self.char2: "Char looks at obj.",
-                self.obj1: "Char looks at you."
-            }
-            cmd_result = self.call_multi_receivers(command(), arg, receivers)
-            self.assertRegex(cmd_result, '^This is a plain object\.\\nIt contains an Obj3\(\#12\) and a test shirt\(\#10\)\.Char looks at obj\.Char looks at you\.')
-            # look at object in a container
-            self.test_shirt.location = self.obj1
-            command = developer_cmds.CmdMultiCmd
-            arg = f"= {aliase} Obj3 in Obj"
-            receivers = {
-                self.char1: "Obj3(#12) is devoid of description.",
-                self.char2: "Char looks at something in obj.",
-                self.obj3: "Char looks at you."
-            }
-            cmd_result = self.call_multi_receivers(command(), arg, receivers)
-            # put objects in self.obj1 back and reset settings changed
-            self.test_shirt.location = self.room1
-            self.obj1.db.desc = None
-            self.obj1.container = False
-            self.obj3.location = self.room2
-
-
-            # test when the Character has no location
-            self.char1.location = None
-            command = developer_cmds.CmdMultiCmd
-            arg = f"= {aliase}"
-            wnt_msg = "You have no location to look at!"
-            cmd_result = self.call(command(), arg, wnt_msg)
-            self.assertRegex(cmd_result, "caller has no location")
-            self.char1.location =  self.room1
-            # test a bad target name
-            command = developer_cmds.CmdMultiCmd
-            arg = f"= {aliase} intentional fail"
-            wnt_msg = "You do not see intentional fail here."
-            cmd_result = self.call(command(), arg, wnt_msg)
-
     def test_um_emote(self):
         self.char3 = create.create_object(
             self.character_typeclass, key="Character Three", location=self.room1, home=self.room1
@@ -2811,3 +2656,182 @@ class TestUMHelp(UniqueMudCmdTest):
         arg = "= help rules"
         cmd_results = self.call(command(), arg)
         self.assertFalse('punch' in cmd_results)
+
+
+class TestUMLook(UniqueMudCmdTest):
+    """
+    test the look command
+
+    Clothing appearances is tested in test_wear_remove
+    """
+
+    def test_look(self):
+        from commands.standard_cmds import CmdLook
+        self.obj3 = create.create_object(
+            self.object_typeclass, key="Obj3", location=self.room2, home=self.room2
+        )
+        self.room2.db.desc = "Room2 description"
+        self.exit2 = create.create_object(
+            self.exit_typeclass, key="a door", location=self.room1, destination=None
+        )
+        self.char3 = create.create_object(
+            self.character_typeclass, key="Char3", location=self.room1, home=self.room1
+        )
+
+        # using aliases
+        for aliase in CmdLook.aliases:
+            # run a standard look at a room
+            command = developer_cmds.CmdMultiCmd
+            arg = f"= {aliase}"
+            receivers = {
+                self.char1: 'Room_desc\nOn the ground are an Obj(#4), an Obj2(#5), a sword(#8), ' \
+                            'a test hat(#9), a test helmet(#11), and a test shirt(#10).' \
+                            '\nChar2(#7) is here. A normal person(#14) is here.\nYou may leave ' \
+                            'by out(#3) or a door(#13).',
+                self.char2: None
+            }
+            cmd_result = self.call_multi_receivers(command(), arg, receivers)
+
+            # look at a room with no description.
+            old_room_desc = self.room1.db.desc
+            self.room1.db.desc = None
+            command = developer_cmds.CmdMultiCmd
+            arg = f"= {aliase}"
+            receivers = {
+                self.char1: 'You are in a space devoid of description.\nOn the ground are an ' \
+                'Obj(#4), an Obj2(#5), a sword(#8), a test hat(#9), a test helmet(#11), and a ' \
+                'test shirt(#10).\nChar2(#7) is here. A normal person(#14) is here.\nYou may ' \
+                'leave by out(#3) or a door(#13).',
+                self.char2: None
+            }
+            cmd_result = self.call_multi_receivers(command(), arg, receivers)
+            self.room1.db.desc = old_room_desc
+
+            # Character looks at another Character
+            command = developer_cmds.CmdMultiCmd
+            arg = f"= {aliase} Char2"
+            receivers = {
+                self.char1: "Char2(#7) is not wearing anything.",
+                self.char2: "Char looks at you.",
+                self.obj1: "Char looks at char2"
+            }
+            self.call_multi_receivers(command(), arg, receivers)
+
+            # Character looks at self
+            command = developer_cmds.CmdMultiCmd
+            arg = f"= {aliase} me"
+            receivers = {
+                self.char1: "You are not wearing anything.",
+                self.char2: "Char looks at themself."
+            }
+            self.call_multi_receivers(command(), arg, receivers)
+            # character looks at an exit
+            command = developer_cmds.CmdMultiCmd
+            arg = f"= {aliase} out"
+            receivers = {
+                self.char1: 'Through out(#3) you see:\r\nRoom2 description\nOn the ground is an Obj3(#12)',
+                self.char2: "Char looks through out."
+            }
+            self.call_multi_receivers(command(), arg, receivers)
+
+            # now look at an exit with no destination
+            command = developer_cmds.CmdMultiCmd
+            arg = f"= {aliase} door"
+            receivers = {
+                self.char1: "A door(#13) does not appear to lead anywhere.",
+                self.char2: "Char looks through a door."
+            }
+            self.call_multi_receivers(command(), arg, receivers)
+
+            # look at an object without a description
+            command = developer_cmds.CmdMultiCmd
+            arg = f"= {aliase} Obj"
+            receivers = {
+                self.char1: "Obj(#4) is devoid of description.",
+                self.char2: "Char looks at obj.",
+                self.obj1: "Char looks at you."
+            }
+            self.call_multi_receivers(command(), arg, receivers)
+
+            # give the object a description.
+            self.obj1.db.desc = 'This is a plain object.'
+            command = developer_cmds.CmdMultiCmd
+            arg = f"= {aliase} Obj"
+            receivers = {
+                self.char1: "This is a plain object.",
+                self.char2: "Char looks at obj.",
+                self.obj1: "Char looks at you."
+            }
+            self.call_multi_receivers(command(), arg, receivers)
+
+            # look at a container
+            self.obj1.container = True
+            command = developer_cmds.CmdMultiCmd
+            arg = f"= {aliase} Obj"
+            receivers = {
+                self.char1: "This is a plain object.\nIt contains nothing.",
+                self.char2: "Char looks at obj.",
+                self.obj1: "Char looks at you."
+            }
+            cmd_result = self.call_multi_receivers(command(), arg, receivers)
+            self.assertRegex(cmd_result, "^This is a plain object\.\nIt contains nothing\.Char " \
+                                         "looks at obj\.Char looks at you\.$")
+
+            # look at a container with an object in it
+            self.obj3.location = self.obj1
+            command = developer_cmds.CmdMultiCmd
+            arg = f"= {aliase} Obj"
+            receivers = {
+                self.char1: "This is a plain object.\nIt contains an Obj3(#12).",
+                self.char2: "Char looks at obj.",
+                self.obj1: "Char looks at you."
+            }
+            cmd_result = self.call_multi_receivers(command(), arg, receivers)
+            wnt_message = '^This is a plain object\.\\nIt contains an Obj3\(\#12\)\.Char looks'
+            self.assertRegex(cmd_result, wnt_message)
+
+            # look at a container with multiple objects in it
+            self.test_shirt.location = self.obj1
+            command = developer_cmds.CmdMultiCmd
+            arg = f"= {aliase} Obj"
+            receivers = {
+                self.char1: "This is a plain object.\nIt contains an Obj3(#12) and a test shirt(#10).",
+                self.char2: "Char looks at obj.",
+                self.obj1: "Char looks at you."
+            }
+            cmd_result = self.call_multi_receivers(command(), arg, receivers)
+            self.assertRegex(cmd_result, '^This is a plain object\.\\nIt contains an Obj3\(\#12\) ' \
+                                         'and a test shirt\(\#10\)\.Char looks at obj\.Char looks ' \
+                                         'at you\.')
+
+            # look at object in a container
+            self.test_shirt.location = self.obj1
+            command = developer_cmds.CmdMultiCmd
+            arg = f"= {aliase} Obj3 in Obj"
+            receivers = {
+                self.char1: "Obj3(#12) is devoid of description.",
+                self.char2: "Char looks at something in obj.",
+                self.obj3: "Char looks at you."
+            }
+            cmd_result = self.call_multi_receivers(command(), arg, receivers)
+
+            # put objects in self.obj1 back and reset settings changed
+            self.test_shirt.location = self.room1
+            self.obj1.db.desc = None
+            self.obj1.container = False
+            self.obj3.location = self.room2
+
+            # test when the Character has no location
+            self.char1.location = None
+            command = developer_cmds.CmdMultiCmd
+            arg = f"= {aliase}"
+            wnt_msg = "You have no location to look at!"
+            cmd_result = self.call(command(), arg, wnt_msg)
+            self.assertRegex(cmd_result, "caller has no location")
+            self.char1.location =  self.room1
+
+            # test a bad target name
+            command = developer_cmds.CmdMultiCmd
+            arg = f"= {aliase} intentional fail"
+            wnt_msg = "You do not see intentional fail here."
+            cmd_result = self.call(command(), arg, wnt_msg)
