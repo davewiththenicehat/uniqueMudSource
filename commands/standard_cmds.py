@@ -766,7 +766,7 @@ class CmdHelp(EvCmdHelp, Command):
             self.subtopics = []
 
         if not self.args:
-            self.topic = 'basic'
+            self.topic = 'unique mud'
         elif self.topic in ('all', 'commands', 'rules'):
             self.topic = ''
 

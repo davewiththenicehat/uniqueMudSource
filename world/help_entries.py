@@ -24,38 +24,15 @@ from utils.um_utils import highlighter
 
 HELP_ENTRY_DICTS = [
     {
-        "key": "evennia",
-        "aliases": ['ev'],
-        "category": "General",
-        "text": """
-            Evennia is a MUD game server in Python.
-
-            # subtopics
-
-            ## Installation
-
-            You'll find installation instructions on https:evennia.com
-
-            ## Community
-
-            There are many ways to get help and communicate with other devs!
-
-            ### IRC
-
-            The irc channel is #evennia on irc.freenode.net
-
-            ### Discord
-
-            There is also a discord channel you can find from the sidebard on evennia.com.
-
-        """
-    },
-    {
-        "key": "basic",
+        "key": "Unique Mud",
         "category": "General",
         "text": f"""
+        Thank you for playing.
+
+        For game world and rules use: {highlighter("help rules", click_cmd="help rules")}
+        To view all your character's commands: {highlighter("help commands", click_cmd="help commands")}
         For all commands and help topics: {highlighter("help all", click_cmd="help all")}
 
         """
-    }
+    },
 ]
