@@ -2634,7 +2634,7 @@ class TestUMHelp(UniqueMudCmdTest):
     def test_help(self):
         command = developer_cmds.CmdMultiCmd
         arg = "= help"
-        wnt_msg = "Help for basic"
+        wnt_msg = "Help for unique mud"
         self.call(command(), arg, wnt_msg)
 
     def test_help_args(self):
