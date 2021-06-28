@@ -5,7 +5,7 @@ from datetime import timedelta, datetime
 from evennia.utils import evtable, evmore
 from evennia.utils.utils import fill, dedent, inherits_from, make_iter, delay
 from evennia import default_cmds
-from evennia.contrib import rpsystem
+from evennia.contrib import rpsystem, extended_room
 from evennia import CmdSet
 from evennia.commands.default.help import CmdHelp as EvCmdHelp
 from evennia.commands.default.system import CmdObjects
@@ -1599,4 +1599,33 @@ class CmdRecog(rpsystem.CmdRecog, Command):
 
 
 class CmdEmote(rpsystem.CmdEmote, Command):
+    pass
+
+
+class UMExtendedRoomCmdSet(CmdSet):
+    """
+    Overridden extended_room system's commands.
+
+    Reason:
+        CmdExtendedRoomLook can not be directly imported, due to local customization.
+        desc, detail will be locked so only builders can use them.
+    """
+
+    def at_cmdset_creation(self):
+        self.add(CmdExtendedRoomDesc)
+        self.add(CmdExtendedRoomDetail)
+        self.add(CmdExtendedRoomGameTime)
+
+
+class CmdExtendedRoomDesc(extended_room.CmdExtendedRoomDesc, Command):
+    locks = "perm(Builder)"
+    help_category = "Building"
+
+
+class CmdExtendedRoomDetail(extended_room.CmdExtendedRoomDetail, Command):
+    locks = "perm(Builder)"
+    help_category = "Building"
+
+
+class CmdExtendedRoomGameTime(extended_room.CmdExtendedRoomGameTime, Command):
     pass

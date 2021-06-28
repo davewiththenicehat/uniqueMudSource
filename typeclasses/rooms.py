@@ -8,11 +8,12 @@ Rooms are simple containers that has no location of their own.
 from collections import defaultdict
 
 from evennia.contrib.rpsystem import ContribRPRoom
+from evennia.contrib.extended_room import ExtendedRoom
 from typeclasses.mixins import ExObjAndRoomMixin, AllObjectsMixin
 from evennia.utils.utils import list_to_string, inherits_from
 
 
-class Room(AllObjectsMixin, ExObjAndRoomMixin, ContribRPRoom):
+class Room(AllObjectsMixin, ExObjAndRoomMixin, ContribRPRoom, ExtendedRoom):
     """
     Rooms are like any Object, except their location is None
     (which is default). They also use basetype_setup() to
@@ -38,6 +39,7 @@ class Room(AllObjectsMixin, ExObjAndRoomMixin, ContribRPRoom):
             inheirited from AllObjectsMixin
                 targetable = False  # can this object be targeted with an action
                 container = True  # Can the object contain other objects
+
     """
 
     def at_object_creation(self):
@@ -55,6 +57,11 @@ class Room(AllObjectsMixin, ExObjAndRoomMixin, ContribRPRoom):
         """
         if not looker:
             return ""
+
+        # update for seasons and time, IE: ExtendedRoom
+        # ensures that our description is current based on time/season
+        self.update_current_description()
+
         # get and identify all objects
         visible = (con for con in self.contents if con != looker and con.access(looker, "view"))
         exits, users, things = [], [], defaultdict(list)
@@ -67,6 +74,7 @@ class Room(AllObjectsMixin, ExObjAndRoomMixin, ContribRPRoom):
             else:
                 # things can be pluralized
                 things[key].append(con)
+
         # get description, build string
         string = ""
         desc = self.db.desc

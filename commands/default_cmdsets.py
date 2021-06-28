@@ -21,7 +21,7 @@ from commands.combat.unarmed import UnarmedCmdSet
 from commands.combat.evasion import EvasionCmdSet
 from commands.combat.one_handed import OneHandedCmdSet
 from typeclasses.equipment.clothing import UMClothedCharacterCmdSet
-from commands.standard_cmds import StandardCmdsCmdSet, UMRPSystemCmdSet
+from commands.standard_cmds import StandardCmdsCmdSet, UMRPSystemCmdSet, UMExtendedRoomCmdSet
 from typeclasses.equipment.wieldable import WieldableCmdSet
 
 
@@ -127,6 +127,7 @@ class CharacterCmdSet(default_cmds.CharacterCmdSet):
         self.add(OneHandedCmdSet)
         self.add(UMClothedCharacterCmdSet)
         self.add(UMRPSystemCmdSet)
+        self.add(UMExtendedRoomCmdSet)
         self.add(StandardCmdsCmdSet)  # has to be after rpsystem
         self.add(WieldableCmdSet)
 
