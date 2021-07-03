@@ -13,6 +13,7 @@ from evennia.utils.test_resources import EvenniaTest
 from world.rules import body, damage, actions
 from commands import developer_cmds
 from typeclasses.equipment.wieldable import Weapon
+from utils.unit_test_resources import UniqueMudCmdTest
 
 
 class TestObjects(CommandTest):
@@ -572,8 +573,7 @@ class TestClothingFunc(EvenniaTest):
 # Testing of ExtendedRoom contrib
 
 from django.conf import settings
-from evennia.contrib import extended_room
-from evennia.objects.objects import DefaultRoom
+from commands.standard_cmds import CmdExtendedRoomDesc, CmdExtendedRoomDetail, CmdExtendedRoomGameTime
 
 
 class ForceUTCDatetime(datetime.datetime):
@@ -593,6 +593,7 @@ class TestExtendedRoom(CommandTest):
     """
     todo:
         command to test the changes to desc command
+            test bad target message
         Test for <timeslot> usesage.
     """
     # account_typeclass = DefaultAccount
@@ -634,39 +635,189 @@ class TestExtendedRoom(CommandTest):
     #        extended_room.CmdExtendedRoomLook(), "nonexistent", "Could not find 'nonexistent'."
     #    )
 
-    def test_cmdsetdetail(self):
-        self.call(extended_room.CmdExtendedRoomDetail(), "", "Details on Room")
+    def test_cmd_detail(self):
+        command = CmdExtendedRoomDetail
+        self.call(command(), "", "Details on Room")
         self.call(
-            extended_room.CmdExtendedRoomDetail(),
+            command(),
             "thingie = newdetail with spaces",
             "Detail set 'thingie': 'newdetail with spaces'",
         )
-        self.call(extended_room.CmdExtendedRoomDetail(), "thingie", "Detail 'thingie' on Room:\n")
+        self.call(command(), "thingie", "Detail 'thingie' on Room:\n")
         self.call(
-            extended_room.CmdExtendedRoomDetail(),
+            command(),
             "/del thingie",
             "Detail thingie deleted, if it existed.",
             cmdstring="detail",
         )
-        self.call(extended_room.CmdExtendedRoomDetail(), "thingie", "Detail 'thingie' not found.")
+        self.call(command(), "thingie", "Detail 'thingie' not found.")
 
         # Test with aliases
-        self.call(extended_room.CmdExtendedRoomDetail(), "", "Details on Room")
+        self.call(command(), "", "Details on Room")
         self.call(
-            extended_room.CmdExtendedRoomDetail(),
+            command(),
             "thingie;other;stuff = newdetail with spaces",
             "Detail set 'thingie;other;stuff': 'newdetail with spaces'",
         )
-        self.call(extended_room.CmdExtendedRoomDetail(), "thingie", "Detail 'thingie' on Room:\n")
-        self.call(extended_room.CmdExtendedRoomDetail(), "other", "Detail 'other' on Room:\n")
-        self.call(extended_room.CmdExtendedRoomDetail(), "stuff", "Detail 'stuff' on Room:\n")
+        self.call(command(), "thingie", "Detail 'thingie' on Room:\n")
+        self.call(command(), "other", "Detail 'other' on Room:\n")
+        self.call(command(), "stuff", "Detail 'stuff' on Room:\n")
         self.call(
-            extended_room.CmdExtendedRoomDetail(),
+            command(),
             "/del other;stuff",
             "Detail other;stuff deleted, if it existed.",
         )
-        self.call(extended_room.CmdExtendedRoomDetail(), "other", "Detail 'other' not found.")
-        self.call(extended_room.CmdExtendedRoomDetail(), "stuff", "Detail 'stuff' not found.")
+        self.call(command(), "other", "Detail 'other' not found.")
+        self.call(command(), "stuff", "Detail 'stuff' not found.")
 
     def test_cmdgametime(self):
-        self.call(extended_room.CmdExtendedRoomGameTime(), "", "It's a spring day, in the evening.")
+
+        command = CmdExtendedRoomGameTime
+
+        self.call(command(), "", "It's a spring day, in the evening.")
+
+
+from evennia.utils import eveditor
+
+class TestCmdDesc(UniqueMudCmdTest):
+
+    def tearDown(self):
+        # make certain chaced variables are not retained.
+        for character in (self.char1, self.char2):
+            for attr_name in ('desc_editing_target', 'desc_editing_seasons'):
+                self.assertFalse(character.attributes.has(attr_name))
+
+    def test_args_edit(self):
+        """Test chaging description via arguments only."""
+
+        command = CmdExtendedRoomDesc
+
+        for season in ('spring', 'summer', 'autumn', 'winter', 'general'):
+            # make certain command runs without issue.
+            args = f'/{season} here = This is a {season} description.'
+            expected_desc = f'This is a {season} description.'
+            wnt_msg = f'Room {season} description is now:\n{expected_desc}'
+            self.call(command(), args, wnt_msg)
+            # verify attribute is correct
+            season_desc = self.room1.attributes.get(f'{season}_desc', False)
+            self.assertEqual(expected_desc, season_desc)
+
+    def test_multi_season_args_edit(self):
+        """Test editing multiple seasons via arguments only."""
+
+        # verification var
+        description = 'This is a multi season description.'
+
+        # test the command
+        command = CmdExtendedRoomDesc
+        args = f'/spring/winter here = {description}'
+        wnt_msg = f'Room spring description is now:\n{description}|' \
+                  f'Room winter description is now:\n{description}'
+        self.call(command(), args, wnt_msg)
+
+        # verify that the attribues have changed
+        self.assertEqual(description, self.room1.attributes.get('spring_desc'))
+        self.assertEqual(description, self.room1.attributes.get('winter_desc'))
+
+
+    def test_args_with_no_rhs(self):
+        """Test argument edit where no rhs is provided."""
+        command = CmdExtendedRoomDesc
+        args = 'here'
+        wnt_msg = 'If the edit swtich is not used, an = than a description is required at the ' \
+                  'end of the command.\nFor example: desc here = Is a small room.\n' \
+                  'Would change the description of the current room to "Is a small room."\n' \
+                  'Use help desc for a further details.'
+        self.call(command(), args, wnt_msg)
+
+
+    def test_no_args(self):
+        """Test desc with no arguments."""
+        command = CmdExtendedRoomDesc
+
+        # make description changes
+        args = f'/spring/winter here = This is a multi season description.'
+        self.call(command(), args)
+
+        # now test the output of desc with no arguments
+        args = ''
+        cmd_result = self.call(command(), args)
+        wanted_message = 'spring: This is a multi season description'
+        self.assertRegex(cmd_result, wanted_message)
+        wanted_message = 'winter: This is a multi season description'
+        self.assertRegex(cmd_result, wanted_message)
+
+    def test_bad_target(self):
+        """Test error handle for bad target."""
+        command = CmdExtendedRoomDesc
+        args = 'intentional fail = This is a description.'
+        wnt_msg = 'You could not find intentional fail.'
+        self.call(command(), args, wnt_msg)
+
+    def test_access_control(self):
+        """Verify access control functions."""
+
+        command = CmdExtendedRoomDesc
+
+        # make char 2 a builder, to grant access to desc
+        self.char2.permissions.add("Builders")
+
+        # test using arguments
+        args = 'here = This is a description.'
+        wnt_msg = "You don't have permission to edit the description of Room."
+        self.call(command(), args, wnt_msg, caller=self.char2)
+
+        # test again using the edit switch
+        args = '/edit here'
+        wnt_msg = "You don't have permission to edit the description of Room."
+        self.call(command(), args, wnt_msg, caller=self.char2)
+
+    def builders_only(self):
+        """Only builders can acces desc command."""
+        command = developer_cmds.CmdMultiCmd
+        args = '= desc'
+        wnt_msg = "Command 'desc' is not available."
+        self.call(command(), args, wnt_msg, caller=self.char2)
+
+    def test_general_overrides_desc(self):
+        """Verify Room.general_desc overrides Room.desc."""
+
+        command = CmdExtendedRoomDesc
+        description = 'This is a room description.'
+
+        # change the general description
+        args = f'/general here = {description}'
+        self.call(command(), args)
+
+        # verify the general description is being used
+        self.assertTrue(description in self.room1.return_appearance(self.char1))
+
+    def test_evedit(self):
+        """Test editing via the edit switch."""
+
+        description = "This is a room description."
+
+        # start the editor
+        args = '/general/edit here'
+        wanted_message = r'Editing Room.'
+        cmd_result = self.call(CmdExtendedRoomDesc(), args, wanted_message)
+
+        # verify editor messages
+        wanted_message = 'seasons general'
+        self.assertRegex(cmd_result, wanted_message)
+        wanted_message = 'Line Editor \[desc\]'
+        self.assertRegex(cmd_result, wanted_message)
+
+        # change the description
+        command = developer_cmds.CmdMultiCmd
+        # change the general description
+        wanted_message = '01This is a room description.'
+        self.call(command(), f'= {description}', wanted_message)
+        # write the changes
+        cmd_result = self.call(command(), '=:wq')
+        wanted_message = 'Saved.\nRoom general description is now:\nThis is a room description.\n' \
+                         'Exited editor.'
+        self.assertEqual(cmd_result, wanted_message)
+
+        # verify the result
+        self.assertTrue(description in self.room1.return_appearance(self.char1))

@@ -3,13 +3,14 @@ import math
 from datetime import timedelta, datetime
 
 from evennia.utils import evtable, evmore
-from evennia.utils.utils import fill, dedent, inherits_from, make_iter, delay
+from evennia.utils.utils import fill, dedent, inherits_from, make_iter, delay, iter_to_str
 from evennia import default_cmds
 from evennia.contrib import rpsystem, extended_room
 from evennia import CmdSet
 from evennia.commands.default.help import CmdHelp as EvCmdHelp
 from evennia.commands.default.system import CmdObjects
 from evennia.commands.default.general import CmdLook as EvCmdLook
+from evennia.utils.eveditor import EvEditor
 
 from commands.command import Command
 from world.rules import stats, skills
@@ -1617,9 +1618,221 @@ class UMExtendedRoomCmdSet(CmdSet):
         self.add(CmdExtendedRoomGameTime)
 
 
+def _clear_ext_room_cache(obj):
+    """By deleteting the caches we force a re-load."""
+    obj.ndb.last_season = None
+    obj.ndb.last_timeslot = None
+
+
+def _desc_edit_complete_msg(caller):
+    """Provides a meaningful completion message."""
+
+    target = caller.db.desc_editing_target
+
+    if inherits_from(target, "typeclasses.rooms.Room"):  # if the target is a room
+        message_provided = False
+        for season in caller.db.desc_editing_seasons:
+            seasonal_desc = target.attributes.get(f'{season}_desc', False)
+            message = f'{target.key} {season} description is now:\n{seasonal_desc}'
+            caller.msg(message)
+            message_provided = True
+        if not message_provided:  # no message provided yet, give a general message
+            caller.msg(f'{target.key} general description is now:\n{target.db.general_desc}')
+    else:  # target is not a room
+        caller.msg(f'{target.key} description is now:\n{target.db.desc}')
+
+
+def _desc_load(caller):
+
+    obj = caller.db.desc_editing_target
+
+    if inherits_from(obj, "typeclasses.rooms.Room"):  # object is a room
+        if caller.db.desc_editing_seasons:  # use the first season if one exists
+            return obj.attributes.get(f'{caller.db.desc_editing_seasons[0]}_desc', '')
+        else:  # if no seasons return the general description
+            return obj.attributes.get(f'general_desc', '')
+
+    return obj.db.desc or ""
+
+
+def _desc_save(caller, buf):
+    """
+    Save line buffer to the desc prop. This should
+    return True if successful and also report its status to the user.
+    """
+
+    obj = caller.db.desc_editing_target
+
+    if inherits_from(obj, "typeclasses.rooms.Room"):  # object is a room
+        if caller.db.desc_editing_seasons:
+            for season in caller.db.desc_editing_seasons:
+                obj.attributes.add(f'{season}_desc', buf)
+        else:
+            obj.attributes.add('general_desc', buf)
+        _clear_ext_room_cache(obj)
+    else:  # object is not a room
+        caller.db.desc_editing_target.db.desc = buf
+
+    # message the caller
+    caller.msg("\n|ySaved.|n")
+    _desc_edit_complete_msg(caller)
+
+    return True
+
+
+def _desc_quit(caller):
+    caller.attributes.remove("desc_editing_target")
+    caller.attributes.remove("desc_editing_seasons")
+    caller.msg("Exited editor.")
+
+
 class CmdExtendedRoomDesc(extended_room.CmdExtendedRoomDesc, Command):
-    locks = "perm(Builder)"
-    help_category = "Building"
+    """
+    `desc` - describe an object or room.
+
+    Usage:
+      desc[/switch] <obj> [= <description>]
+
+      Supported switches are listed below.
+      obj is the object to edit.
+        Use 'here' for the current room.
+        Use 'self' for your current puppet.
+      The '=' and description is only required if the 'edit' switch is not used.
+
+    Switches:
+      general - set the general description for this room
+      spring  - set description for spring in current room.
+      summer - set description for summer in current room.
+      autumn  - set description for autumn (fall) in current room.
+      winter  - set description for winter in current room.
+      edit - Edit the room description in a vi command like enviroment.
+
+      The use of multiple switches is supported.
+      If no season switches are used the general description is edited.
+
+    Notes:
+      You can embed time markers in your room description, like this:
+          <night>In the darkness, the forest looks foreboding.</night>
+      The text between the markers will only appear if the game is in that time slot.
+      The available times are <night>, <morning>, <afternoon> and <evening>.
+
+      Seasons and time-of-day markers only work on Rooms. Not Characters or Objects.
+
+    """
+
+    locks = 'perm(Builder)'
+    help_category = 'Building'
+    switch_options = ('edit', 'spring', 'summer', 'autumn', 'winter', 'general')
+    seasons = ('spring', 'summer', 'autumn', 'winter', 'general')
+
+    def edit_handler(self):
+        target = self.target
+        caller = self.caller
+
+        # inform command caller the rhs will not be used
+        if self.rhs:
+            self.msg("|rText after the = symbol will not be used.|n")
+
+        # handle no target with an error, it should have been caugh in the func method
+        if not target:
+            err_msg = f"Command desc, caller: {caller.id} | edit_handler called with no target." \
+                      f"\nCommand syntec: {self.raw}."
+            error_report(err_msg, caller)
+            return
+
+        # echo caller
+        caller.msg(f'|yEditing {target.key}.|n')
+
+        if caller.db.desc_editing_seasons:
+            caller.msg(f'|y\tseasons {iter_to_str(self.caller.db.desc_editing_seasons)}.|n')
+        else:
+            caller.msg('|y\tgeneral description.|n')
+
+        # launch the editor
+        EvEditor(
+            self.caller,
+            loadfunc=_desc_load,
+            savefunc=_desc_save,
+            quitfunc=_desc_quit,
+            key="desc",
+            persistent=True,
+        )
+        return
+
+    def func(self):
+        """Define extended command"""
+        caller = self.caller
+        location = caller.location
+        target = self.target
+
+        # if no arguments display this location's descriptions
+        if not self.args:
+            if location:
+                string = "|wDescriptions on %s|n:\n" % location.key
+                string += " |wspring:|n %s\n" % location.db.spring_desc
+                string += " |wsummer:|n %s\n" % location.db.summer_desc
+                string += " |wautumn:|n %s\n" % location.db.autumn_desc
+                string += " |wwinter:|n %s\n" % location.db.winter_desc
+                string += " |wgeneral:|n %s" % location.db.general_desc
+                caller.msg(string)
+                return
+
+        # display a message if a bad target was provided
+        if not target:
+            if self.lhs:
+                caller.msg(f'You could not find {self.lhs}.')
+                return
+
+        # prevent unauthorized access
+        if not (target.access(caller, "control") or target.access(caller, "edit")):
+            caller.msg(f"You don't have permission to edit the description of {target.key}.")
+            return
+
+        # right hand side is required if no 'edit' switch is used
+        if not self.rhs and 'edit' not in self.switches:
+            message = 'If the edit swtich is not used, an = than a description is required at ' \
+                      'the end of the command.\nFor example: desc here = Is a small room.\n' \
+                      'Would change the description of the current room to "Is a small room."\n' \
+                      f'Use {highlighter("help desc", click_cmd="help desc")} for a further details.'
+            caller.msg(message)
+            return
+
+        # gather edit information
+        caller.db.desc_editing_target = target
+        caller.db.desc_editing_seasons = []
+        # if the target is a room
+        if inherits_from(target, "typeclasses.rooms.Room"):
+            # gather seasons to edit, if any
+            for switch in self.switches:
+                if switch in self.seasons:
+                    caller.db.desc_editing_seasons.append(switch)
+            if not caller.db.desc_editing_seasons:
+                caller.db.desc_editing_seasons.append('general_desc')
+
+        # go to editor if switch was used
+        if 'edit' in self.switches:
+            self.edit_handler()
+            return
+
+        # create a list of descriptions to edit via command line args
+        desc_to_edit = []
+        if inherits_from(target, "typeclasses.rooms.Room"):  # if the target is a room
+            for season in caller.db.desc_editing_seasons:
+                desc_to_edit.append(f'{season}_desc')
+            _clear_ext_room_cache(target)  # clear the room's desc cache to prep for change
+        else:  # the target is not a room
+            desc_to_edit.append('desc')  # if target is not a room edit the standard desc attribute
+
+        # make the changes
+        for desc_attr in desc_to_edit:
+            target.attributes.add(desc_attr, self.rhs)
+
+        # message the caller
+        _desc_edit_complete_msg(caller)
+
+        # clean up tmp variables
+        caller.attributes.remove("desc_editing_target")
+        caller.attributes.remove("desc_editing_seasons")
 
 
 class CmdExtendedRoomDetail(extended_room.CmdExtendedRoomDetail, Command):
