@@ -621,6 +621,7 @@ class CmdLook(EvCmdLook, Command):
         Here to easily set command instance attributes.
         """
         self.requires_ready = False  # if true this command requires the ready status before it can do anything. deferal commands still require ready to defer
+        self.target_is_detail = False  # record if target is a room detail.
 
     def custom_requirements(self):
         """Verifies commands custom requirements are met. If this method returns False the command will end.
@@ -638,8 +639,13 @@ class CmdLook(EvCmdLook, Command):
         caller = self.caller
         if self.args:  # a target was provided in command
             if not self.target:  # no target found
-                caller.msg(f"You do not see {self.args} here.")
-                return False
+                detail = self.detail_search()
+                if detail:
+                    self.target_is_detail = True  # record if target is a room detail.
+                    self.target = detail
+                else:
+                    caller.msg(f"You do not see {self.args} here.")
+                    return False
         else:  # no target was provided in command
             if not caller.location:  # caller has no location
                 caller.msg("You have no location to look at!")
@@ -678,15 +684,41 @@ class CmdLook(EvCmdLook, Command):
         """
         caller = self.caller
         target = self.target
+
+        # handle no target found
         if not target:
             err_msg = f"Command look, caller: {caller.id} | " \
                        "caller has no location. After func call."
             error_report(err_msg, caller)
             return False
+
+        # support looking at a room detail.
+        if self.target_is_detail:
+
+            detail_name = self.target[0]
+            detail_desc = self.target[1]
+
+            # find if a or an is needed for location message
+
+            a_or_an = 'a'
+            for vowel in 'aeiou':
+                if detail_name.startswith(vowel):
+                    a_or_an = 'an'
+                    break
+            room_msg = f'/Me looks at {a_or_an} {detail_name}.'
+
+            # message the room
+            caller.msg(detail_desc)
+            caller.location.emote_contents(room_msg, caller, exclude=(caller))
+            return True
+
         # process the look
         self.msg((caller.at_look(target), {"type": "look"}), options=None)
+
         # if the character is looking at something other than the room.
         if not inherits_from(target, "typeclasses.rooms.Room"):
+
+            # message objects in location of the callers look
             if inherits_from(target, "typeclasses.exits.Exit"):
                 if target.key in STANDARD_EXITS:  # if the target is a standard exit
                     room_msg = f"/Me looks /target."
@@ -694,7 +726,7 @@ class CmdLook(EvCmdLook, Command):
                     room_msg = f"/Me looks through /target."
                 caller.location.emote_contents(room_msg, caller, target, exclude=(caller,))
             else:
-                if target is caller: # |o
+                if target is caller:
                     room_msg = f"/Me looks at {caller.get_pronoun('|o')}self."
                     caller.location.emote_contents(room_msg, caller, exclude=(caller))
                 else:
@@ -709,6 +741,8 @@ class CmdLook(EvCmdLook, Command):
                     target_msg = f"/Me looks at you."
                     caller.location.emote_contents(room_msg, caller, em_targ, exclude=(caller, target))
                     target.emote(target_msg, sender=caller)
+
+        return True
 
 
 class CmdHelp(EvCmdHelp, Command):

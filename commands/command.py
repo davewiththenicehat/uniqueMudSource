@@ -146,6 +146,7 @@ class Command(default_cmds.MuxCommand):
             example: target_inherits_from = ("typeclasses.equipment.clothing.UMClothing", 'clothing and armor')
             Failure message is handled automatically.
         target_in_hand = False  # if True the target of the command must be in the Characters hand to complete successfully
+        target_is_detail = False  # record if target is a room detail.
         search_caller_only = False  # if True the command will only search the caller for targets
             Failure message is handled automatically.
         search_candidates (list): List of objects to search for the command's target.
@@ -239,6 +240,7 @@ class Command(default_cmds.MuxCommand):
         cost(cost_level='very easy', cost_stat='END'), Calculate and remove the cost of this Command
         target_bad(target=object), returns True if object passed is not targetable by this command
         target_search(target_name=str), Search for an instance of a target.
+        detail_search(target_name=str), Search for a room detail.
         split_target_name(target_name=str), accepts command target string.
             Returns the target_name and location_name
         evade_roll, used for unit testing
@@ -269,6 +271,7 @@ class Command(default_cmds.MuxCommand):
         self.target_inherits_from = False  # a tuple
             # position 0 string of a class type, position 1 is a string to show on mismatch
         self.target_in_hand = False  # if True the target of the command must be in the Characters hand to complete successfully
+        self.target_is_detail = False  # record if target is a room detail.
         self.search_caller_only = False  # if True the command will only search the caller for targets
         self.search_candidates = None  # List of objects to search for the command's target.
         self.range = []  # list of Objects. If list has objects, target's location must be in the range list.
@@ -1154,6 +1157,48 @@ class Command(default_cmds.MuxCommand):
         if target:  # a target(s) was found
             target = target[target_number]  # get the correct target number
             return target
+
+    def detail_search(self):
+        """Use caller's command arguments to search for a room detail.
+
+        returns:
+            detail (list), Where key 0 is the detail's name and key 1 is the detail's description.
+                An empty list is return if no detail was found.
+
+        Notes:
+
+            Targeting details are handled on a per command basis.
+
+            Call after taget collection has failed.
+            Recommend calling in Command.custom_requirments
+
+            commands.Command.target_is_detail is an instance attribute to record if the command's
+                target is a detail.
+
+            For an example refer to commands.standard_cmds.CmdLook
+
+            Detail search intentionally requires the extact name of the detail.
+            Details should be relatively small and slightly difficult to find.
+
+            Details are a Room dictionary attribute managed by builders with the [detail] command.
+                Room.details, refer to evennia.contribs.extended_rooms for more information.
+        """
+
+        target_name = self.lhs.strip().lower()
+
+        # support target descriptions that start with numbers
+        # number is not needed, just the name.
+        target_name_starts_with_num = re.match(r"^(\d+)\s+(.+)", target_name)
+        if target_name_starts_with_num:
+            # there are two or more capture patterns above
+            _, target_name = target_name_starts_with_num.groups()
+
+        # search for the room detail
+        detail = self.caller.location.return_detail(target_name)
+        if detail:
+            return (target_name, detail)
+        else:
+            return ()
 
     def split_target_name(self, target_name):
         """

@@ -2835,3 +2835,27 @@ class TestUMLook(UniqueMudCmdTest):
             arg = f"= {aliase} intentional fail"
             wnt_msg = "You do not see intentional fail here."
             cmd_result = self.call(command(), arg, wnt_msg)
+
+    def test_look_at_detail(self):
+
+        command = developer_cmds.CmdMultiCmd
+
+        # make a detail
+        self.room1.set_detail('detail name', 'detail description.')
+        self.room1.set_detail('avowel detail name', 'vowel detail description.')
+
+        # look at a detail
+        arg = f"= l detail name"
+        receivers = {
+            self.char1: "detail description.",
+            self.char2: 'Char looks at a detail name.'
+        }
+        cmd_result = self.call_multi_receivers(command(), arg, receivers)
+
+        # make certain an is echoed when a name starts with a vowel
+        arg = f"= l avowel detail name"
+        receivers = {
+            self.char1: 'vowel detail description',
+            self.char2: 'Char looks at an avowel detail name.'
+        }
+        cmd_result = self.call_multi_receivers(command(), arg, receivers)

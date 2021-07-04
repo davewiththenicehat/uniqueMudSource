@@ -28,6 +28,9 @@ class Room(AllObjectsMixin, ExObjAndRoomMixin, ContribRPRoom, ExtendedRoom):
         Inherits:
             evennia.contrib.rpsystem.ContribRPRoom
                 Roleplaying base system for Evennia
+            evennia.contrib.extended_room.ExtendedRoom
+                For seasons and details.
+                Use commands.Command.detail_search, to search for a Room detail.
             typeclasses.mixins.ExObjAndRoomMixin
             typeclasses.mixins.AllObjectsMixin
 
