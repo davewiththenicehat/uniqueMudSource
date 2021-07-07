@@ -8,7 +8,7 @@ from evennia import default_cmds
 from evennia.contrib import rpsystem, extended_room
 from evennia import CmdSet
 from evennia.commands.default.help import CmdHelp as EvCmdHelp
-from evennia.commands.default.system import CmdObjects
+from evennia.commands.default.system import CmdObjects, CmdTime as EvCmdTime
 from evennia.commands.default.general import CmdLook as EvCmdLook
 from evennia.utils.eveditor import EvEditor
 
@@ -54,6 +54,13 @@ class StandardCmdsCmdSet(default_cmds.CharacterCmdSet):
         self.add(CmdStop)
         self.add(CmdSkills)
         self.add(CmdEcho)
+        self.add(CmdServerTime)
+
+class CmdServerTime(EvCmdTime):
+    key = 'server time'
+    aliases = ['server_time',]
+    locks = "perm(Admin)"
+
 
 class CmdEcho(Command):
     """

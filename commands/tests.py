@@ -2859,3 +2859,14 @@ class TestUMLook(UniqueMudCmdTest):
             self.char2: 'Char looks at an avowel detail name.'
         }
         cmd_result = self.call_multi_receivers(command(), arg, receivers)
+
+
+class TestCmdServerTime(UniqueMudCmdTest):
+
+    def test_server_time(self):
+        command = standard_cmds.CmdServerTime
+        cmd_result = self.call(command(), '')
+        wnt_msg = 'Server time'
+        self.assertRegex(cmd_result, wnt_msg)
+        wnt_msg = 'In-Game time'
+        self.assertRegex(cmd_result, wnt_msg)
