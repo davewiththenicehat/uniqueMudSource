@@ -1859,7 +1859,7 @@ class TestCommands(UniqueMudCmdTest):
         # test draining all stat types, all cost levels
         # with modifier stat being 100, 0 than -100
         command = developer_cmds.CmdCmdFuncTest
-        std_cost_stats = ('WILL', 'willpower', 'END', 'endurance')
+        std_cost_stats = ('WILL', 'willpower', 'END', 'endurance', 'PERM', 'permission')
         stats_long_names = tuple(STAT_MAP_DICT.values())
         for stat in std_cost_stats + STATS + stats_long_names:
             # get variables needed for tests

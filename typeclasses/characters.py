@@ -436,6 +436,27 @@ class Character(AllObjectsMixin, CharExAndObjMixin, UMClothedCharacter, GenderCh
         self.endurance.delete()
         del self.endurance
 
+    # define characters's permission
+    @property
+    def PERM(self):
+        try:
+            if self.permission:
+                pass
+        except AttributeError:
+            self.permission = Element(self, 100, **CHARACTER_STAT_SETTINGS)
+            self.permission.verify()
+            self.permission.modifier_stat = 'WIS'
+        return self.permission
+
+    @PERM.setter
+    def PERM(self, value):
+        self.permission.set(value)
+
+    @PERM.deleter
+    def PERM(self):
+        self.permission.delete()
+        del self.permission
+
     # define characters's strength
     @property
     def STR(self):
