@@ -19,6 +19,7 @@ from evennia.contrib.gendersub import SetGender
 from commands.developer_cmds import DeveloperCmdSet
 from commands.combat.unarmed import UnarmedCmdSet
 from commands.combat.evasion import EvasionCmdSet
+from commands.abilities.request import RequestCmdSet
 from commands.combat.one_handed import OneHandedCmdSet
 from typeclasses.equipment.clothing import UMClothedCharacterCmdSet
 from commands.standard_cmds import StandardCmdsCmdSet, UMRPSystemCmdSet, UMExtendedRoomCmdSet
@@ -130,6 +131,7 @@ class CharacterCmdSet(default_cmds.CharacterCmdSet):
         self.add(UMExtendedRoomCmdSet)
         self.add(StandardCmdsCmdSet)  # has to be after rpsystem
         self.add(WieldableCmdSet)
+        self.add(RequestCmdSet)
 
 
 class AccountCmdSet(default_cmds.AccountCmdSet):
