@@ -215,6 +215,8 @@ class Character(AllObjectsMixin, CharExAndObjMixin, UMClothedCharacter, GenderCh
         """
         self.cache_stat_modifiers()  # load stats cache when Character is initialized.
         self.END  # init endurance
+        self.WILL  # init willpower
+        self.PERM  # init permission
         return super().at_init()  # call at_init below this one, ie typeclasses.mixins.CharExAndObjMixin
 
     def at_object_creation(self):

@@ -478,7 +478,7 @@ class CmdStatus(Command):
         caller.msg("Health:", force=True)
         row1 = list()
         row2 = list()
-        for health_stat in ('hp', 'endurance'):
+        for health_stat in ('hp', 'endurance', 'permission', 'willpower'):
             row1.append(health_stat)
             if hasattr(caller, health_stat):
                 health_value = getattr(caller, health_stat, 'Missing post check')
