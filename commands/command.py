@@ -625,6 +625,7 @@ class Command(default_cmds.MuxCommand):
             successful (bool): True if the command completed sucessfully.
                 If this method returns True self.def_act_comp will be called after automatically.
         """
+        return True
 
     def def_act_comp(self):
         """Called after deferred_action completes successfully.

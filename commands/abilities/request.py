@@ -34,7 +34,7 @@ class RequestCommand(Command):
         self.cost_level = 'very easy'
         # required ranks in the commands skill_name for this command to work.
         # self.required_ranks = 1
-        # self.cost_stat = 'PERM'  # stat this command will use for the action's cost
+        self.cost_stat = 'PERM'  # stat this command will use for the action's cost
 
 
 class CmdUniversalTime(RequestCommand):
@@ -42,6 +42,16 @@ class CmdUniversalTime(RequestCommand):
     aliases = "universal time"
     locks = "cmd:perm(time) or perm(Player)"
 
-    def func(self):
-        utime = f"Current time {datetime.fromtimestamp(gametime.gametime(absolute=True))}"
+    def deferred_action(self):
+        """
+        This method is called after defer_time seconds when the Command.defer method is used.
+
+        Usage:
+            Intended to be overritten. Simply put the action portions of a command in this method.
+        Returns:
+            successful (bool): True if the command completed sucessfully.
+                If this method returns True self.def_act_comp will be called after automatically.
+        """
+        utime = f"Current universal time {datetime.fromtimestamp(gametime.gametime(absolute=True))}"
         self.caller.msg(utime)
+        return True
