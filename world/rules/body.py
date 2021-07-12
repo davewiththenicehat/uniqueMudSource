@@ -37,6 +37,7 @@ CHARACTER_CONDITIONS = (
     'dead',
     'poisoned',
     'sick',
+    'learning'
 )
 
 # BELOW lists specific to species of Characters

@@ -2407,13 +2407,13 @@ class TestLearn(UniqueMudCmdTest):
         command = developer_cmds.CmdMultiCmd
         arg = "= learn punch, complete_cmd_early"
         self.call(command(), arg)
-        learning_dict = self.char1.learning
+        learning_dict = self.char1.condition.learning
         self.assertTrue(isinstance(learning_dict.get('comp_date'), float))
         self.assertTrue(isinstance(learning_dict.get('task_id'), int))
         self.assertTrue(isinstance(learning_dict.get('rank'), int))
         self.assertTrue(isinstance(learning_dict.get('skill_name'), str))
         self.task_handler.clock.advance(1801)
-        self.assertFalse(self.char1.learning)
+        self.assertFalse(self.char1.condition.learning)
 
     def test_learn_one_skill_at_a_time(self):
         self.char1.skills.unarmed.punch_exp = 600
@@ -2431,7 +2431,7 @@ class TestLearn(UniqueMudCmdTest):
         command = developer_cmds.CmdMultiCmd
         arg = "= learn punch, complete_cmd_early"
         self.call(command(), arg)
-        task_id = self.char1.learning.get('task_id')
+        task_id = self.char1.condition.learning.get('task_id')
         self.assertTrue(self.task_handler.exists(task_id))
         self.task_handler.clock.advance(1801)
         self.assertFalse(self.task_handler.exists(task_id))

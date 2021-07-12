@@ -294,7 +294,7 @@ class CmdLearn(Command):
         """Message caller available skill increase."""
         caller = self.caller
         msg = ""
-        caller_learning = caller.learning
+        caller_learning = caller.condition.learning
         # message for increaseable skills.
         for skill_name in increaseable_skills:
             cmd_suggestion = highlighter("learn "+skill_name,
@@ -313,12 +313,13 @@ class CmdLearn(Command):
 
     def currently_learning_msg(self, msg):
         caller = self.caller
-        caller_learning = caller.learning
+        caller_learning = caller.condition.learning
         if not caller_learning:
             return msg
         skill_name = caller_learning.get('skill_name')
         rank = caller_learning.get('rank')
-        comp_date = time.strftime('%Y-%m-%d %H:%M:%S', time.localtime(caller_learning.get("comp_date")))
+        comp_date = time.strftime('%Y-%m-%d %H:%M:%S',
+                                  time.localtime(caller_learning.get("comp_date")))
         msg += f"\nYou are currently learning {skill_name} to rank {rank}.\n" \
                f"Learning will complete on {comp_date}."
         return msg
@@ -337,7 +338,7 @@ class CmdLearn(Command):
         """
         caller = self.caller
         args = self.args
-        caller_learning = caller.learning
+        caller_learning = caller.condition.learning
         single_skill = args.replace('?', '') if args.endswith('?') else False
         # create a list of skills that have an increase available
         increaseable_skills = {}
@@ -434,14 +435,14 @@ class CmdLearn(Command):
                       f"failed to find skill {skill_name} in skills."
             error_report(err_msg, caller)
             return False
-        caller.learning = {
+        caller.condition.learning = {
                             'task_id': task.get_id(),
                             'comp_date': comp_date,
                             'skill_name': skill_name,
                             'rank': rank
                           }
         # message caller and location
-        comp_date = time.strftime('%Y-%m-%d %H:%M:%S', time.localtime(caller.learning.get("comp_date")))
+        comp_date = time.strftime('%Y-%m-%d %H:%M:%S', time.localtime(caller.condition.learning.get("comp_date")))
         msg = f'You complete studing {skill_name}, this rank increase will complete on {comp_date}.'
         caller.msg(msg)
         caller.emote_location(f'/Me completes studing {self.args.lower()}.')

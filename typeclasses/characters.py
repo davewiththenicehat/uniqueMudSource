@@ -280,23 +280,6 @@ class Character(AllObjectsMixin, CharExAndObjMixin, UMClothedCharacter, GenderCh
                 set_inst.verify()
         return self._skills
 
-
-    @property
-    def learning(self):
-        """dict attribute to track the global task ID and completion date of a Characters learning task."""
-        return self.attributes.get('learning', False)
-
-    @learning.setter
-    def learning(self, value):
-        if value:
-            self.attributes.add('learning', value)
-        else:
-            self.attributes.remove('learning')
-
-    @learning.deleter
-    def learning(self):
-        self.attributes.remove('learning')
-
     # define objects's condition
     @property
     def condition(self):
