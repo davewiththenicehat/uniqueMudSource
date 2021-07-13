@@ -2870,3 +2870,19 @@ class TestCmdServerTime(UniqueMudCmdTest):
         self.assertRegex(cmd_result, wnt_msg)
         wnt_msg = 'In-Game time'
         self.assertRegex(cmd_result, wnt_msg)
+
+
+class TestCmdUniversalTime(UniqueMudCmdTest):
+
+    def test_cmd_utime(self):
+
+        command = developer_cmds.CmdMultiCmd
+
+        # run the command, verify output.
+        for aliase in ('utime', 'universal time'):
+            arg = f"= {aliase}, complete_cmd_early"
+            wnt_msg = "You will be busy for 1 second.|Current universal time: "
+            self.call(command(), arg, wnt_msg)
+
+        # verify a cost has been taken
+        self.assertTrue(self.char1.permission > 99.5)

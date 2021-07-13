@@ -42,6 +42,14 @@ class CmdUniversalTime(RequestCommand):
     aliases = "universal time"
     locks = "cmd:perm(time) or perm(Player)"
 
+
+    def set_instance_attributes(self):
+        """Called automatically at the start of at_pre_cmd.
+
+        Here to easily set command instance attributes.
+        """
+        self.defer_time = 1  # time is seconds to wait before calling the command's action
+
     def deferred_action(self):
         """
         This method is called after defer_time seconds when the Command.defer method is used.
@@ -52,6 +60,6 @@ class CmdUniversalTime(RequestCommand):
             successful (bool): True if the command completed sucessfully.
                 If this method returns True self.def_act_comp will be called after automatically.
         """
-        utime = f"Current universal time {datetime.fromtimestamp(gametime.gametime(absolute=True))}"
+        utime = f"Current universal time: {datetime.fromtimestamp(gametime.gametime(absolute=True))}"
         self.caller.msg(utime)
         return True

@@ -102,8 +102,7 @@ class Command(default_cmds.MuxCommand):
             To initalize an attribute created by UM it needs to be declared in Command.at_init.
 
         status_type = 'busy'  # Character status type used to track the command
-        defer_time = 3  # time is seconds for the command to wait before running
-            action of command
+        defer_time = 3  # time is seconds to wait before calling the command's action
         evade_mod_stat = 'AGI'  # stat used to evade this command
             AGI  # agility, defend against physical actions like attacks
         evade_msg, message to display when the character attempts to evade
