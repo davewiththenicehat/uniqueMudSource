@@ -466,3 +466,21 @@ def purchase_mod(caller, log=False):
     if log:
         log_info(f'world.stats.strength_max_mod | Character id: {caller.id} | chr_value: {chr_value} | purchase_modifier: {purchase_modifier}')
     return purchase_modifier
+
+
+def restoration_roll(restoration_modifier=0):
+    """
+    Get a number to restore a Characte stat.
+
+    Argument:
+        restoration_modifier=0, gets added to the max number that can be rolled.
+
+    Equation:
+        A random whole number from 0 to 1 plus the stat's restoration modifier is returned.
+        There is always at least a 50% chance of restoring 1 point.
+            (The maximum possible roll can not be less than 1)
+    """
+    restoration_max = 1 + restoration_modifier
+    if restoration_max < 1:  # restoration max can not be less than 1
+        restoration_max = 1
+    return randint(0, restoration_max)

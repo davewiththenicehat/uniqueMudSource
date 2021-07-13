@@ -16,6 +16,88 @@ from typeclasses.equipment.wieldable import Weapon
 from utils.unit_test_resources import UniqueMudCmdTest
 
 
+class TestRestoration(UniqueMudCmdTest):
+
+    def test_natural_healing(self):
+
+        # verify the natural healing script works
+        self.char1.hp = 50
+        self.char1.END = 50
+        self.char1.WILL = 50
+        self.char1.PERM = 50
+
+        # call the natural healing script
+        nat_heal_script = self.char1.scripts.get('Natural_Healing')
+        nat_heal_script[0].at_repeat()
+
+        # verify healing occured
+        self.assertTrue(self.char1.hp > 50)
+        self.assertTrue(self.char1.END > 50)
+
+        # there is a chance non hp and endurance stats will not restore
+        for stat in (self.char1.WILL, self.char1.PERM):
+            stat_restoration_success = False
+            for number in range(1000):
+                if stat.value > 50:
+                    stat_restoration_success = True
+                    break
+                else:
+                    nat_heal_script[0].at_repeat()
+            self.assertTrue(stat_restoration_success)
+
+    def test_hp_random_restoration(self):
+        # test hp restoration
+        self.char1.hp = 50
+        # make certain the Character heals by some ammount
+        self.assertEqual(self.char1.hp, 50)
+        self.char1.heal()
+        self.assertTrue(self.char1.hp > 50)
+
+    def test_hp_set_ammount_restoration(self):
+        # heal now by a set ammount
+        self.char1.hp = 50
+        self.assertEqual(self.char1.hp, 50)
+        self.char1.heal(ammount=5)
+        self.assertEqual(self.char1.hp, 55)
+
+    def test_stat_restoration(self):
+
+        char = self.char1
+
+        # test all stats
+        for stat in (char.END, char.WILL, char.CHR, char.WIS, char.INT, char.SPD, char.AGI,
+                     char.OBS, char.CON, char.STR, char.PERM, char.WILL):
+
+            stat.set(99)
+
+            # There is a down to 50% chance the stat
+            restoration_successful = False
+            for number in range(1000):
+                char.restore_stat(stat)
+                if stat == 100:
+                    restoration_successful = True
+                    break
+            self.assertTrue(restoration_successful)
+
+
+class TestCharacterHP(UniqueMudCmdTest):
+
+    def test_hp_breakpoint(self):
+        """Verify character goes unconscious when hp is below 0."""
+        self.char1.hp = -1
+        self.assertTrue(self.char1.condition.unconscious)
+        self.char1.hp = 100
+        self.assertFalse(self.char1.condition.unconscious)
+
+
+    def test_healing_wakes_unconsious_char(self):
+        # verify healing will wake an unconcious Character
+        self.char1.condition.unconscious = True
+        self.assertTrue(self.char1.condition.unconscious)
+        self.char1.heal()
+        self.assertFalse(self.char1.condition.unconscious)
+
+
 class TestObjects(CommandTest):
     """
     Used to test the character object
@@ -58,32 +140,32 @@ class TestObjects(CommandTest):
         self.assertEqual(gendersub._RE_GENDER_PRONOUN.sub(char._get_pronoun, txt), "Test its gender")
 
         # test Character stats
-        for stat in (char.END, char.WILL, char.CHR, char.WIS, char.INT, char.SPD, char.AGI,
-                     char.OBS, char.CON, char.STR, char.PERM):
-            self.assertEqual(stat, 100)
+        for stat in (char.END, char.WILL, char.PERM,
+                     char.CHR, char.WIS, char.INT, char.SPD, char.AGI, char.OBS, char.CON, char.STR):
+
+            self.assertEqual(stat.value, 100)
             self.assertEqual(stat.max, CHARACTER_STAT_SETTINGS.get('max'))
             self.assertEqual(stat.min, CHARACTER_STAT_SETTINGS.get('min'))
             self.assertEqual(stat.breakpoint, CHARACTER_STAT_SETTINGS.get('breakpoint'))
+
             # test changing stat
             stat.set(99)
             self.assertEqual(stat, 99)
             self.assertEqual(char.attributes.get(f'{stat.name}_value'), 99)
+
             # test changing stats max
             self.assertFalse(char.attributes.has(f'{stat.name}_max'))
             stat.max = 101
             self.assertEqual(char.attributes.get(f'{stat.name}_max'), 101)
             stat.max = 100
             self.assertEqual(char.attributes.get(f'{stat.name}_max'), 100)
+
             # test changing stats min
             self.assertFalse(char.attributes.has(f'{stat.name}_min'))
             stat.min = -99
             self.assertEqual(char.attributes.get(f'{stat.name}_min'), -99)
             stat.min = -100
             self.assertEqual(char.attributes.get(f'{stat.name}_min'), -100)
-            # test stat restoration
-            stat.set(99)
-            char.restore_stat(stat)
-            self.assertTrue(stat == 100)
 
         # test basic attributes shared among all object types
         for attr_type in ('container', 'targetable'):
@@ -101,37 +183,6 @@ class TestObjects(CommandTest):
                 setattr(obj, attr_type, def_attr_val)
                 self.assertEqual(getattr(obj, attr_type), def_attr_val)
                 self.assertEqual(obj.attributes.get(attr_type, False), def_attr_val)
-
-        # test hp restoration
-        self.assertFalse(char.condition.dead)
-        char.hp = 50
-        # make certain the Character heals by some ammount
-        self.assertEqual(char.hp, 50)
-        char.heal()
-        self.assertTrue(char.hp > 50)
-        # heal now by a set ammount
-        char.hp = 50
-        self.assertEqual(char.hp, 50)
-        char.heal(ammount=5)
-        self.assertEqual(char.hp, 55)
-        # verify the natural healing script works
-        char.hp = 50
-        self.assertEqual(char.hp, 50)
-        nat_heal_script = char.scripts.get('Natural_Healing')
-        nat_heal_script[0].at_repeat()
-        self.assertTrue(char.hp > 50)
-        # verify healing will wake an unconcious Character
-        self.assertFalse(char.condition.unconscious)
-        char.condition.unconscious = True
-        self.assertTrue(char.condition.unconscious)
-        char.heal()
-        self.assertFalse(char.condition.unconscious)
-        # test hp breakpoints
-        self.assertFalse(char.condition.unconscious)
-        char.hp = -1
-        self.assertTrue(char.condition.unconscious)
-        char.hp = 100
-        self.assertFalse(char.condition.unconscious)
 
         # test usdesc
         self.assertEqual(char.usdesc, 'A normal person')

@@ -260,12 +260,12 @@ def restoration_roll(restoration_modifier=0):
     Get a number to restore health on an object
 
     Argument:
-        restoration_modifie=0, gets added to the max number that can be returned
+        restoration_modifie=0, gets added to the max number that can be rolled
 
     Equation:
         Returns a random number between:
             4 + restoration_modifier
-            The number can not e less than 1
+            The number can not be less than 1
     """
     restoration_max = 4 + restoration_modifier
     if restoration_max < 1:  # restoration max can not be less than 1

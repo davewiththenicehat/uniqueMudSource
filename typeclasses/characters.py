@@ -946,16 +946,23 @@ class Character(AllObjectsMixin, CharExAndObjMixin, UMClothedCharacter, GenderCh
             ammount=None, a set ammount to restore by.
                 If passed restore_stat will ignore the standard restore check
 
-        Notes
+        Notes:
             This is registered on a script, NaturalHealing.
             This script is created in at_object_creation
+
+        Returns:
+            success (boolean): True if the restore occurred successfully.
         """
+
         # dead Characters can not restore
         if self.condition.dead:
-            return
-        if ammount:  # if ammount pass restore by that ammount
+            return True
+
+        # if an ammount is passed restore by that ammount
+        if ammount:
             stat.set(stat + ammount)
-            return
+            return True
+
         # restore according to Character's natural healing
         cost_mod_type = stat.name # if this stat has no modifier_stat, default to itself
         if stat:
@@ -965,15 +972,23 @@ class Character(AllObjectsMixin, CharExAndObjMixin, UMClothedCharacter, GenderCh
             error_message = f"Character.restore_stat, character: {self.id}, Failed to receive an instance of {stat.name} on character."
             um_utils.error_report(error_message, self)
             return False
+
         # adjust restoration by the stat's restoration modifider.
         restoration_modifier = getattr(stat, f"{cost_mod_type}_restoration_mod", 0)
         restoration_modifier += modifier
-        stat.set(stat + damage.restoration_roll(restoration_modifier))
-        # If this restoration was hp, and the character is concious, wake them.
-        if stat.name == 'hp':
-            if self.condition.unconscious:
-                if self.hp > self.hp.breakpoint:
-                    self.wake_check()
+
+        # restore the stat
+        if stat.name in ('hp', 'END', 'endurance'):  # the stat is hp or endurance
+            stat.set(stat + damage.restoration_roll(restoration_modifier))
+            # If this restoration was hp, and the character is unconcious, wake them.
+            if stat.name == 'hp':
+                if self.condition.unconscious:
+                    if self.hp > self.hp.breakpoint:
+                        self.wake_check()
+        else:  # stat being restored is not health or endurance
+            stat.set(stat + stats.restoration_roll(restoration_modifier))
+
+        return True
 
     def wake_check(self):
         """
@@ -1195,3 +1210,5 @@ class NaturalHealing(DefaultScript):
         char = self.obj
         char.restore_stat(char.hp)
         char.restore_stat(char.END)
+        char.restore_stat(char.WILL)
+        char.restore_stat(char.PERM)
