@@ -641,12 +641,13 @@ class Command(default_cmds.MuxCommand):
         self.gain_exp()
         self.cost()
 
-    def stop_request(self, target=None, stop_message=None, stop_cmd=None):
+    def stop_request(self, target=None, status_type='busy', stop_message=None, stop_cmd=None):
         """Request for a player to stop an action.
 
         Arguments:
             target=Character, target of the stop request
                 Default: caller.self
+            status_type (str): The type of status to create.
             stop_message=str, message shown to target.
                 Default: f'Stop your {status['cmd'].key} command?'
             stop_cmd=str, command to run if the stop request is done.

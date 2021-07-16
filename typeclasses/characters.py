@@ -170,7 +170,8 @@ class Character(AllObjectsMixin, CharExAndObjMixin, UMClothedCharacter, GenderCh
         ready(), returns True if a character is ready for a 'busy' action
         stun(int() or float()), stun the Character for argument seconds
         status_stop(status_type=str, stop_message=str, stop_cmd=str), stop a stun status early
-        status_stop_request(stop_message=None, stop_cmd=None), Request for a player to stop a status.
+        status_stop_request( status_type, stop_message, stop_cmd), Request for a player to stop a
+            status.
         cache_stat_modifiers(), Creates "Stat modifiers" mentioned in the Attributes section of this docstring
         at_msg_receive(force=None, force_on_unconscious=None), a Character will silence messages when they are unconscious or dead.
             To force reciving a certain message always use the force kwarg.
@@ -692,58 +693,51 @@ class Character(AllObjectsMixin, CharExAndObjMixin, UMClothedCharacter, GenderCh
         """
         return status_functions.status_force_stop(self, stop_message, stop_cmd, status_type, stopper)
 
-    def status_stop_request(self, stop_message=None, stop_cmd=None):
-        """
-        Request for a player to stop a status.
-        status_stop_request will verify that the target has a deffered command.
-        If stop_cmd was provided and there is no deffered command.
-            stop_request will suggest the stop_cmd to the target.
-        Returns True if the command was successfully stopped.
+    def status_stop_request(self, status_type='busy', stop_message=None, stop_cmd=None):
+        """Request for a player to stop a status.
 
         Arguments:
+            status_type (str): The type of status to create.
             stop_message=str, message shown to target.
-                Default: f'Stop your {target.nbd.deffered_command.key} command?'
+                Default: f'Stop your {status['cmd'].key} command?'
             stop_cmd=str, command to run if the stop request is done.
                 Default: None
                 Example: 'look'
 
-        Reason:
-            Allows for support of commands that allow for openings.
-            Possible to receive assistance from someone else.
-            Much more.
 
-        Useage:
-            If not calling on self:
-                call within Command.func or Command.deffered_action methods
-                message = f'caller.get_display_name(target) left an opening, dodge?'
-                target.status_stop_request(message, 'dodge')
-            If calling on self
-                message = 'You are at 20 hp, would you like to teleport home?'
-                target.status_stop_request(message, 'tel home')
-
-        Limitations:
+        Notes:
             Is NOT compatible with settings.MULTISESSION_MODE = 3
             Only supports requesting a stop for the 'busy' status
 
-        References:
-        https://github.com/evennia/evennia/wiki/EvMenu#the-get_input-way
+            Reference:
+                https://github.com/evennia/evennia/wiki/EvMenu#the-get_input-way
         """
-        if self.nattributes.has('deffered_command'):
-            if not stop_message:
-                stop_message = f'Stop your {self.ndb.deffered_command.key} command'
-            self_sessions = self.sessions.get()
-            self.ndb.cmd_stop_request = status_functions.status_user_request_stop
-            if stop_cmd:
-                utils.evmenu.get_input(self, f"{stop_message} to |lc{stop_cmd}|lt{stop_cmd}|le? 'y' for yes or 'i' to ignore.",
-                                       self.ndb.cmd_stop_request, self_sessions, stop_cmd)
-            else:
-                utils.evmenu.get_input(self, f"{stop_message}? 'y' for yes or 'i' to ignore.",
-                                       self.ndb.cmd_stop_request, self_sessions)
-            return True
-        else:  # if no command is waiting, suggest the stop_cmd
-            if stop_cmd:
-                self.msg(f'You may want to |lc{stop_cmd}|lt{stop_cmd}|le.')
-            return False
+
+        # get the caller's status
+        char_status = self.caller.get_status(status_type)
+
+        # request a stop of the status if one exists
+        if char_status:
+            char_deferred_cmd = char_status['cmd']
+            if char_deferred_cmd:
+                if not stop_message:
+                    stop_message = f'Stop your {char_deferred_cmd.key} command'
+                self_sessions = self.sessions.get()
+                self.ndb.cmd_stop_request = status_functions.status_user_request_stop
+                if stop_cmd:
+                    stop_message = f"{stop_message} to |lc{stop_cmd}|lt{stop_cmd}|le? 'y' for yes " \
+                                    "or 'i' to ignore."
+                    utils.evmenu.get_input(self, stop_message, self.ndb.cmd_stop_request,
+                                           self_sessions, stop_cmd)
+                else:
+                    utils.evmenu.get_input(self, f"{stop_message}? 'y' for yes or 'i' to ignore.",
+                                           self.ndb.cmd_stop_request, self_sessions)
+                return True
+
+        # no status or command to stop, message caller recommending stop command.
+        if stop_cmd:
+            self.msg(f'You may want to |lc{stop_cmd}|lt{stop_cmd}|le.')
+        return False
 
     def statuses(self):
         """Return a list of status the Character is currently under.
