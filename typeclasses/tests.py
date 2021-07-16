@@ -941,6 +941,5 @@ class TestCharacterStatus(UniqueMudCmdTest):
             # verify the status no longer exists
             self.assertFalse(self.char1.get_status(status_type))
 
-
         # test that no statuses exist
         self.assertFalse(self.char1.statuses())

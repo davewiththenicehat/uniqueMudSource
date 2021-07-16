@@ -3,6 +3,7 @@ from unittest import mock
 from evennia.commands.default.tests import CommandTest
 from evennia.utils.test_resources import TestCase
 from evennia import create_object
+from evennia.scripts.taskhandler import TaskHandlerTask
 
 from typeclasses.races import Human
 from typeclasses.exits import Exit
@@ -15,6 +16,8 @@ from utils import um_utils
 from utils.unit_test_resources import UniqueMudCmdTest
 from world.rules.stats import STATS
 from world.rules import skills
+from world import status_functions
+from commands.command import Command
 
 
 class TestRules(CommandTest):
@@ -611,3 +614,32 @@ class TestFileHelp(TestCase):
             self.assertEqual(HELP_ENTRY_DICTS[inum].get('aliases', []), helpentry.aliases)
             self.assertEqual(HELP_ENTRY_DICTS[inum]['category'], helpentry.help_category)
             self.assertEqual(HELP_ENTRY_DICTS[inum]['text'], helpentry.entrytext)
+
+
+class TestStatusFunctions(UniqueMudCmdTest):
+
+    def test_status_functions(self):
+
+        # verify all status types
+        for status_type in status_functions.STATUS_TYPES:
+
+            # create the status
+            status_functions.status_delay_set(self.char1, cmd=None, delay_time=3,
+                                              status_type=status_type)
+
+            # get the character status
+            char1_status = status_functions.get_status(self.char1, status_type)
+
+            # make certain the status is a dictionary
+            self.assertTrue(isinstance(char1_status, dict))
+
+            # that the required keys exist
+            status_keys = char1_status.keys()
+            for stat_key in ('cmd', 'task', 'comp_time'):
+                self.assertTrue(stat_key in status_keys)
+
+            # complete the status
+            status_functions.complete(self.char1, status_type)
+
+            # verify the status no longer exists
+            self.assertFalse(self.char1.get_status(status_type))
