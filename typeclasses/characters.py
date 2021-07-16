@@ -766,6 +766,19 @@ class Character(AllObjectsMixin, CharExAndObjMixin, UMClothedCharacter, GenderCh
         # Return the statuses, if any
         return statuses
 
+    def get_status(self, status_type='busy'):
+        """Return a single status type.
+
+        Arguments:
+            status_type (str): The type of status to get.
+
+        Returns:
+            status (dict): A status dictionary or an empty dictionary if there is on status of the
+                type passed.
+        """
+
+        return status_functions.get_status(self, status_type)
+
     def cache_stat_modifiers(self):
         """
         Create a cache of meaningful ability modifiers.
