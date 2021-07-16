@@ -1371,7 +1371,7 @@ class Command(default_cmds.MuxCommand):
     def gain_exp(self):
         """Gain experience.
 
-        Called in world.rules.status_fucntions.status_delay_stop, where each
+        Called in world.rules.status_fucntions.complete, where each
         command's deferred_action method is called. For all non-evasion cmds
         Called in world.rules.actions.evade_roll for evade commands. Just after
         the function stops the deferred instance, but before it echos the
