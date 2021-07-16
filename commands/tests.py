@@ -2470,8 +2470,8 @@ class TestStop(UniqueMudCmdTest):
         arg = "= punch char2"
         self.call(command(), arg)
         char1_status = self.char1.get_status('busy')
-        char1_status_cmd = char1_status['cmd']
-        char1_status_cmd.unstoppable = True
+        #char1_status_cmd = char1_status['cmd']
+        #char1_status_cmd.unstoppable = True
         arg = "= stop"
         wnt_msg = 'Punch can not be stopped.'
         self.call(command(), arg, wnt_msg)

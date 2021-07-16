@@ -60,7 +60,7 @@ def status_delay_set(char, cmd=None, delay_time=3, status_type='busy'):
     status['task'] = task
 
     # save the status as a Character attribute
-    char.nattributes.set(f'{status_type}', status)
+    char.nattributes.add(f'{status_type}', status)
 
     # message the the char of the status creation
     plural_sec = 's' if delay_time > 1.99 else ''

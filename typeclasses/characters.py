@@ -714,7 +714,7 @@ class Character(AllObjectsMixin, CharExAndObjMixin, UMClothedCharacter, GenderCh
         """
 
         # get the caller's status
-        char_status = self.caller.get_status(status_type)
+        char_status = self.get_status(status_type)
 
         # request a stop of the status if one exists
         if char_status:

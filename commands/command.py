@@ -317,7 +317,7 @@ class Command(default_cmds.MuxCommand):
 
         # if this command has been deferred in the caller's statuses, do not clean this command's
         # instance attributes.
-        for status in caller_statuses:
+        for status in caller_statuses.values():
             if self == status['cmd']:
                 return
 
