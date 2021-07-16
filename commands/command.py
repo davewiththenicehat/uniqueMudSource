@@ -654,7 +654,7 @@ class Command(default_cmds.MuxCommand):
             target=Character, target of the stop request
                 Default: caller.self
             stop_message=str, message shown to target.
-                Default: f'Stop your {target.ndb.deffered_command.key} command?'
+                Default: f'Stop your {status['cmd'].key} command?'
             stop_cmd=str, command to run if the stop request is done.
                 Default: None
                 Example: 'look'
@@ -693,7 +693,7 @@ class Command(default_cmds.MuxCommand):
             target=Character, the target of the forced stop
                 Default: self.caller
             stop_message=str, a message to show the target.
-                Default: f'/Me stopped your {target.ndb.deffered_command.key} command with {self_pronoun} {self.key}.'
+                Default: f'/Me stopped your {status['cmd'].key} command with {self_pronoun} {self.key}.'
             stop_cmd=str: a command to run when the deffered command is stopped.
                 Default: None
                 Example: 'look'
@@ -708,16 +708,20 @@ class Command(default_cmds.MuxCommand):
         #set the target of the forced stop
         if not target:
             target = caller
+        target_status = target.get_status(status_type)
 
         # Stop the status, or message caller if there is no status of type.
-        if target.get_status(status_type):  # verify there is a status of type passed
-            if not stop_message:  # if none was provided make a message
-                if target == caller:  # do not display a stop message if the player stopped their own command
-                    stop_message = None
-                else:
-                    self_pronoun = caller.get_pronoun('|p')
-                    stop_message = f'/Me stopped your {target.ndb.deffered_command.key} command with {self_pronoun} {self.key}.'
-            status_functions.status_force_stop(target, stop_message, stop_cmd, status_type, caller)
+        if target_status:  # verify there is a status of type passed
+            target_deferred_cmd = target_status['cmd']
+            if target_deferred_cmd:  # the status has a deferred command.
+                if not stop_message:  # if none was provided make a message
+                    if target == caller:  # show no message if caller is stopping their own command
+                        stop_message = None
+                    else:
+                        self_pronoun = caller.get_pronoun('|p')
+                        stop_message = f'/Me stopped your {target_deferred_cmd.key} command with ' \
+                                       f'{self_pronoun} {self.key}.'
+                status_functions.status_force_stop(target, stop_message, stop_cmd, status_type, caller)
         else:  # no status of type passed on target
             caller.emote(f'/target is not commited to an action.', target)
 
