@@ -581,12 +581,8 @@ class CmdCmdFuncTest(DeveloperCommand):
 
         /r, shows the return from the function
         /d, deffer this command after setting its attributes.
-            Functions that use attributes from self.caller.deffered_command will be using attributes
-            on this command.
-        /unit_test_succ, if caller is a developer Command.combat_action will
-            always hit
-        /unit_test_fail, if caller is a developer Command.combat_action will
-            always miss
+        /unit_test_succ, if caller is a developer Command.combat_action will always hit
+        /unit_test_fail, if caller is a developer Command.combat_action will always miss
         char, the name of the character the command will target
         requires_wielding:True,
             requires_wielding refers to Command.requires_wielding
