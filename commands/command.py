@@ -699,12 +699,14 @@ class Command(default_cmds.MuxCommand):
         Example:
             commands.developer_cmdsets.CmdStopCmd
         """
+
         caller = self.caller
         #set the target of the forced stop
         if not target:
             target = caller
-        # if the target has a command deffered
-        if target.nattributes.has('deffered_command'):
+
+        # Stop the status, or message caller if there is no status of type.
+        if target.get_status(status_type):  # verify there is a status of type passed.
             if not stop_message:  # if none was provided make a message
                 if target == caller:  # do not display a stop message if the player stopped their own command
                     stop_message = None
@@ -712,7 +714,7 @@ class Command(default_cmds.MuxCommand):
                     self_pronoun = caller.get_pronoun('|p')
                     stop_message = f'/Me stopped your {target.ndb.deffered_command.key} command with {self_pronoun} {self.key}.'
             status_functions.status_force_stop(target, stop_message, stop_cmd, status_type, caller)
-        else:
+        else:  # no status of type passed on target
             caller.emote(f'/target is not commited to an action.', target)
 
     def complete_early(self, target=None, comp_msg=None):
