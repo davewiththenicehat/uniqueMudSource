@@ -17,7 +17,7 @@ from world.rules import stats, skills
 from utils.um_utils import highlighter, error_report
 from typeclasses.exits import STANDARD_EXITS
 from world.rules.body import CHARACTER_CONDITIONS
-from world.status_functions import status_delay_get, complete, STATUS_TYPES
+from world.status_functions import status_delay_get, complete, STATUS_TYPES, get_status
 
 
 class StandardCmdsCmdSet(default_cmds.CharacterCmdSet):
@@ -227,6 +227,7 @@ class CmdStop(Command):
         stop, stops your current action.
     """
     key = 'stop'
+    switch_options = STATUS_TYPES + ('all')
 
     def set_instance_attributes(self):
         """Called automatically at the start of at_pre_cmd.
@@ -248,12 +249,16 @@ class CmdStop(Command):
                 super().self.func()
         """
         caller = self.caller
-        deferred_cmd = caller.nattributes.get('deffered_command')
-        if deferred_cmd:
-            if deferred_cmd.unstoppable:  # do not stop unstoppable commands
-                caller.msg(f'{deferred_cmd.key.capitalize()} can not be stopped.')
-            else:  # all other commands can be stopped with stop
-                complete(caller, 'busy', False)
+
+        # if not specified, stop the 'busy' status
+        caller_status = get_status(caller, 'busy')
+        if caller_status:
+            caller_status_cmd = caller_status['cmd']
+            if caller_status_cmd:
+                if caller_status_cmd.unstoppable:  # do not stop unstoppable commands
+                    caller.msg(f'{caller_status_cmd.key.capitalize()} can not be stopped.')
+                else:  # all other commands can be stopped with stop
+                    complete(caller, 'busy', False)
         else:  # has no action deferred
             caller.msg('You are not commited to an action.')
         return True
