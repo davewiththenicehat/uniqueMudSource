@@ -125,7 +125,7 @@ def complete(char, status_type='busy', complete_cmd=True):
     """
 
     # get the status
-    status = char.nattributes.get(f'{status_type}')
+    status = char.get_status(status_type)
 
     # stop the function if there is no status of this type on the Character
     if not status:

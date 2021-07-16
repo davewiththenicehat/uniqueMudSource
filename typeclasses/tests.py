@@ -3,17 +3,21 @@ import datetime
 
 from evennia.commands.default.tests import CommandTest
 from evennia import create_object
+from evennia.contrib import gendersub
+from evennia.utils.test_resources import EvenniaTest
+from evennia.scripts.taskhandler import TaskHandlerTask
+
 from typeclasses.characters import Character, CHARACTER_STAT_SETTINGS
 from typeclasses.races import Human
 from typeclasses.exits import Exit
 from typeclasses.rooms import Room
 from typeclasses.objects import Object
-from evennia.contrib import gendersub
-from evennia.utils.test_resources import EvenniaTest
 from world.rules import body, damage, actions
 from commands import developer_cmds
 from typeclasses.equipment.wieldable import Weapon
 from utils.unit_test_resources import UniqueMudCmdTest
+from world import status_functions
+from commands.command import Command
 
 
 class TestRestoration(UniqueMudCmdTest):
@@ -873,3 +877,70 @@ class TestCmdDesc(UniqueMudCmdTest):
 
         # verify the result
         self.assertTrue(description in self.room1.return_appearance(self.char1))
+
+
+class TestCharacterStatus(UniqueMudCmdTest):
+
+    def test_character_get_status(self):
+
+        # defer a command
+        command = developer_cmds.CmdMultiCmd
+        arg = "= defer_cmd"
+        self.call(command(), arg)
+
+        # get the status created
+        char1_busy_status = self.char1.get_status('busy')
+
+        # verify the status is a dictionary
+        self.assertTrue(isinstance(char1_busy_status, dict))
+
+        # that the required keys exist
+        status_keys = char1_busy_status.keys()
+        for stat_key in ('cmd', 'task', 'comp_time'):
+            self.assertTrue(stat_key in status_keys)
+
+        # that the status values are of correct type
+        self.assertTrue(isinstance(char1_busy_status['cmd'], Command))
+        self.assertTrue(isinstance(char1_busy_status['task'], TaskHandlerTask))
+        self.assertTrue(isinstance(char1_busy_status['comp_time'], float))
+
+    def test_character_statuses(self):
+
+        # create a status of each type
+        for status_type in status_functions.STATUS_TYPES:
+            status_functions.status_delay_set(self.char1, cmd=None, delay_time=3,
+                                              status_type=status_type)
+
+        # get the character statuses
+        char1_statuses = self.char1.statuses()
+
+        # verify the statuses is a dictionary
+        self.assertTrue(isinstance(char1_statuses, dict))
+
+        # verify keys and values within the satuses dict
+        char1_statuses_keys = char1_statuses.keys()
+        for status_type in status_functions.STATUS_TYPES:
+
+            # make certain each status type exists
+            self.assertTrue(status_type in char1_statuses_keys)
+
+            # get the status
+            status = char1_statuses.get(status_type)
+
+            # make certain the status is a dictionary
+            self.assertTrue(isinstance(status, dict))
+
+            # that the required keys exist
+            status_keys = status.keys()
+            for stat_key in ('cmd', 'task', 'comp_time'):
+                self.assertTrue(stat_key in status_keys)
+
+            # complete the status
+            status_functions.complete(self.char1, status_type)
+
+            # verify the status no longer exists
+            self.assertFalse(self.char1.get_status(status_type))
+
+
+        # test that no statuses exist
+        self.assertFalse(self.char1.statuses())
