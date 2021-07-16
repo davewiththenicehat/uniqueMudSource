@@ -541,6 +541,7 @@ class CmdCondition(Command):
 
     def func(self):
         caller = self.caller
+
         # display name and appearance
         caller.msg("|/", force=True)
         caller.msg(f"Condition of: {caller.name}")
@@ -548,7 +549,8 @@ class CmdCondition(Command):
         row2 = list()
         row3 = list()
         row4 = list()
-        # loop through statistics attributes
+
+        # gather and display caller conditions
         for condition in CHARACTER_CONDITIONS:
             # show two stats to a row
             if len(row1) < len(row3):
@@ -566,25 +568,33 @@ class CmdCondition(Command):
         cond_table = evtable.EvTable(table=cond_list, border=None, pad_left=4)
         caller.msg(cond_table, force=True)
         caller.msg("|/", force=True)
+
+        # display caller position
         caller.msg(f"Position: {caller.position.capitalize()}", force=True)
         caller.msg("|/", force=True)
+
+        # display caller's statuses
         caller.msg("Status:", force=True)
         status_table = evtable.EvTable(table=[], border_right_char='|', pad_left=4, pad_right=4)
         for status_type in STATUS_TYPES:
             status_name = highlighter(status_type.capitalize(), click_cmd=f"help {status_type}", up=True)
-            if caller.nattributes.has(f'{status_type}'):
+            caller_status = caller.get_status(status_type)
+            if caller_status:
                 status_list = []
                 status_list.append(status_name)
-                if caller.nattributes.has("deffered_command"):
-                    cmd_name = caller.ndb.deffered_command.key.capitalize()
+                caller_deferred_cmd = caller_status['cmd']
+                if caller_deferred_cmd:
+                    cmd_name = caller_deferred_cmd.key.capitalize()
                     status_list.append(f"Action: {cmd_name}")
-                    time_remain = status_delay_get(caller, status_type='busy')
+                    time_remain = status_delay_get(caller)
                     time_remain = round(time_remain)
                     status_list.append(f"Time left: {time_remain}s")
                 status_table.add_column(*status_list)
             else:
                 status_table.add_column(status_name, "No")
         caller.msg(status_table, force=True)
+
+        # display caller's body
         body_table = evtable.EvTable(table=[], pad_left=2, pad_right=2)
         body_list = []
         for part in caller.body.parts:
