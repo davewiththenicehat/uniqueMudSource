@@ -739,11 +739,11 @@ class Command(default_cmds.MuxCommand):
             if deferred_cmd:  # make certain the status as an action deferred
                 stopped_succesfully = status_functions.complete(target, 'busy', True)
                 if stopped_succesfully:
-                    if not comp_msg:  # if none was provided make a message
+                    if (not comp_msg) and (target != caller):  # if none was provided make a message
                         self_pronoun = self.caller.get_pronoun('|p')
                         comp_msg = f'/Me allowed you to complete your {deferred_cmd.key} command ' \
                                    f'early with {self_pronoun} {self.key} command.'
-                    target.emote(comp_msg, caller, target)
+                        target.emote(comp_msg, caller, target)
                     return stopped_succesfully
                 else:  # The status failed to stop
                     self.caller.emote(f"You failed to stop /target's action.")
