@@ -310,14 +310,18 @@ class Command(default_cmds.MuxCommand):
         """
 
     def at_post_cmd(self):
-        """
-        This hook is called after the command has finished executing
-        (after self.func()).
+        """This hook is called after the command has finished executing (after self.func())."""
+        # get the caller's statuses
+        caller_statuses = self.caller.statuses()
 
-        """
-        # If this is not a deferred command. Clean up attributes changed during command run.
-        if not self.caller.nattributes.has("deffered_command"):
-            self.set_instance_attributes()
+        # if this command has been deferred in the caller's statuses, do not clean this command's
+        # instance attributes.
+        for status in caller_statuses:
+            if self == status['cmd']:
+                return
+
+        # This command is not a deferred command. Clean up attributes changed during command run.
+        self.set_instance_attributes()
 
     def parse(self):
         """
