@@ -170,7 +170,7 @@ class Character(AllObjectsMixin, CharExAndObjMixin, UMClothedCharacter, GenderCh
         ready(), returns True if a character is ready for a 'busy' action
         stun(int() or float()), stun the Character for argument seconds
         status_stop(status_type=str, stop_message=str, stop_cmd=str), stop a stun status early
-        status_stop_request( status_type, stop_message, stop_cmd), Request for a player to stop a
+        status_stop_request(status_type, stop_message, stop_cmd), Request for a player to stop a
             status.
         cache_stat_modifiers(), Creates "Stat modifiers" mentioned in the Attributes section of this docstring
         at_msg_receive(force=None, force_on_unconscious=None), a Character will silence messages when they are unconscious or dead.

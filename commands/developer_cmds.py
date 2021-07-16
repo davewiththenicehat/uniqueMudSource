@@ -210,11 +210,11 @@ class CmdInterruptCmd(Command):
             if target:
                 target = self.caller.search(target)
         if not target:
-            stop_success = self.stop_request(None, None, 'test_cmd')
+            stop_success = self.stop_request(None, 'busy' None, 'test_cmd')
             if not stop_success:
                 self.caller.msg('You are not commited to an action.')
         else:
-            stop_success = self.stop_request(target, None, 'test_cmd')
+            stop_success = self.stop_request(target, 'busy', None, 'test_cmd')
             if not stop_success:
                 self.caller.msg(f'{target.usdesc} is not commited to an action.')
 

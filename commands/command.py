@@ -226,7 +226,8 @@ class Command(default_cmds.MuxCommand):
         def_act_comp(self), called if deferred_action returns True, runs completion tasks.
             exp gain and action costs occur here.
         start_message(), Displays a message after a command has been successfully deffered.
-        stop_request(self, target, stop_message, stop_cmd), request a Character to stop a deffered command early
+        stop_request(self, target, status_type, stop_message, stop_cmd), request a Character to stop
+            a deffered command early
         stop_forced(self, target, stop_message, stop_cmd, status_type), force a character to stop a deffered command early
         complete_early(self, target, stop_message), make a Character to complete a deffered command early
         successful(success=True), records if a command was successful
@@ -663,7 +664,7 @@ class Command(default_cmds.MuxCommand):
         if not target:
             target = self.caller
         if utils.inherits_from(target, 'typeclasses.characters.Character'):
-            return target.status_stop_request(stop_message, stop_cmd)
+            return target.status_stop_request(status_type, stop_message, stop_cmd)
         else:
             return False
 
