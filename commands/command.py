@@ -747,7 +747,7 @@ class Command(default_cmds.MuxCommand):
             if not comp_msg:  # if none was provided make a message
                 self_pronoun = self.caller.get_pronoun('|p')
                 comp_msg = f'/Me allowed you to complete your {target.ndb.deffered_command.key} command early with {self_pronoun} {self.key} command.'
-            stopped_succesfully = status_functions.status_delay_stop(target, 'busy', True)
+            stopped_succesfully = status_functions.complete(target, 'busy', True)
             if comp_msg and target is not caller:
                 target.emote(comp_msg, caller, target)
         else:

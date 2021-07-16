@@ -17,7 +17,7 @@ from world.rules import stats, skills
 from utils.um_utils import highlighter, error_report
 from typeclasses.exits import STANDARD_EXITS
 from world.rules.body import CHARACTER_CONDITIONS
-from world.status_functions import status_delay_get, status_delay_stop
+from world.status_functions import status_delay_get, complete, STATUS_TYPES
 
 
 class StandardCmdsCmdSet(default_cmds.CharacterCmdSet):
@@ -253,7 +253,7 @@ class CmdStop(Command):
             if deferred_cmd.unstoppable:  # do not stop unstoppable commands
                 caller.msg(f'{deferred_cmd.key.capitalize()} can not be stopped.')
             else:  # all other commands can be stopped with stop
-                status_delay_stop(caller, 'busy', False)
+                complete(caller, 'busy', False)
         else:  # has no action deferred
             caller.msg('You are not commited to an action.')
         return True
@@ -565,9 +565,9 @@ class CmdCondition(Command):
         caller.msg("|/", force=True)
         caller.msg("Status:", force=True)
         status_table = evtable.EvTable(table=[], border_right_char='|', pad_left=4, pad_right=4)
-        for status_type in ('busy', 'stunned'):
+        for status_type in STATUS_TYPES:
             status_name = highlighter(status_type.capitalize(), click_cmd=f"help {status_type}", up=True)
-            if caller.nattributes.has(f'{status_type}_status'):
+            if caller.nattributes.has(f'{status_type}'):
                 status_list = []
                 status_list.append(status_name)
                 if caller.nattributes.has("deffered_command"):

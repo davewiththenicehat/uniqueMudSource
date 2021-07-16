@@ -34,7 +34,7 @@ class TestRestoration(UniqueMudCmdTest):
         self.assertTrue(self.char1.hp > 50)
         self.assertTrue(self.char1.END > 50)
 
-        # there is a chance non hp and endurance stats will not restore
+        # there is as alow as a 50% chance non hp and endurance stats will not restore
         for stat in (self.char1.WILL, self.char1.PERM):
             stat_restoration_success = False
             for number in range(1000):
@@ -70,7 +70,7 @@ class TestRestoration(UniqueMudCmdTest):
 
             stat.set(99)
 
-            # There is a down to 50% chance the stat
+            # There is as low as a 50% chance the stat will not restore
             restoration_successful = False
             for number in range(1000):
                 char.restore_stat(stat)

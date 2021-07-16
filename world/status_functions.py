@@ -1,3 +1,24 @@
+"""
+Adds a dictionary f'status_type', to a Character, as an nattribute.
+
+Only one instance of a status_type can exist at a time on a Character.
+
+status_type = {
+                'task': task  # utils.delay returned task
+                'cmd': cmd  # a weakref of a command.
+                'comp_time': time  # time.time() + delay_time
+}
+
+The 'stunned' status is a persistent task. Making certain stuns end after a server restart.
+All other status types do not survive a restart.
+
+status_user_request_stop adds attribute Character.nbd.cmd_stop_request
+    A serialized instance of status_user_request_stop. It is passed to utils.evmenu.get_input when
+    asking a player if they would like to stop their current command.
+
+Unit testing for these functions is done in the commands unit test.
+"""
+
 import time
 import weakref
 from evennia import utils
@@ -5,136 +26,132 @@ from evennia import utils
 
 STATUS_TYPES = ('stunned', 'busy')
 
-"""
-Only one instance of a status_type can exist at a time on a Character.
-Only ONE command can be deffered at a time.
-    Even if you attempt to defer a second command under a different status type
 
-Attributes:
-Character.db.f'{status_type}', a float or int of the time the status will end.
-Character.ndb.deffered_command, weakref.proxy instance of a Command to defer.
-Character.f'{status_type}_status', instance of a utils.delay
-    stores the stop function and time it will run. Automatically calls it.
-    Supports canceling.
-Character.nbd.cmd_stop_request, an serialized instance of status_user_request_stop
-    passed to utils.evmenu.get_input when asking a player if they would like to
-    stop their current command.
+def status_delay_set(char, cmd=None, delay_time=3, status_type='busy'):
+    """Create a status that will automatically complete, possibly with an action.
 
-Unit testing for these functions is done in the commands unit test.
-"""
+    Arguments:
+        char (Character): The Character to attach this status to.
+        cmd (Command): A Command to call at the completion of this status.
+        delay_time (int): Number of seconds to wait before completing this status.
+        status_type (str): The type of status to create.
 
+    Returns:
+        success (bool): if the status was successfully created.
 
-def status_delay_set(target, cmd, delay_time, status_type):
     """
-    INTERNAL COMMAND, not intended for general developers.
 
-    defers or delays the action portion of a command
-    Returns True if a command was successfully deffered.
+    # create a status dictionary.
+    status = {}
 
-    References:
-    https://github.com/evennia/evennia/wiki/Coding-Utils#utilsdelay
-        Much of utilsdelay is poorly documented.
-        utilsdelay is an instance of evennia.scripts.TaskHandler
-        TaskHandler returns a twisted Deffered object
-        https://twistedmatrix.com/documents/13.0.0/api/twisted.internet.defer.Deferred.html
-    """
-    # create an Character.int attribute with the completion time
-    target.attributes.add(status_type, time.time() + delay_time)
-    if cmd:
-        # only create a command if one is currently not deffered
-        if not target.nattributes.has('deffered_command'):
-            # created a reference of the command that is being deffered
-            target.nattributes.add('deffered_command', weakref.proxy(cmd))
-    # Return correct plural on seconds
-    plural_sec = 's' if delay_time > 1.99 else ''
-    target.msg(f'You will be {status_type} for {round(delay_time)} second{plural_sec}.')
-    if status_type != 'stunned':
-        target.nattributes.add(f'{status_type}_status', utils.delay(delay_time, status_delay_stop, target, status_type, True))
+    # Record the completion time for this status
+    status['comp_time'] = status_type, time.time() + delay_time
+
+    # record the command (if any) for this status
+    status['cmd'] = cmd
+
+    # create the task for this status
+    if status_type == 'stunned':  # stunned status are persistent tasks
+        task = utils.delay(delay_time, complete, char, status_type, False)
     else:
-        target.nattributes.add(f'{status_type}_status', utils.delay(delay_time, status_delay_stop, target, status_type, False))
-    return True  # tell target the command was deferred succesfully
+        task = utils.delay(delay_time, complete, char, status_type, True)
+
+    # record the task
+    status['task'] = task
+
+    # save the status as a Character attribute
+    char.nattributes.set(f'{status_type}', status)
+
+    # message the the char of the status creation
+    plural_sec = 's' if delay_time > 1.99 else ''
+    char.msg(f'You will be {status_type} for {round(delay_time)} second{plural_sec}.')
+
+    return True  # tell char the command was deferred succesfully
 
 
-def status_delay_get(target, status_type='busy'):
+def status_delay_get(char, status_type='busy'):
+    """Get the delay remaining on a status, or 0 if there is no status of the type passed.
+
+    Attributes:
+        char (Character): The Character to attach this status to.
+        status_type (str): The type of status to get.
+
+    returns:
+        time_remaining (float): The time remaining before status completion. 0 is returned if there
+            is no status, or if there is no time remaining on the status.
     """
-    INTERNAL COMMAND, not intended for general developers.
-
-    Checks if a deferal or delay type is on a character.
-
-    Returns 0 if there is no delay, returns a float of the difference if there is.
-    """
-    if target.attributes.has(status_type):
+    status = char.nattributes.get(status_type, False)
+    if status:
         current_time = time.time()
-        if current_time > target.attributes.get(status_type):
-            target.attributes.remove(status_type)
+        status_comp_time = status['comp_time']
+        if current_time > status_comp_time:
+            char.nattributes.remove(status_type)
             return 0
         else:
-            return target.attributes.get(status_type) - current_time
+            return status_comp_time - current_time
     else:
         return 0
 
 
-def status_delay_stop(target, status_type, complete_cmd):
+def complete(char, status_type='busy', complete_cmd=True):
     """
-    INTERNAL COMMAND, not intended for general developers.
 
-    stop utils.delay called from status_delay_set
-    Returns True when the status was stopped successfully
-
-    Reference:
-    https://twistedmatrix.com/documents/13.0.0/api/twisted.internet.defer.Deferred.html#cancel
-    https://github.com/evennia/evennia/wiki/Coding-Utils#utilsdelay
-    Much of utilsdelay is poorly documented.
-    utilsdelay is an instance of evennia.scripts.TaskHandler
-        note the use of delay_status_inst.remove()
-        it is used to remove the instance of utilsdelay
-        This is a TaskHandler method
     """
+
+    # get the status
+    status = char.nattributes.get(f'{status_type}')
+
     # stop the function if there is no status of this type on the Character
-    if not target.nattributes.has(f'{status_type}_status'):
+    if not status:
         return False
-    delay_status_inst = target.nattributes.get(f'{status_type}_status')
-    if delay_status_inst:
+
+    # get the status' task
+    task = status['task']
+
+    if task:
+
         # remove tmp attributes order of removal matters
-        try:
-            target.nattributes.remove('cmd_stop_request')
-        except AttributeError:
-            pass
-        try:
-            # If the deffered command was not called by the twisted deferred instance cancel it
-            if not delay_status_inst.called:
-                delay_status_inst.cancel()
-        except AttributeError:
-            pass
+        if char.nattributes.has('cmd_stop_request'):
+            char.nattributes.remove('cmd_stop_request')
+
+        # If the task was not called by the twisted deferred instance cancel it
+        if not task.called:
+            task.cancel()
+
         # remove commands waiting for user imput
         # utils.evmenu.get_input adds cmdset InputCmdSet which adds InputCmdSet
-        target.cmdset.remove(utils.evmenu.InputCmdSet)
-        target.cmdset.remove(utils.evmenu.CmdGetInput)
-        # run the deffered command if it is not being cancelled
-        if complete_cmd:
-            if target.nattributes.has("deffered_command"):
-                cmd = target.ndb.deffered_command
-                # check all command requirements
-                if cmd.requirements(basic=True, custom=True, target=True):
-                    cmd_successful = cmd.deferred_action()  # run the action
-                    # Run command completion tasks. Evasion cmds do this in actions.evade_roll
-                    if cmd.cmd_type != 'evasion' and cmd_successful:
-                        cmd.def_act_comp()
-        # remove tmp attributes order of removal matters
-        delay_status_inst.remove()
-        if target.attributes.has(status_type):
-            target.attributes.remove(status_type)
-        if target.nattributes.has("deffered_command"):
-            # reset attributes that may have been changed in command run
-            target.ndb.deffered_command.set_instance_attributes()
-            target.nattributes.remove('deffered_command')
-        if target.nattributes.has(f'{status_type}_status'):
-            target.nattributes.remove(f'{status_type}_status')
-        target.msg(f"You are no longer {status_type}.")
+        char.cmdset.remove(utils.evmenu.InputCmdSet)
+        char.cmdset.remove(utils.evmenu.CmdGetInput)
+
+        # collect an instance of the command
+        cmd = status['cmd']
+
+        # run the deferred command if specified
+        if complete_cmd and cmd:
+            # check all command requirements
+            if cmd.requirements(basic=True, custom=True, target=True):
+                cmd_successful = cmd.deferred_action()  # run the action
+                # Run command completion tasks. Evasion cmds do this in actions.evade_roll
+                if cmd.cmd_type != 'evasion' and cmd_successful:
+                    cmd.def_act_comp()
+
+        # remove the deferred task
+        task.remove()
+
+        # reset the command instance
+        if cmd:
+            cmd.set_instance_attributes()
+
+        # remove the status
+        char.nattributes.remove(status_type)
+
+        # message the Character.
+        char.msg(f"You are no longer {status_type}.")
+
         return True
 
 
-def status_user_request_stop(target, prompt, result, *args, **kwargs):
+def status_user_request_stop(char, prompt, result, *args, **kwargs):
     """
     Request a player if they would like to cancel a command.
     Allows for a custom prompt to be sent to do this.
@@ -151,26 +168,26 @@ def status_user_request_stop(target, prompt, result, *args, **kwargs):
     if result.lower() in ("y", "yes", "i", "ignore"):
         if result.lower() in ("y", "yes"):
             # stop the command waiting to be run
-            status_delay_stop(target, 'busy', False)
+            complete(char, 'busy', False)
             # any arguments received should be stop commands, run them now
             for cmd in args:
                 if isinstance(cmd, str):
-                    target.execute_cmd(cmd)
+                    char.execute_cmd(cmd)
     else:
         # remove commands waiting for user imput
-        target.cmdset.remove(utils.evmenu.InputCmdSet)
-        target.cmdset.remove(utils.evmenu.CmdGetInput)
+        char.cmdset.remove(utils.evmenu.InputCmdSet)
+        char.cmdset.remove(utils.evmenu.CmdGetInput)
         # run the none get_input command
-        target.execute_cmd(result)
+        char.execute_cmd(result)
         # listen for the get_input command again
-        target.cmdset.add(utils.evmenu.InputCmdSet)
+        char.cmdset.add(utils.evmenu.InputCmdSet)
         # Ask again after completing the none get_input cmd for a command
-        target.msg(f"|/{prompt}")
+        char.msg(f"|/{prompt}")
         # returning True will make sure the prompt state is not exited
         return True
 
 
-def status_force_stop(target, stop_message=None, stop_cmd=None, status_type='busy', stopper=None):
+def status_force_stop(char, stop_message=None, stop_cmd=None, status_type='busy', stopper=None):
     """
     INTERNAL COMMAND, not intended for general developers.
 
@@ -178,16 +195,16 @@ def status_force_stop(target, stop_message=None, stop_cmd=None, status_type='bus
     Returns True if the status was stopped, false if it was not.
 
     Supports (Optional):
-        sending a message to the target
+        sending a message to the char
         running a command after stopping the status
     """
     # stop the status and any commands waiting to run
-    stop_success = status_delay_stop(target, status_type, False)
+    stop_success = complete(char, status_type, False)
     # only do rest if there was a command to stop.
     if stop_success:
         if stop_message:
-            target.emote(stop_message, target, stopper)
+            char.emote(stop_message, char, stopper)
         if stop_cmd:
             if isinstance(stop_cmd, str):
-                target.execute_cmd(stop_cmd)
+                char.execute_cmd(stop_cmd)
     return stop_success

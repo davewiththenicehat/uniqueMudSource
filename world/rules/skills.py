@@ -28,8 +28,7 @@ Each skill set has skills (commands, actions or abilities) it grants access to l
         the represented skill.
         This tracker does not set to zero when a rank is increased.
         This tracker increases if the Character succeds or fails with the action.
-            This occurs when status_functions.status_delay_stop calls the
-            command's deferred_action method.
+            This occurs when status_functions.complete calls the command's deferred_action method.
         This tracker does not increase if the Character stops the action.
     Refer to utils.element.ListElement, for full usage. The function simular dictionaries.
 
