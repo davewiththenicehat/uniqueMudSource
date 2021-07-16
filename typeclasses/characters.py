@@ -745,7 +745,7 @@ class Character(AllObjectsMixin, CharExAndObjMixin, UMClothedCharacter, GenderCh
                 self.msg(f'You may want to |lc{stop_cmd}|lt{stop_cmd}|le.')
             return False
 
-    def status(self):
+    def statuses(self):
         """Return a list of status the Character is currently under.
 
         Returns:
