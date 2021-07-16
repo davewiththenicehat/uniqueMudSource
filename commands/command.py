@@ -706,7 +706,7 @@ class Command(default_cmds.MuxCommand):
             target = caller
 
         # Stop the status, or message caller if there is no status of type.
-        if target.get_status(status_type):  # verify there is a status of type passed.
+        if target.get_status(status_type):  # verify there is a status of type passed
             if not stop_message:  # if none was provided make a message
                 if target == caller:  # do not display a stop message if the player stopped their own command
                     stop_message = None
@@ -717,46 +717,48 @@ class Command(default_cmds.MuxCommand):
         else:  # no status of type passed on target
             caller.emote(f'/target is not commited to an action.', target)
 
-    def complete_early(self, target=None, comp_msg=None):
-        """
-        Complete a deffered complete before the completion time has passed
-        Returns True if the early completion was successful.
-        Displays a f'/target is not commited to an action.' message
-            if the command could not be completed early.
-
-        Supports:
-            Sending a custom message
-            Target other than self.caller
+    def complete_early(self, target=None, status_type='busy', comp_msg=None):
+        """Complete a deferred status early.
 
         Arguments:
             target=Character, a Character to complete a command early
             comp_msg=msg, a message to send to the target
 
-        Example:
-            From within a commands func method
-            if target:
-                self.complete_early(target)
-            else:
-                self.complete_early(self.caller)
+        Returns:
+            stopped_succesfully (bool): True if the command stopped successfully.
 
+        Usage:
             Example in commands.developer_cmdsets.CmdCompleteCmdEarly
         """
+
+        # collect and create required variables
         caller = self.caller
-        stopped_succesfully = None
+        stopped_succesfully = False
         if not target:
             target = self.caller
-        if target.nattributes.has('deffered_command'):
-            if not comp_msg:  # if none was provided make a message
-                self_pronoun = self.caller.get_pronoun('|p')
-                comp_msg = f'/Me allowed you to complete your {target.ndb.deffered_command.key} command early with {self_pronoun} {self.key} command.'
-            stopped_succesfully = status_functions.complete(target, 'busy', True)
-            if comp_msg and target is not caller:
-                target.emote(comp_msg, caller, target)
+        target_status = target.get_status(status_type)
+
+        # complete the command early
+        if target_status:  # verify the target has a status of type passed
+            deferred_cmd = target_status['cmd']
+            if deferred_cmd:  # make certain the status as an action deferred
+                stopped_succesfully = status_functions.complete(target, 'busy', True)
+                if stopped_succesfully:
+                    if not comp_msg:  # if none was provided make a message
+                        self_pronoun = self.caller.get_pronoun('|p')
+                        comp_msg = f'/Me allowed you to complete your {deferred_cmd.key} command ' \
+                                   f'early with {self_pronoun} {self.key} command.'
+                    target.emote(comp_msg, caller, target)
+                    return stopped_succesfully
+                else:  # The status failed to stop
+                    self.caller.emote(f"You failed to stop /target's action.")
+                    return stopped_succesfully
+
+        # No status existed to complete early, or failed to complete
+        if target == self.caller:
+            self.caller.msg(f'You are not commited to an action.')
         else:
-            if target == self.caller:
-                self.caller.msg(f'You are not commited to an action.')
-            else:
-                caller.emote("/Target is not commited to an action.", target)
+            caller.emote("/Target is not commited to an action.", target)
         return stopped_succesfully
 
     def act_vs_msg(self, action_result, evade_result):
