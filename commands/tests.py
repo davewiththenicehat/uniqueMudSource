@@ -2454,11 +2454,10 @@ class TestStop(UniqueMudCmdTest):
         command = developer_cmds.CmdMultiCmd
         arg = "= punch char2"
         self.call(command(), arg)
-        self.assertTrue(self.char1.nattributes.has('deffered_command'))
         arg = "= stop"
         wnt_msg = "You are no longer busy."
         self.call(command(), arg, wnt_msg)
-        self.assertFalse(self.char1.nattributes.has('deffered_command'))
+        self.assertFalse(self.get_status('busy'))
 
     def test_no_deferred_action(self):
         command = developer_cmds.CmdMultiCmd
@@ -2470,8 +2469,9 @@ class TestStop(UniqueMudCmdTest):
         command = developer_cmds.CmdMultiCmd
         arg = "= punch char2"
         self.call(command(), arg)
-        deferred_cmd = self.char1.nattributes.get('deffered_command')
-        deferred_cmd.unstoppable = True
+        char1_status = self.char1.get_status('busy')
+        char1_status_cmd = char1_status['cmd']
+        char1_status_cmd.unstoppable = True
         arg = "= stop"
         wnt_msg = 'Punch can not be stopped.'
         self.call(command(), arg, wnt_msg)

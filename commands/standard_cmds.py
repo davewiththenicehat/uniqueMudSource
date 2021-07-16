@@ -227,7 +227,7 @@ class CmdStop(Command):
         stop, stops your current action.
     """
     key = 'stop'
-    switch_options = STATUS_TYPES + ('all')
+    switch_options = STATUS_TYPES + ('all',)
 
     def set_instance_attributes(self):
         """Called automatically at the start of at_pre_cmd.
