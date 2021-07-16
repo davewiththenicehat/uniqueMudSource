@@ -745,6 +745,27 @@ class Character(AllObjectsMixin, CharExAndObjMixin, UMClothedCharacter, GenderCh
                 self.msg(f'You may want to |lc{stop_cmd}|lt{stop_cmd}|le.')
             return False
 
+    def status(self):
+        """Return a list of status the Character is currently under.
+
+        Returns:
+            statuses (dict): A dictionary of status dictionaries or an empty dictionary if there are
+                no statuses on this Character.
+                The dictionary keys are the type of status.
+                    IE: statuses['busy']
+        """
+
+        statuses = {}
+
+        # gather all current statuses, if any
+        for status_type in status_functions.STATUS_TYPES:
+            status = status_functions.get_status(self, status_type)
+            if status:
+                statuses.update({status_type: status})
+
+        # Return the statuses, if any
+        return statuses
+
     def cache_stat_modifiers(self):
         """
         Create a cache of meaningful ability modifiers.

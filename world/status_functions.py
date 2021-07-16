@@ -69,6 +69,24 @@ def status_delay_set(char, cmd=None, delay_time=3, status_type='busy'):
     return True  # tell char the command was deferred succesfully
 
 
+def get_status(char, status_type='busy'):
+    """Get an instance of a status.
+
+    Attributes:
+        char (Character): The Character to attach this status to.
+        status_type (str): The type of status to get.
+
+    returns:
+        status (dict): An instance of the Character's status dictionary or an empty dictionary if
+            no status of the type passed exists on this Character.
+    """
+    status = char.nattributes.get(status_type, False)
+    if status:
+        return status
+    else:
+        return {}
+
+
 def status_delay_get(char, status_type='busy'):
     """Get the delay remaining on a status, or 0 if there is no status of the type passed.
 
