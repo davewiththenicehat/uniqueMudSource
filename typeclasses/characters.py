@@ -626,13 +626,12 @@ class Character(AllObjectsMixin, CharExAndObjMixin, UMClothedCharacter, GenderCh
         if conscious_only:  # stop running if only testing consciousness
             return True
         # Player is not ready if they have a status active.
-        for status_type in status_functions.STATUS_TYPES:
-            if self.attributes.has(status_type):
-                delay_remaining = status_functions.status_delay_get(self, status_type)
-                if delay_remaining > 0:
-                    plural_sec = 's' if delay_remaining > 1.99 else ''
-                    self.msg(f'You will be {status_type} for {round(delay_remaining)} second{plural_sec}.')
-                    return False  # Tell command character is currently occupied
+        for char_status in self.statuses():
+            delay_remaining = status_functions.status_delay_get(self, char_status)
+            if delay_remaining > 0:
+                plural_sec = 's' if delay_remaining > 1.99 else ''
+                self.msg(f'You will be {char_status} for {round(delay_remaining)} second{plural_sec}.')
+                return False  # Tell command character is currently occupied
         return True  # player is ready
 
     def get_pronoun(self, pattern):

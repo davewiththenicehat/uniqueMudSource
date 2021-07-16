@@ -45,7 +45,7 @@ def status_delay_set(char, cmd=None, delay_time=3, status_type='busy'):
     status = {}
 
     # Record the completion time for this status
-    status['comp_time'] = status_type, time.time() + delay_time
+    status['comp_time'] = time.time() + delay_time
 
     # record the command (if any) for this status
     status['cmd'] = cmd
