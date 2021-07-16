@@ -642,13 +642,7 @@ class Command(default_cmds.MuxCommand):
         self.cost()
 
     def stop_request(self, target=None, stop_message=None, stop_cmd=None):
-        """
-        Request for a player to stop an action.
-        This has a parent function in Character.status_stop_request.
-        stop_request will verify that the target has a deffered command.
-        If stop_cmd was provided and there is no deffered command.
-            stop_request will suggest the stop_cmd to the target.
-        Returns True if the command was successfully stopped.
+        """Request for a player to stop an action.
 
         Arguments:
             target=Character, target of the stop request
@@ -659,19 +653,10 @@ class Command(default_cmds.MuxCommand):
                 Default: None
                 Example: 'look'
 
-        Reason:
-            Adds a command stop request at command level.
+        Returns:
+            send_success (bool): True if the request was succesfully sent.
 
-        Useage:
-            If not calling on self:
-                call within Command.func or Command.deffered_action methods
-                self.stop_request(target, stop_message, stop_cmd)
-            If calling on self
-                NOTE: recommend using Character.status_stop_request over this strategy
-                Character.ndb.deffered_command.stop_request()  # to call off a deffered command
-                The above method is still useable if the command does not use the Character.ready() method
-
-        Limitations:
+        Notes:
             Is NOT compatible with settings.MULTISESSION_MODE = 3
         """
         if not target:
