@@ -269,7 +269,7 @@ def action_cost(char, cost_level=None, cost_stat=None, subt_cost=True, log=False
     todo:
         make a cache for the equation: https://docs.python.org/3/library/functools.html
     """
-    action_cmd = char.nattributes.get('deffered_command')
+    action_cmd = char.get_cmd('busy')
     if not cost_level or not cost_stat:  # this command does not have a cost
         if action_cmd:
             if not cost_stat:
