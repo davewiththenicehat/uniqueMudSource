@@ -22,12 +22,12 @@ COST_LEVELS = {
     'daunting': 5
 }
 
-def targeted_action(caller, target, log=False):
+def targeted_action(char, target, status_type='busy', log=False):
     """
     Used to facilitate a standard action that has a target.
 
     Arguments:
-        caller, is the character commiting the action
+        char, is the character commiting the action
         target, the target this command targets
         log=False, if True log the variables used
 
@@ -41,20 +41,23 @@ def targeted_action(caller, target, log=False):
         An unconscious Character can not evade and has an evade result of 5
     """
     # get reference of the command creating the action
-    action_cmd = caller.nattributes.get('deffered_command')
+    action_cmd = char.get_cmd(status_type)
+
+    # stop if there is not command deferred for the status type passed.
     if not action_cmd:
         if log:
-            log_info(f"actions.targeted_action, caller id {caller.id}: caller " \
-                     f"has no deffered actions.")
-        caller.msg('You no longer have an action waiting.')
+            log_info(f"actions.targeted_action, char id {char.id}: char has no deferred actions.")
+        char.msg('You no longer have an action waiting.')
         return
-    action_result = action_roll(caller, log)
+
+
+    action_result = action_roll(char, log)
     # only roll an evade if the target is a Character
     evade_result = EVADE_MIN  # default evade for non Character Objects
     if inherits_from(target, 'typeclasses.characters.Character'):
         evade_result = evade_roll(target, action_cmd.evade_mod_stat, log)
     if log:
-        log_info(f'actions.targeted_action, caller id {caller.id}: ' \
+        log_info(f'actions.targeted_action, char id {char.id}: ' \
                  f'action_result: {action_result} | evade_result {evade_result}')
     return action_result - evade_result, action_result, evade_result
 
@@ -121,7 +124,7 @@ def evade_roll(char=None, evade_mod_stat=None, log=False, unit_test=False):
     if char.position == 'laying':
         evade_mod -= LAYING_EVADE_PENALTY
     # get reference of the command creating the action
-    evade_cmd = char.nattributes.get('deffered_command')
+    evade_cmd = char.get_cmd()
     if evade_cmd:  # if there is an active command
         cmd_type = getattr(evade_cmd, 'cmd_type', False)
         if cmd_type:  # verify cmd_type existance
@@ -133,7 +136,7 @@ def evade_roll(char=None, evade_mod_stat=None, log=False, unit_test=False):
             # it's evade type is the same as the attack action's
             if cmd_type == 'evasion' and evade_cmd.evade_mod_stat == evade_mod_stat:
                 if log:
-                    log_info(f'Character ID: {char.id}: evade_roll found a deffered command.')
+                    log_info(f'Character ID: {char.id}: evade_roll found a deferred command.')
                 # get Character's skill bonus modifier
                 roll_max += skills.evd_max_mod(evade_cmd)
                 # check if any wielded items will assist with this evasion
@@ -202,7 +205,7 @@ def action_roll(char, log=False, unit_test=False):
     action_mod_stat = 'OBS'
     action_mod = 0
     # get reference of the command creating the action
-    action_cmd = char.nattributes.get('deffered_command')
+    action_cmd = char.get_cmd('busy')
     if action_cmd:  # if there is an active command
         if log:
             msg = f'Character ID: {char.id}: action_roll found a deffered command.'

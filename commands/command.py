@@ -937,6 +937,7 @@ class Command(default_cmds.MuxCommand):
         # reference data types
         caller = self.caller
         target = self.target
+        status_type = self.status_type
         cmd_desc = self.pres_tense_desc
         weapon_desc = self.weapon_desc
         passed_caller_msg = caller_msg
@@ -967,7 +968,8 @@ class Command(default_cmds.MuxCommand):
 
         # roll the attack
         if result is None:  # Not a dev account using unit_test arg
-            result, action_result, evade_result = actions.targeted_action(caller, target, log)
+            result, action_result, evade_result = actions.targeted_action(caller, target,
+                                                                          status_type, log)
         if action_mod:  # if passed, add action mod to results
             result += action_mod
             action_result += action_mod

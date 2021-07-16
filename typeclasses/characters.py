@@ -772,6 +772,22 @@ class Character(AllObjectsMixin, CharExAndObjMixin, UMClothedCharacter, GenderCh
 
         return status_functions.get_status(self, status_type)
 
+    def get_cmd(self, status_type='busy'):
+        """Return a command deferred as a single status type.
+
+        Arguments:
+            status_type (str): The type of status to get.
+
+        Returns:
+            deferred_cmd (Command): an instance of a deferred command.
+        """
+        status = self.get_status(status_type)
+        if status:
+            deferred_cmd = status['cmd']
+        else:
+            deferred_cmd = None
+        return deferred_cmd
+
     def cache_stat_modifiers(self):
         """
         Create a cache of meaningful ability modifiers.
