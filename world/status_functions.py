@@ -94,7 +94,15 @@ def status_delay_get(char, status_type='busy'):
 
 
 def complete(char, status_type='busy', complete_cmd=True):
-    """
+    """Complete the deferred status.
+
+    Arguments:
+        char (Character): The Character to attach this status to.
+        status_type (str): The type of status to get. Default is 'busy'.
+        complete_cmd (bool): Should the command the status refers to be called?
+
+    Returns:
+        success (bool): The completion was successful
 
     """
 
